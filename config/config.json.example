@@ -6,17 +6,6 @@
         "DB_PASS"                       : "DATABASE PASSWORD",
         "DB_QUICK"                      : "DATABASE FOR QUICK ANNOTATION",
         "DB_ORCA"                       : "DATABASE FOR ORCA"
-    }
-}
-
-{
-    "DB" : {
-        "DB_HOST"                       : "DATABASE HOST NAME OR IP ADDRESS",
-        "DB_USER"                       : "DATABASE USERNAME",
-        "DB_PORT"                       : "DATABSE PORT",
-        "DB_PASS"                       : "DATABASE PASSWORD",
-        "DB_QUICK"                      : "DATABASE FOR QUICK ANNOTATION",
-        "DB_ORCA"                       : "DATABASE FOR ORCA"
     },
     
     "WEB" : {
