@@ -1,0 +1,32 @@
+{
+  "name": "ORCA",
+  "version": "0.0.1",
+  "description": "This directory contains the entirety of the BioGRID ORCA Web Application.",
+  "main": "www/index.php",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build-css": "./bin/compileLess.sh",
+    "copy-modules": "./bin/copyModules.sh",
+    "copy-js": "./bin/copyJS.sh",
+    "copy-scripts": "./bin/copyScripts.sh",
+    "build": "npm run build-css && npm run copy-modules && npm run copy-js && npm run copy-scripts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/BioGRID/ORCA"
+  },
+  "author": "BioGRID <biogridadmin@gmail.com>",
+  "license": "MIT License",
+  "bugs": {
+    "url": "https://github.com/BioGRID/ORCA/issues"
+  },
+  "dependencies": {
+    "jquery": "~2.2.0",
+    "bootstrap": "~3.3.6",
+    "font-awesome": "~4.5.0",
+    "datatables.net": "~1.10.11",
+    "datatables.net-bs": "~1.10.11",
+    "qtip2": "~3.0.3"
+  },
+  "devDependencies": {}
+}
