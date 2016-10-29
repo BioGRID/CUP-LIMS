@@ -87,3 +87,30 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Configs
+config.json
+config/config.json
+config.php
+
+# Misc
+.listing
+
+# Logs
+logs/
+
+# Composer
+vendor/
+app/vendor/
+
+# NPM
+node_modules/
+app/node_modules/
+npm-debug.log
+
+Web Root
+site/www/css/
+site/www/fonts/
+site/www/js/
+site/www/scripts/
+site/www/logs/
