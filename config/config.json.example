@@ -1,52 +1,52 @@
 {
-	"DB" : {
-		"DB_HOST"						: "DATABASE HOST NAME OR IP ADDRESS",
-		"DB_USER"						: "DATABASE USERNAME",
-		"DB_PORT"						: "DATABSE PORT",
-		"DB_PASS"						: "DATABASE PASSWORD",
-		"DB_QUICK"						: "DATABASE FOR QUICK ANNOTATION",
-		"DB_ORCA"						: "DATABASE FOR ORCA"
-	}
+    "DB" : {
+        "DB_HOST"                       : "DATABASE HOST NAME OR IP ADDRESS",
+        "DB_USER"                       : "DATABASE USERNAME",
+        "DB_PORT"                       : "DATABSE PORT",
+        "DB_PASS"                       : "DATABASE PASSWORD",
+        "DB_QUICK"                      : "DATABASE FOR QUICK ANNOTATION",
+        "DB_ORCA"                       : "DATABASE FOR ORCA"
+    }
 }
 
 {
-	"DB" : {
-		"DB_HOST"						: "DATABASE HOST NAME OR IP ADDRESS",
-		"DB_USER"						: "DATABASE USERNAME",
-		"DB_PORT"						: "DATABSE PORT",
-		"DB_PASS"						: "DATABASE PASSWORD",
-		"DB_QUICK"						: "DATABASE FOR QUICK ANNOTATION",
-		"DB_ORCA"						: "DATABASE FOR ORCA"
-	},
-	
-	"WEB" : {
-		"WEB_URL"						: "WEB URL FOR YOUR INSTALLATION",
-		"WEB_NAME"						: "Open Repository for CRISPR Analysis",
-		"WEB_NAME_ABBR"					: "ORCA",
-		"WEB_DESC"						: "The BioGRID ORCA system is a platform for the management and processing of large scale CRISPR screens",
-		"WEB_KEYWORDS"					: "bioinformatics, database, lims, crispr, protein, curation",
-		"OWNER_NAME"					: "TyersLab.com",
-		"OWNER_URL"						: "http://www.tyerslab.com",
-		"ADMIN_EMAIL"					: "biogridadmin@gmail.com",
-		"WIKI_URL"						: "https://github.com/BioGRID/ORCA/wiki"
-	},
-	
-	"DIRECTORIES" : {
-		"BASE_PATH"						: "FULL PATH TO YOUR SITE DIRECTORY",
-		"WEB_DIR"						: "www",
-		"APP_DIR"						: "app"
-		"CSS_DIR"						: "css",
-		"JS_DIR"						: "js",
-		"IMG_DIR"						: "img",
-		"SCRIPT_DIR"					: "scripts"
-		"TEMPLATE_DIR"					: "templates",
-		"INC_DIR"						: "inc"
-	},
-	
-	"SESSION" : {
-		 "SESSION_NAME"					: "ORCA_USER",
-		 "PERSISTENT_TIMEOUT"			: 604800,
-		 "COOKIE_NAME"					: "ORCA"
-	}
+    "DB" : {
+        "DB_HOST"                       : "DATABASE HOST NAME OR IP ADDRESS",
+        "DB_USER"                       : "DATABASE USERNAME",
+        "DB_PORT"                       : "DATABSE PORT",
+        "DB_PASS"                       : "DATABASE PASSWORD",
+        "DB_QUICK"                      : "DATABASE FOR QUICK ANNOTATION",
+        "DB_ORCA"                       : "DATABASE FOR ORCA"
+    },
+    
+    "WEB" : {
+        "WEB_URL"                       : "WEB URL FOR YOUR INSTALLATION",
+        "WEB_NAME"                      : "Open Repository for CRISPR Analysis",
+        "WEB_NAME_ABBR"                 : "ORCA",
+        "WEB_DESC"                      : "The BioGRID ORCA system is a platform for the management and processing of large scale CRISPR screens",
+        "WEB_KEYWORDS"                  : "bioinformatics, database, lims, crispr, protein, curation",
+        "OWNER_NAME"                    : "TyersLab.com",
+        "OWNER_URL"                     : "http://www.tyerslab.com",
+        "ADMIN_EMAIL"                   : "biogridadmin@gmail.com",
+        "WIKI_URL"                      : "https://github.com/BioGRID/ORCA/wiki"
+    },
+    
+    "DIRECTORIES" : {
+        "BASE_PATH"                     : "FULL PATH TO YOUR SITE DIRECTORY",
+        "WEB_DIR"                       : "www",
+        "APP_DIR"                       : "app"
+        "CSS_DIR"                       : "css",
+        "JS_DIR"                        : "js",
+        "IMG_DIR"                       : "img",
+        "SCRIPT_DIR"                    : "scripts"
+        "TEMPLATE_DIR"                  : "templates",
+        "INC_DIR"                       : "inc"
+    },
+    
+    "SESSION" : {
+         "SESSION_NAME"                 : "ORCA_USER",
+         "PERSISTENT_TIMEOUT"           : 604800,
+         "COOKIE_NAME"                  : "ORCA"
+    }
 
 }
