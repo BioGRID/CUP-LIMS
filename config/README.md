@@ -13,6 +13,7 @@ These variables are used to setup connectivity to the MySQL database used to ope
 ## Web Configuration
 These variables pertain to the website and the public facing aspects of the IMS. 
 + **WEB_URL** - This is the full url to your ORCA installation. For example: http://www.orca.com, http://192.111.111.111, http://localhost
++ **WEB_SUBFOLDER** - If your url uses a subfolder, you need to specify it here. Example: if you url is http://www.orca.com/myorca you would put "myorca" here. Generally not required, so the default is "".
 + **WEB_NAME** - This is the name for your installation. Default: Open Repository for CRISPR Analysis
 + **WEB_NAME_ABBR** - An abbreviated version of the **WEB_NAME** variable for instances with limited space. Default: ORCA
 + **WEB_DESC** - A general description of your site, likely no need to modify. This is used in meta desc headings in HTML.
@@ -21,6 +22,7 @@ These variables pertain to the website and the public facing aspects of the IMS.
 + **OWNER_URL** - A url to link to when attributing the site. Default: http://www.tyerslab.com.
 + **ADMIN_EMAIL** - An email address to contact when seeking the site administrator. Default: biogridadmin@gmail.com.
 + **WIKI_URL** - A url to the Wiki for the ORCA platform, with tips for its use and operation. Default: https://github.com/BioGRID/ORCA/wiki.
++ **VERSION** - A version number. Can be almost anything. Default: 0.0.0.1Alpha.
 
 ## Directory Configuration
 These are the general directories used by the application. Other than the **BASE_PATH** variable, you should not need to modify any of the other defaults, unless in circumstances where you are unable to use the default value.
