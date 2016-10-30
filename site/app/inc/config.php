@@ -54,7 +54,6 @@ define( 'CONFIG', $config );
  * directly.
  */
 
-
 /**
  * PDO MySQL Connection String and DB Variables
  */
