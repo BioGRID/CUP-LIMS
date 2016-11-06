@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "bootstrap": "~3.3.6",
+    "bootstrap-datepicker": "^1.6.4",
     "datatables.net": "~1.10.11",
     "datatables.net-bs": "~1.10.11",
     "dropzone": "^4.3.0",

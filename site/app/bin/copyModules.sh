@@ -24,3 +24,11 @@ cp -rf node_modules/datatables.net-bs/css/dataTables.bootstrap.css ../www/css/
 # QTIP2
 cp -rf node_modules/qtip2/dist/jquery.qtip.min.js ../www/js/
 cp -rf node_modules/qtip2/dist/jquery.qtip.min.css ../www/css/
+
+# DROPZONE
+cp -rf node_modules/dropzone/dist/min/dropzone.min.js ../www/js/
+cp -rf node_modules/dropzone/dist/min/dropzone.min.css ../www/css/
+
+# BOOTSTRAP DATEPICKER
+cp -rf node_modules/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js ../www/js/
+cp -rf node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker3.min.css ../www/css/
