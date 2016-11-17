@@ -19,11 +19,14 @@ class UploadController extends lib\Controller {
 		$addonJS = array( );
 		$addonJS[] = "dropzone.min.js";
 		$addonJS[] = "bootstrap-datepicker.min.js";
+		$addonJS[] = "formValidation/formValidation.min.js";
+		$addonJS[] = "formValidation/bootstrap.min.js";
 		$addonJS[] = "orca-upload.js";
 		
 		$addonCSS = array( );
 		$addonCSS[] = "dropzone.min.css";
 		$addonCSS[] = "bootstrap-datepicker3.min.css";
+		$addonCSS[] = "formValidation/formValidation.min.css";
 		
 		$this->headerParams->set( 'ADDON_CSS', $addonCSS );
 		$this->footerParams->set( 'ADDON_JS', $addonJS );
@@ -46,6 +49,7 @@ class UploadController extends lib\Controller {
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
 			"CELL_LINES" => $cellLines,
+			"DATASET_CODE" => uniqid( ),
 			"TODAY" => date( 'Y-m-d', strtotime( 'today' ))
 		);
 		

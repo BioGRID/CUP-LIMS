@@ -35,7 +35,7 @@ $config = array( );
 if( !isset( $_SESSION['ORCA_CONFIG'] ) && isset( $_SESSION['ORCA_CONFIG']['DB'] )) {
 	$config = $_SESSION['ORCA_CONFIG'];
 } else {
-	$config = trim(file_get_contents( '../../config/config.json' ));
+	$config = trim(file_get_contents( dirname( __FILE__ ) . '/../../../config/config.json' ));
 	$config = json_decode( $config, true );
 	$_SESSION['ORCA_CONFIG'] = $config;
 }
@@ -73,6 +73,13 @@ define( 'WEB_PATH', CONFIG['DIRECTORIES']['BASE_PATH'] . "/" . CONFIG['DIRECTORI
 define( 'APP_PATH', CONFIG['DIRECTORIES']['BASE_PATH'] . "/" . CONFIG['DIRECTORIES']['APP_DIR'] );
 define( 'TEMPLATE_PATH', APP_PATH . "/" . CONFIG['DIRECTORIES']['TEMPLATE_DIR'] );
 define( 'INC_PATH', APP_PATH . "/" . CONFIG['DIRECTORIES']['INC_DIR'] );
+
+/**
+ * UPLOADS
+ */
+ 
+define( 'UPLOAD_TMP_PATH', WEB_PATH . "/" . CONFIG['DIRECTORIES']['UPLOAD_DIR'] . "/" . CONFIG['DIRECTORIES']['UPLOAD_TMP_DIR'] );
+define( 'UPLOAD_PROCESSED_PATH', WEB_PATH . "/" . CONFIG['DIRECTORIES']['UPLOAD_DIR'] . "/" . CONFIG['DIRECTORIES']['UPLOAD_PROCESSED_DIR'] );
 
 /**
  * URLS

@@ -1,10 +1,5 @@
 #!/bin/sh -e
 
-# MAKE DIRECTORIES
-mkdir -p ../www/css
-mkdir -p ../www/fonts
-mkdir -p ../www/js
-
 # FONT AWESOME
 cp -rf node_modules/font-awesome/css/font-awesome.min.css ../www/css/
 cp -rf node_modules/font-awesome/fonts/* ../www/fonts/
@@ -32,3 +27,8 @@ cp -rf node_modules/dropzone/dist/min/dropzone.min.css ../www/css/
 # BOOTSTRAP DATEPICKER
 cp -rf node_modules/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js ../www/js/
 cp -rf node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker3.min.css ../www/css/
+
+# FORM VALIDATION
+cp -rf node_modules/formvalidation/dist/js/formValidation.min.js ../www/js/formValidation/
+cp -rf node_modules/formvalidation/dist/js/framework/bootstrap.min.js ../www/js/formValidation/
+cp -rf node_modules/formvalidation/dist/css/formValidation.min.css ../www/css/formValidation/
