@@ -31,7 +31,10 @@
         "IMG_DIR"                       : "img",
         "SCRIPT_DIR"                    : "scripts",
         "TEMPLATE_DIR"                  : "templates",
-        "INC_DIR"                       : "inc"
+        "INC_DIR"                       : "inc",
+		"UPLOAD_DIR"					: "uploads",
+		"UPLOAD_TMP_DIR"				: "tmp",
+		"UPLOAD_PROCESSED_DIR"			: "processed"
     },
     
     "SESSION" : {

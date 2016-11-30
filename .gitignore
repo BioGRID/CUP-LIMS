@@ -91,7 +91,6 @@ ENV/
 # Configs
 config.json
 config/config.json
-config.php
 
 # Misc
 .listing
@@ -114,3 +113,5 @@ site/www/fonts/
 site/www/js/
 site/www/scripts/
 site/www/logs/
+site/www/uploads/tmp/
+site/www/uploads/processed/

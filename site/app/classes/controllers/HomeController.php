@@ -44,7 +44,8 @@ class HomeController extends lib\Controller {
 			"WEB_URL" => WEB_URL,
 			"VERSION" => CONFIG['WEB']['VERSION'],
 			"FIRSTNAME" => $_SESSION[SESSION_NAME]['FIRSTNAME'],
-			"LASTNAME" => $_SESSION[SESSION_NAME]['LASTNAME']
+			"LASTNAME" => $_SESSION[SESSION_NAME]['LASTNAME'],
+			"IMG_URL" => IMG_URL
 		);
 		
 		$this->renderView( "home" . DS . "HomeIndex.tpl", $params, false );
