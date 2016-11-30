@@ -8,5 +8,5 @@ mkdir -p ../www/js/formValidation
 mkdir -p ../www/css/formValidation
 mkdir -p ../www/scripts
 mkdir -p ../www/uploads
-mkdir -p ../www/uploads/tmp
+mkdir -p ../www/uploads/staging
 mkdir -p ../www/uploads/processed

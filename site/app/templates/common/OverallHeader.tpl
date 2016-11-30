@@ -17,12 +17,13 @@
 	{{CANONICAL|raw}}
 	
 	<!-- IMS Stylesheets -->
-	<link rel="stylesheet" type="text/css" href="{{CSS_URL}}/styles.min.css" />
 	<link rel="stylesheet" type="text/css" href="{{CSS_URL}}/font-awesome.min.css" />
 
 	{% for STYLESHEET in ADDON_CSS %}
 		<link rel="stylesheet" type="text/css" href="{{CSS_URL}}/{{STYLESHEET}}" />
 	{% endfor %}
+	
+	<link rel="stylesheet" type="text/css" href="{{CSS_URL}}/styles.min.css" />
 	
 	<!-- IMS Favicon -->
 	<link rel="icon" type="image/png" href="{{IMG_URL}}/favicon-32x32.png" sizes="32x32">

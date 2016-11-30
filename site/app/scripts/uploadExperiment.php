@@ -4,6 +4,10 @@
  * Handle the movement and processing of uploaded files
  * into the correct upload location
  */
+ 
+// header('HTTP/1.1 500 Internal Server Error');
+// header('Content-type: text/plain');
+// die( );
 
 require_once __DIR__ . '/../../app/lib/Bootstrap.php';
 
@@ -17,7 +21,7 @@ if( !empty( $_FILES )) {
 	
 	// Generate random directory for it to prevent possible
 	// conflicts
-	$directory = UPLOAD_TMP_PATH . DS . $_POST['datasetcode'];
+	$directory = UPLOAD_TMP_PATH . DS . $_POST['experimentCode'];
 	
 	if( !is_dir( $directory )) {
 		mkdir( $directory, 0777, false );
@@ -25,7 +29,7 @@ if( !empty( $_FILES )) {
 	
 	// Remove any existing files, in case mistake uploads
 	// occurred previously
-	array_map( 'unlink', glob( $directory . DS . "*.*" ));
+	// array_map( 'unlink', glob( $directory . DS . "*.*" ));
 	
 	// Move the file to the new directory which is just a temporary
 	// home until we have a chance to move it to a permanent one
@@ -36,6 +40,7 @@ if( !empty( $_FILES )) {
 	}
 } 
 
-echo json_encode( array( "status" => $status, "filename" => $filename ));
+die( "FAIL" );
+//echo json_encode( array( "status" => $status, "filename" => $filename ));
  
 ?>

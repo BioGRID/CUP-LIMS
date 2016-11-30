@@ -12,9 +12,11 @@
 	
 	Dropzone.autoDiscover = false;
 	var baseURL = $("head base").attr( "href" );
+	var expDropzone;
 
 	$(function( ) {
 		
+		addFileValidator( );
 		initializeDropzone( );
 		initializeDatePicker( );
 		initializeUploadFormValidation( );
@@ -23,42 +25,90 @@
 	
 	function initializeDatePicker( ) {
 		
-		$("input#datasetDate").datepicker({
+		$("input#experimentDate").datepicker({
 			format: 'yyyy-mm-dd',
 			todayHighlight: true,
 			forceParse: true
 		}).on( 'changeDate', function( e ) {
-			$("#uploadForm").formValidation( 'revalidateField', 'datasetDate' );
+			$("#uploadForm").formValidation( 'revalidateField', 'experimentDate' );
 		});
 		
 	}
 	
 	function initializeDropzone( ) {
 		
-		$("div#dropzoneBox").dropzone({ 
-			url: baseURL + "/scripts/uploadDataset.php",
-			maxFiles: 1,
-			maxfilesexceeded: function( file ) {
-				this.removeAllFiles( );
-				this.addFile( file );
-			},
+		expDropzone = new Dropzone( "div#dropzoneBox", { 
+			url: baseURL + "/scripts/uploadExperiment.php",
+			parallelUploads: 3,
+			addRemoveLinks: true,
 			sending: function( file, xhr, formData ) {
-				formData.append( 'datasetcode', $("#datasetCode").val( ) );
-				$("#datasetFile").val( "" );
-				$("#uploadForm").formValidation( 'revalidateField', 'datasetFile' );
+				formData.append( 'experimentCode', $("#experimentCode").val( ) );
 			},
 			success: function( file, response ) {
-				console.log( response );
-				var obj = JSON.parse( response );
-				$("#datasetFile").val( obj.filename );
-				$("#uploadForm").formValidation( 'revalidateField', 'datasetFile' );
+				
+				// Set to a value, to allow for validation
+				// of form submission
+				$("#experimentHasFile").val( "true" );
+				
+				// Test to see if we are still validated
+				$("#uploadForm").formValidation( 'revalidateField', 'experimentHasFile' );
+				
 			},
 			canceled: function( file ) {
-				$("#uploadForm").formValidation( 'revalidateField', 'datasetFile' );
+				$("#uploadForm").formValidation( 'revalidateField', 'experimentHasFile' );
 			},
 			error: function( file, message ) {
-				$("#uploadForm").formValidation( 'revalidateField', 'datasetFile' );
+				$("#uploadForm").formValidation( 'revalidateField', 'experimentHasFile' );
 			}
+		});
+		
+		expDropzone.on( "addedfile", function( file ) {
+			
+			// Use a fancy text type icon to represent
+			// non-image type files
+			if (!file.type.match(/image.*/)) {
+				expDropzone.emit( "thumbnail", file, baseURL + "/img/text-icon.png" );
+			} 
+			
+			// Check for duplicates and ignore them if they
+			// are already uploaded
+			if( this.files.length ) {
+				var i, len;
+				for( i = 0, len = this.files.length; i < len - 1; i++ ) {
+					if( this.files[i].name == file.name && this.files[i].size == file.size ) {
+						this.removeFile( file );
+					}
+				}
+			} 
+			
+		});
+		
+		expDropzone.on( "removedfile", function( file ) {
+			
+			if( !this.files.length ) {		
+				// Empty out to prevent form submission
+				$("#experimentHasFile").val( "" );
+			} else {
+				
+				// Check to see if there are any successfully
+				// uploaded files remaining and set the validation
+				// flag if not 
+				var hasFile = false;
+				var i, len;
+				for( i = 0, len = this.files.length; i < len; i++ ) {
+					if( this.files[i].status == "success" ) {
+						hasFile = true;
+						break;
+					}
+				}
+				
+				if( !hasFile ) {
+					$("#experimentHasFile").val( "" );
+				}
+			}
+			
+			$("#uploadForm").formValidation( 'revalidateField', 'experimentHasFile' );
+			
 		});
 		
 	}
@@ -67,39 +117,42 @@
 		
 		var fieldVals = { };
 		
-		fieldVals['datasetName'] = {
+		fieldVals['experimentName'] = {
 			validators: {
 				notEmpty: {
-					message: 'A Dataset Name is Required'
+					message: 'An Experiment Name is Required'
 				}
 			}
 		};
 		
-		fieldVals['datasetDate'] = {
+		fieldVals['experimentDate'] = {
 			validators: {
 				notEmpty: {
-					message: 'A Dataset Date is Required'
+					message: 'An Experiment Date is Required'
 				},
 				date: {
 					format: 'YYYY-MM-DD',
-					message: 'The Dataset Date is not formatted correctly. Should be YYYY-MM-DD'
+					message: 'The Experiment Date is not formatted correctly. Should be YYYY-MM-DD'
 				}
 			}
 		};
 		
-		fieldVals['datasetDesc'] = {
+		fieldVals['experimentDesc'] = {
 			validators: {
 				notEmpty: {
-					message: 'A Dataset Description is Required'
+					message: 'An Experiment Description is Required'
 				}
 			}
 		};
 		
-		fieldVals['datasetFile'] = {
+		fieldVals['experimentHasFile'] = {
 			excluded: false,
 			validators: {
 				notEmpty: {
-					message: 'An Uploaded Dataset File is Required'
+					message: 'An Uploaded Experiment File is Required'
+				},
+				hasFiles: {
+					message: 'You must upload at least one valid file'
 				}
 			}
 		};
@@ -113,13 +166,43 @@
 			var $form = $(e.target),
 				fv = $(e.target).data( 'formValidation' );
 				
-			submitDataset( );
+			submitExperiment( );
 				
 		});
 	}
 	
-	function submitDataset( ) {
-		alert( "DATASET SUBMITTED" );
+	function submitExperiment( ) {
+		console.log( "EXPERIMENT SUBMITTED" );
+	}
+	
+	function addFileValidator( ) {
+		
+		FormValidation.Validator.hasFiles = {
+			validate: function( validator, $field, options ) {
+			
+				var files = expDropzone.files;
+				var filesLength = files.length;
+				var hasFile = false;
+				
+				if( filesLength ) {
+					var i, len;
+					for( i = 0; i < filesLength; i++ ) {
+						if( files[i].status == "success" ) {
+							hasFile = true;
+							break;
+						}
+					}
+				}
+					
+				if( hasFile ) {
+					return true;
+				} 
+				
+				return false;
+			
+			}
+		};
+		
 	}
 
 }));

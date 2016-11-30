@@ -33,6 +33,14 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 { margin-top: 0px; margin-b
 .paddingLg { padding: 15px; }
 .paddingMd { padding: 10px; }
 
+i {
+	&.primaryIcon { color: @brand-primary; }
+	&.successIcon { color: @brand-success; }
+	&.infoIcon { color: @brand-info; }
+	&.dangerIcon { color: @brand-danger; }
+	&.warningIcon { color: @brand-warning; }
+}
+
 /* SITE COMPONENTS */
 
 .orcaNav { background-color: @brand-info; }
@@ -43,8 +51,6 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 { margin-top: 0px; margin-b
 
 #footer { 
 	background-color: @brand-info; 
-	display: table-row;
-	height: 1px;
 	
 	section { 
 		padding: 10px; 
@@ -68,9 +74,29 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 { margin-top: 0px; margin-b
 
 /* UPLOAD */
 
-.uploadForm {
+#uploadForm {
 	.dropzone {
 		border: 2px dashed @brand-primary;
+		
+		.dz-message {
+			font-size: 18px;
+		}
+		
+		.dz-details {
+			opacity: 100;
+			.dz-filename span, .dz-size span {
+				background-color: @brand-warning;
+			}
+			.dz-filename span {
+				font-weight: bold;
+			}
+		}	
+		
+		.dz-progress {
+			.dz-upload {
+				background: @brand-success !important;
+			}
+		}
 	}
 }
 		
