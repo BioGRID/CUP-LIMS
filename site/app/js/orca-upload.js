@@ -64,8 +64,6 @@
 		
 		expDropzone.on( "addedfile", function( file ) {
 			
-			console.log( this.files );
-			
 			// Use a fancy text type icon to represent
 			// non-image type files
 			if (!file.type.match(/image.*/)) {
@@ -154,7 +152,7 @@
 					message: 'An Uploaded Experiment File is Required'
 				},
 				hasFiles: {
-					message: 'You must upload at least one valid file'
+					message: 'You must upload at least one valid file AND have no files still processing...'
 				}
 			}
 		};
@@ -175,6 +173,40 @@
 	
 	function submitExperiment( ) {
 		console.log( "EXPERIMENT SUBMITTED" );
+		
+		var formData = $("#uploadForm").serializeArray( );
+		var submitSet = { };
+		
+		// Get main form data
+		$.each( formData, function( ) {
+			submitSet[this.name] = this.value;
+		});
+		
+		// Get successful files only
+		submitSet['experimentFiles'] = [];
+		$.each( expDropzone.files, function( ) {
+			if( this.status == "success" ) {
+				submitSet['experimentFiles'].push( this.name );
+			}
+		});
+		
+		// Convert to JSON
+		submitSet = JSON.stringify( submitSet );
+		
+		// Send via AJAX for submission to
+		// database and placement of files
+		$.ajax({
+			url: baseURL + "/scripts/submitExperiment.php",
+			type: "POST",
+			data: {"expData" : submitSet},
+			dataType: 'json'
+		}).done( function( data, textStatus, jqXHR ) {
+			
+		}).fail( function( jqXHR, textStatus, errorThrown ) {
+			console.log( jqXHR );
+			console.log( textStatus );
+		});
+		
 	}
 	
 	function addFileValidator( ) {
@@ -190,14 +222,18 @@
 				if( filesLength ) {
 					var i, len;
 					for( i = 0; i < filesLength; i++ ) {
+						// Ensure at least 1 successful file
 						if( files[i].status == "success" ) {
 							hasSuccess = true;
+						// Ensure no files are still queued or uploading
 						} else if( files[i].status == "queued" || files[i].status == "uploading" ) {
 							stillProcessing = true;
 						}
 					}
 				}
-					
+				
+				// If at least one successful and none
+				// still processing, we are valid
 				if( hasSuccess && !stillProcessing ) {
 					return true;
 				} 
