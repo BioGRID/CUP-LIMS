@@ -39,8 +39,5 @@ if( !empty( $_FILES )) {
 		$filename = $targetFile;
 	}
 } 
-
-die( "FAIL" );
-//echo json_encode( array( "status" => $status, "filename" => $filename ));
  
 ?>

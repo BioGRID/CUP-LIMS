@@ -19,7 +19,7 @@
 				</div>
 				<div class='form-group col-lg-4 col-md-4'>
 					<label for='experimentCell' class='control-label'>Cell Line</label>
-					<select class='form-control' id='experimentCell'>
+					<select class='form-control' id='experimentCell' name='experimentCell'>
 						{% for cellLineID, cellLineName in CELL_LINES %}
 							<option value='{{cellLineID}}'>{{cellLineName}}</option>
 						{% endfor %}
@@ -36,11 +36,14 @@
 					<input type='hidden' id='experimentCode' name='experimentCode' value='{{DATASET_CODE}}' />
 					<input type='hidden' id='experimentHasFile' name='experimentHasFile' value='' />
 				</div>
-				<div id='experimentFiles'></div>
 				<div class='marginTopSm col-lg-12 col-md-12'>
 					<button class='btn btn-success btn-lg' id='experimentUploadBtn' type='submit'><strong>Submit Experiment</strong> <i class='fa fa-check'></i></button>
 				</div>
 			</div>
 		</div>
 	</div>
+	<div class='container-fluid'>
+		<div class='TEST'><div class="alert alert-success" role="alert">TEST</div></div>
+	</div>
 </div>
+
