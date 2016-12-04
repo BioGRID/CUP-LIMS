@@ -64,6 +64,8 @@
 		
 		expDropzone.on( "addedfile", function( file ) {
 			
+			console.log( this.files );
+			
 			// Use a fancy text type icon to represent
 			// non-image type files
 			if (!file.type.match(/image.*/)) {
@@ -182,19 +184,21 @@
 			
 				var files = expDropzone.files;
 				var filesLength = files.length;
-				var hasFile = false;
+				var hasSuccess = false;
+				var stillProcessing = false;
 				
 				if( filesLength ) {
 					var i, len;
 					for( i = 0; i < filesLength; i++ ) {
 						if( files[i].status == "success" ) {
-							hasFile = true;
-							break;
+							hasSuccess = true;
+						} else if( files[i].status == "queued" || files[i].status == "uploading" ) {
+							stillProcessing = true;
 						}
 					}
 				}
 					
-				if( hasFile ) {
+				if( hasSuccess && !stillProcessing ) {
 					return true;
 				} 
 				
