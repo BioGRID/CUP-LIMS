@@ -43,8 +43,6 @@ class Experiments {
 		$this->db->beginTransaction( );
 		
 		try {
-			
-			echo $_SESSION[SESSION_NAME]['ID'];
 		
 			// Create Experiment
 			$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".experiments VALUES( '0', ?, ?, ?, ?, ?, NOW( ), ?, 'active', ? )" );
@@ -59,7 +57,7 @@ class Experiments {
 			}
 			
 			$this->db->commit( );
-			return array( "STATUS" => "success", "MESSAGE" => "Successfully Added Experiment" );
+			return array( "STATUS" => "success", "MESSAGE" => "Successfully Added Experiment", "ID" => $experimentID );
 			
 		} catch( PDOException $e ) {
 			$this->db->rollback( );

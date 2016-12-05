@@ -165,14 +165,13 @@
 			
 			var $form = $(e.target),
 				fv = $(e.target).data( 'formValidation' );
-				
+			
 			submitExperiment( );
 				
 		});
 	}
 	
 	function submitExperiment( ) {
-		console.log( "EXPERIMENT SUBMITTED" );
 		
 		var formData = $("#uploadForm").serializeArray( );
 		var submitSet = { };
@@ -199,12 +198,30 @@
 			url: baseURL + "/scripts/submitExperiment.php",
 			type: "POST",
 			data: {"expData" : submitSet},
-			dataType: 'json'
+			dataType: 'json',
+			beforeSend: function( ) {
+				$("#messages").html( "" );
+			}
 		}).done( function( data, textStatus, jqXHR ) {
+			
+			var alertType = "success";
+			var alertIcon = "fa-check";
+			if( data["STATUS"] == "error" ) {
+				alertType = "danger";
+				alertIcon = "fa-warning";
+				$("#uploadForm").formValidation( 'disableSubmitButtons', false );
+			} 
+			
+			$("#messages").html( '<div class="alert alert-' + alertType + '" role="alert"><i class="fa ' + alertIcon + ' fa-lg"></i> ' + data['MESSAGE'] + '</div></div>' );
+			
+			if( data["STATUS"] == "success" ) {
+				window.location = baseURL + "/FileProcess?expID=" + data["ID"] + "&full=true";
+			}
 			
 		}).fail( function( jqXHR, textStatus, errorThrown ) {
 			console.log( jqXHR );
 			console.log( textStatus );
+			$("#uploadForm").formValidation( 'disableSubmitButtons', false );
 		});
 		
 	}
