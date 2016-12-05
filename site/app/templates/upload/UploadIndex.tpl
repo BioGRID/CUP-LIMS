@@ -42,8 +42,6 @@
 			</div>
 		</div>
 	</div>
-	<div class='container-fluid'>
-		<div class='TEST'><div class="alert alert-success" role="alert">TEST</div></div>
-	</div>
+	<div id='messages' class='container-fluid'></div>
 </div>
 
