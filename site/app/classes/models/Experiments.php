@@ -57,6 +57,8 @@ class Experiments {
 			}
 			
 			$this->db->commit( );
+			
+			$this->files->removeStagingDir( $data->experimentCode );
 			return array( "STATUS" => "success", "MESSAGE" => "Successfully Added Experiment", "ID" => $experimentID );
 			
 		} catch( PDOException $e ) {
