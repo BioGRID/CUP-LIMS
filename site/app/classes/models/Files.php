@@ -93,6 +93,24 @@ class Files {
 		return false;
 	}
 	
+	/**
+	 * Clean out any remaining staging files that are not part
+	 * of the final setup, then get rid of the directory
+	 */
+	 
+	public function removeStagingDir( $expCode ) {
+	 
+		$dir = UPLOAD_TMP_PATH . DS . $expCode;
+		
+		// Remove any existing files, in case mistake uploads
+		// occurred previously
+		array_map( 'unlink', glob( $dir . DS . "*" ));
+		
+		// Remove Directory
+		rmdir( $dir );
+	
+	}
+	
 }
 
 ?>
