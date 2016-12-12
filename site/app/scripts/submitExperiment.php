@@ -6,6 +6,8 @@
  * and database insert calls
  */
  
+use ORCA\app\lib;
+ 
 // header('HTTP/1.1 500 Internal Server Error');
 // header('Content-type: text/plain');
 // die( );
@@ -13,6 +15,10 @@
 session_start( );
 
 require_once __DIR__ . '/../../app/lib/Bootstrap.php';
+
+if( !lib\Session::isLoggedIn( ) ) {
+	die( json_encode( array( "STATUS" => "error", "MESSAGE" => "Your Session has Expired, please logout and log back in again!" )));
+}
 
 use ORCA\app\classes\models;
 $experiments = new models\Experiments( );
@@ -40,6 +46,6 @@ if( isset( $_POST['expData'] )) {
 	$response = array( "STATUS" => "error", "MESSAGE" => "No Data Sent for Processing" );
 }
 
-echo json_encode( $response );
+exit( json_encode( $response ) );
  
 ?>

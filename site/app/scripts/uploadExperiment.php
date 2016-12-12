@@ -39,5 +39,7 @@ if( !empty( $_FILES )) {
 		$filename = $targetFile;
 	}
 } 
+
+exit( );
  
 ?>

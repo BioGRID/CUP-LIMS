@@ -7,7 +7,9 @@
 
 <div class='greyBG marginTopSm paddingLg marginBotSm'>
 	<div class='container-fluid'>
-		<div>{{ EXP_ID }}</div>
-		<div>{{ PERFORM_FULL }}</div>
+
 	</div>
 </div>
+
+<input type='hidden' id='experimentID' value='{{ EXP_ID }}' />
+<input type='hidden' id='performFull' value='{{ PERFORM_FULL }}' />

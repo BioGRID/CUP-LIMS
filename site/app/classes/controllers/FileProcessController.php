@@ -17,7 +17,7 @@ class FileProcessController extends lib\Controller {
 		parent::__construct( $twig );
 		
 		$addonJS = array( );
-		//$addonJS[] = "orca-fileprocess.js";
+		$addonJS[] = "orca-fileprocess.js";
 		
 		$addonCSS = array( );
 		
