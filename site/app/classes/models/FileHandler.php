@@ -3,20 +3,70 @@
 namespace ORCA\app\classes\models;
 
 /**
- * Files
+ * File Handler
  * This class is for handling processing of data
  * for files and related tables.
  */
 
 use \PDO;
  
-class Files {
+class FileHandler {
 
 	private $db;
 
 	public function __construct( ) {
 		$this->db = new PDO( DB_CONNECT, DB_USER, DB_PASS );
 		$this->db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+	}
+	
+	/** 
+	 * Fetch a set of files from the database pertaining to a specific
+	 * experiment ID and a status
+	 */
+	 
+	public function fetchFiles( $expID, $isFull ) {
+		
+		$query = "SELECT file_id, file_name, file_size FROM " . DB_MAIN . ".files WHERE file_status='active' AND experiment_id=?";
+	
+		if( !$isFull ) {
+			$query .= " AND file_state='new'";
+		}
+
+		$stmt = $this->db->prepare( $query );
+		$stmt->execute( array( $expID ) );
+		
+		$files = array( );
+		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
+			$files[] = array( "NAME" => $row->file_name, "ID" => $row->file_id, "SIZE" => $this->formatFileSize( $row->file_size ) );
+		}
+		
+		return $files;
+	
+	}
+	
+	/**
+	 * Convert file sizes into a consise value
+	 * that's easier to present
+	 */
+	 
+	private function formatFileSize( $bytes ) {
+		
+        if( $bytes >= 1073741824 ) {
+            $bytes = number_format( $bytes / 1073741824, 2 ) . ' GB';
+        } else if( $bytes >= 1048576 ) {
+            $bytes = number_format( $bytes / 1048576, 2 ) . ' MB';
+        } else if( $bytes >= 1024 ) {
+            $bytes = number_format( $bytes / 1024, 2 ) . ' kB';
+        } else if( $bytes > 1 ) {
+            $bytes = $bytes . ' bytes';
+        } else if( $bytes == 1 ) {
+            $bytes = $bytes . ' byte';
+        } else {
+            $bytes = '0 bytes';
+        }
+
+        return $bytes;
+		
 	}
 	
 	/** 

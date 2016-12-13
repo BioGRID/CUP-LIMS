@@ -7,7 +7,7 @@
 
 <div class='greyBG marginTopSm paddingLg marginBotSm'>
 	<div class='container-fluid'>
-
+		<div id='processingOutput'></div>
 	</div>
 </div>
 

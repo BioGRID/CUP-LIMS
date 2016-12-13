@@ -3,7 +3,7 @@
 namespace ORCA\app\classes\models;
 
 /**
- * Experiments
+ * Experiment Handler
  * This class is for handling processing of data
  * for experiments and related tables.
  */
@@ -11,7 +11,7 @@ namespace ORCA\app\classes\models;
 use \PDO;
 use ORCA\app\classes\models;
  
-class Experiments {
+class ExperimentHandler {
 
 	private $db;
 	private $files;
@@ -20,7 +20,7 @@ class Experiments {
 		$this->db = new PDO( DB_CONNECT, DB_USER, DB_PASS );
 		$this->db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 		
-		$this->files = new models\Files( );
+		$this->files = new models\FileHandler( );
 	}
 	
 	/** 
