@@ -21,6 +21,24 @@ class Lookups {
 	}
 	
 	/**
+	 * Build a list of all sgRNAs and their associated ids
+	 */
+	 
+	public function buildSGRNAHash( ) {
+		
+		$sgRNAs = array( );
+		
+		$stmt = $this->db->prepare( "SELECT sgrna_id, sgrna_sequence FROM " . DB_MAIN . ".sgRNAs" );
+		$stmt->execute( );
+		
+		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
+			$sgRNAs[$row->sgrna_sequence] = $row->sgrna_id;
+		}
+		
+		return $sgRNAs;
+	}
+	
+	/**
 	 * Build a list of cell lines that can be referenced by ID
 	 * and are ordered by name ASC
 	 */

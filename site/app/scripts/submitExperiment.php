@@ -21,7 +21,7 @@ if( !lib\Session::isLoggedIn( ) ) {
 }
 
 use ORCA\app\classes\models;
-$experiments = new models\Experiments( );
+$experiments = new models\ExperimentHandler( );
 
 $response = array( );
 
