@@ -215,7 +215,7 @@
 			$("#messages").html( '<div class="alert alert-' + alertType + '" role="alert"><i class="fa ' + alertIcon + ' fa-lg"></i> ' + data['MESSAGE'] + '</div></div>' );
 			
 			if( data["STATUS"] == "success" ) {
-				window.location = baseURL + "/FileProcess?expID=" + data["ID"] + "&full=true";
+				window.location = baseURL + "/FileProgress?expID=" + data["ID"];
 			}
 			
 		}).fail( function( jqXHR, textStatus, errorThrown ) {

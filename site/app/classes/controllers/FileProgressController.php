@@ -11,7 +11,7 @@ namespace ORCA\app\classes\controllers;
 use ORCA\app\lib;
 use ORCA\app\classes\models;
 
-class FileProcessController extends lib\Controller {
+class FileProgressController extends lib\Controller {
 	
 	public function __construct( $twig ) {
 		parent::__construct( $twig );
@@ -44,24 +44,20 @@ class FileProcessController extends lib\Controller {
 			}
 		}
 		
-		// See if we are redoing all files
-		// or just parsing new ones
-		$performFull = "false";
-		if( isset( $_GET['full'] ) && strtolower($_GET['full']) == "true" ) {
-			$performFull = "true";
-		}
+		$fileHandler = new models\FileHandler( );
+		$files = $fileHandler->fetchFiles( $experimentID );
+		$formattedFiles = $fileHandler->fetchFormattedFileStates( $files );
 				
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
-			"EXP_ID" => $experimentID,
-			"PERFORM_FULL" => $performFull
+			"FILE_PROGRESS" => implode( "", $formattedFiles )
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/FileProcess' />" );
 		$this->headerParams->set( "TITLE", "File Process Experiment | " . CONFIG['WEB']['WEB_NAME'] );
 		
-		$this->renderView( "fileProcess" . DS . "FileProcessIndex.tpl", $params, false );
+		$this->renderView( "fileProgress" . DS . "FileProgressIndex.tpl", $params, false );
 				
 	}
 

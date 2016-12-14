@@ -13,10 +13,69 @@ use \PDO;
 class FileHandler {
 
 	private $db;
+	private $twig;
 
 	public function __construct( ) {
 		$this->db = new PDO( DB_CONNECT, DB_USER, DB_PASS );
 		$this->db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+		
+		$loader = new \Twig_Loader_Filesystem( TEMPLATE_PATH );
+		$this->twig = new \Twig_Environment( $loader );
+	}
+	
+	/**
+	 * Convert a set of files into a formatted alert indicating the current
+	 * state of the file
+	 */
+	 
+	public function fetchFormattedFileStates( $files ) {
+		
+		$formattedFiles = array( );
+		$fileCount = 0;
+		$fileTotal = sizeof( $files );
+		foreach( $files as $file ) {
+			
+			$fileCount++;
+
+			$icon = "fa-check";
+			$type = "success";
+			$preamble = "";
+			if( $file['STATE'] == "inprogress" ) {
+				$icon = "fa-spinner fa-spin";
+				$type = "warning";
+				$preamble = "Processing File";
+			} else if( $file['STATE'] == "parsed" ) {
+				$icon = "fa-check";
+				$type = "success";
+				$preamble = "Successfully Processed";
+			} else if( $file['STATE'] == "error" ) {
+				$icon = "fa-warning";
+				$type = "danger";
+				$preamble = "Error Processing";
+			} else if( $file['STATE'] == "new" || $file['STATE'] == "redo" ) {
+				$icon = "fa-hourglass-start";
+				$type = "info";
+				$preamble = "Queued for Processing";
+			}
+			
+			$params = array( 
+				"FILE_NAME" => $file['NAME'],
+				"FILE_SIZE" => $file['SIZE'],
+				"ERRORS" => $file['STATE_MSG'],
+				"PROCESS_PREAMBLE" => $preamble,
+				"FILE_NUMBER" => $fileCount,
+				"FILE_TOTAL" => $fileTotal,
+				"ICON" => $icon,
+				"TYPE" => $type
+			);
+			
+			$view = "fileProgress" . DS . "FileProgressAlert.tpl";
+			$formattedFiles[] = $this->twig->render( $view, $params );
+			
+		}
+		
+		return $formattedFiles;
+		
 	}
 	
 	/** 
@@ -24,20 +83,16 @@ class FileHandler {
 	 * experiment ID and a status
 	 */
 	 
-	public function fetchFiles( $expID, $isFull ) {
+	public function fetchFiles( $expID ) {
 		
-		$query = "SELECT file_id, file_name, file_size FROM " . DB_MAIN . ".files WHERE file_status='active' AND experiment_id=?";
-	
-		if( !$isFull ) {
-			$query .= " AND file_state='new'";
-		}
+		$query = "SELECT file_id, file_name, file_size, file_state, file_state_msg FROM " . DB_MAIN . ".files WHERE file_status='active' AND experiment_id=? ORDER BY file_addeddate DESC,file_id DESC";
 
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( array( $expID ) );
 		
 		$files = array( );
 		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
-			$files[] = array( "NAME" => $row->file_name, "ID" => $row->file_id, "SIZE" => $this->formatFileSize( $row->file_size ) );
+			$files[] = array( "NAME" => $row->file_name, "ID" => $row->file_id, "SIZE" => $this->formatFileSize( $row->file_size ), "STATE" => $row->file_state, "STATE_MSG" => json_decode( $row->file_state_msg, true ) );
 		}
 		
 		return $files;
@@ -93,7 +148,7 @@ class FileHandler {
 			if( $fileInfo = $this->moveFileToProcessing( $filename, $expCode )) {
 		
 				// Create File
-				$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".files VALUES( '0', ?, ?, NOW( ), 'new', 'active', ?, ? )" );
+				$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".files VALUES( '0', ?, ?, NOW( ), 'new','-', 'active', ?, ? )" );
 				$stmt->execute( array( $filename, $fileInfo['SIZE'], $expID, $_SESSION[SESSION_NAME]['ID'] ));
 				
 				// Fetch its new ID
