@@ -23,6 +23,24 @@ class ExperimentHandler {
 		$this->files = new models\FileHandler( );
 	}
 	
+	/**
+	 * Fetch information about an experiment based on the passed in
+	 * experiment ID, return false if non-existant
+	 */
+	 
+	public function fetchExperiment( $expID ) {
+		
+		$stmt = $this->db->prepare( "SELECT * FROM " . DB_MAIN . ".experiments WHERE experiment_id=? LIMIT 1" );
+		$stmt->execute( array( $expID ) );
+		
+		if( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
+			return $row;
+		} 
+		
+		return false;
+		
+	}
+	
 	/** 
 	 * Insert an experiment into the database if one with the same
 	 * name doesn't already exist.
