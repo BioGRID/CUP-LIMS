@@ -17,7 +17,7 @@ class FileProgressController extends lib\Controller {
 		parent::__construct( $twig );
 		
 		$addonJS = array( );
-		$addonJS[] = "orca-fileprocess.js";
+		$addonJS[] = "orca-fileprogress.js";
 		
 		$addonCSS = array( );
 		
@@ -33,7 +33,7 @@ class FileProgressController extends lib\Controller {
 	
 	public function Index( ) {
 		
-		lib\Session::canAccess( "curator" );
+		//lib\Session::canAccess( "curator" );
 		$lookups = new models\Lookups( );
 		
 		// Fetch and Check Experiment ID
@@ -46,12 +46,32 @@ class FileProgressController extends lib\Controller {
 		
 		$fileHandler = new models\FileHandler( );
 		$files = $fileHandler->fetchFiles( $experimentID );
-		$formattedFiles = $fileHandler->fetchFormattedFileStates( $files );
-				
+		$fileData = $fileHandler->fetchFormattedFileStates( $files );
+		
+		$expHandler = new models\ExperimentHandler( );
+		$expInfo = $expHandler->fetchExperiment( $experimentID );
+		
+		$totalComplete = $fileData['STATS']['ERROR'] + $fileData['STATS']['SUCCESS'];
+		$progressPercent = ($totalComplete / $fileData['STATS']['TOTAL'])*100;
+		
+		$isRunning = "true";
+		if( $totalComplete == $fileData['STATS']['TOTAL'] ) {
+			$isRunning = "false";
+		}
+
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
-			"FILE_PROGRESS" => implode( "", $formattedFiles )
+			"FILE_PROGRESS" => implode( "", $fileData['FILES'] ),
+			"QUEUED_FILES" => $fileData['STATS']['QUEUED'],
+			"INPROGRESS_FILES" => $fileData['STATS']['INPROGRESS'],
+			"ERROR_FILES" => $fileData['STATS']['ERROR'],
+			"SUCCESS_FILES" => $fileData['STATS']['SUCCESS'],
+			"TOTAL_FILES" => $fileData['STATS']['TOTAL'],
+			"PROGRESS_PERCENT" => number_format( $progressPercent, 0 ),
+			"COMPLETED_FILES" => $totalComplete,
+			"EXPERIMENT_NAME" => $expInfo->experiment_name,
+			"IS_RUNNING" => $isRunning
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/FileProcess' />" );

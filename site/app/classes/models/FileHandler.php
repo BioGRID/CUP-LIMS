@@ -33,6 +33,9 @@ class FileHandler {
 		$formattedFiles = array( );
 		$fileCount = 0;
 		$fileTotal = sizeof( $files );
+		
+		$stats = array( "TOTAL" => $fileTotal, "INPROGRESS" => 0, "SUCCESS" => 0, "ERROR" => 0, "QUEUED" => 0 );
+		
 		foreach( $files as $file ) {
 			
 			$fileCount++;
@@ -44,18 +47,22 @@ class FileHandler {
 				$icon = "fa-spinner fa-spin";
 				$type = "warning";
 				$preamble = "Processing File";
+				$stats['INPROGRESS']++;
 			} else if( $file['STATE'] == "parsed" ) {
 				$icon = "fa-check";
 				$type = "success";
 				$preamble = "Successfully Processed";
+				$stats['SUCCESS']++;
 			} else if( $file['STATE'] == "error" ) {
 				$icon = "fa-warning";
 				$type = "danger";
 				$preamble = "Error Processing";
+				$stats['ERROR']++;
 			} else if( $file['STATE'] == "new" || $file['STATE'] == "redo" ) {
 				$icon = "fa-hourglass-start";
 				$type = "info";
 				$preamble = "Queued for Processing";
+				$stats['QUEUED']++;
 			}
 			
 			$params = array( 
@@ -74,7 +81,7 @@ class FileHandler {
 			
 		}
 		
-		return $formattedFiles;
+		return array( "FILES" => $formattedFiles, "STATS" => $stats );
 		
 	}
 	
