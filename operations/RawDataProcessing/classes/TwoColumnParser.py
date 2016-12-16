@@ -30,7 +30,7 @@ class TwoColumnParser( ) :
 				splitLine = line.strip( ).split( "\t" )
 				if len(splitLine) <= 0 :
 					continue
-				elif len(splitLine) == 2 :
+				elif len(splitLine) != 2 :
 					self.errors[lineNumber] = "TOO MANY ENTRIES: Found " + str(len(splitLine)) + " entries on row " + str(lineNumber)
 					continue
 				
@@ -50,7 +50,7 @@ class TwoColumnParser( ) :
 				else :
 					sgRNAID = self.insertSGRNA( sgRNA )
 					
-				self.cursor.execute( "INSERT INTO " + Config.DB_MAIN + ".raw_reads VALUES( '0', %s, %s, %s, NOW( ), 'active' )", [sgRNAID, readCount, self.fileID] )
+				self.cursor.execute( "INSERT INTO " + Config.DB_MAIN + ".raw_reads VALUES( '0', %s, %s, %s )", [sgRNAID, readCount, self.fileID] )
 				
 			if len(self.errors) > 0 :
 				self.db.rollback( )
