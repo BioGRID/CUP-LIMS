@@ -30,7 +30,7 @@ class FileHandler {
 	 
 	public function fetchFormattedFileStates( $files ) {
 		
-		$formattedFiles = array( );
+		$formattedFiles = array( "INPROGRESS" => array( ), "COMPLETED" => array( ), "QUEUED" => array( ) );
 		$fileCount = 0;
 		$fileTotal = sizeof( $files );
 		
@@ -42,26 +42,31 @@ class FileHandler {
 
 			$icon = "fa-check";
 			$type = "success";
+			$group = "QUEUED";
 			$preamble = "";
 			if( $file['STATE'] == "inprogress" ) {
 				$icon = "fa-spinner fa-spin";
 				$type = "warning";
 				$preamble = "Processing File";
+				$group = "INPROGRESS";
 				$stats['INPROGRESS']++;
 			} else if( $file['STATE'] == "parsed" ) {
 				$icon = "fa-check";
 				$type = "success";
 				$preamble = "Successfully Processed";
+				$group = "COMPLETED";
 				$stats['SUCCESS']++;
 			} else if( $file['STATE'] == "error" ) {
 				$icon = "fa-warning";
 				$type = "danger";
 				$preamble = "Error Processing";
+				$group = "COMPLETED";
 				$stats['ERROR']++;
 			} else if( $file['STATE'] == "new" || $file['STATE'] == "redo" ) {
 				$icon = "fa-hourglass-start";
 				$type = "info";
 				$preamble = "Queued for Processing";
+				$group = "QUEUED";
 				$stats['QUEUED']++;
 			}
 			
@@ -77,7 +82,7 @@ class FileHandler {
 			);
 			
 			$view = "fileProgress" . DS . "FileProgressAlert.tpl";
-			$formattedFiles[] = $this->twig->render( $view, $params );
+			$formattedFiles[$group][] = $this->twig->render( $view, $params );
 			
 		}
 		

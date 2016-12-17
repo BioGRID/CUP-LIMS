@@ -75,7 +75,5 @@ with Database.db as cursor :
 						parserHandler.setFileState( row['file_id'], "error", errors )
 					else :
 						parserHandler.setFileState( row['file_id'], "parsed", [] )
-						
-			break
 					
 sys.exit(0)

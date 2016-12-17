@@ -62,7 +62,9 @@ class FileProgressController extends lib\Controller {
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
-			"FILE_PROGRESS" => implode( "", $fileData['FILES'] ),
+			"FILE_INPROGRESS" => implode( "", $fileData['FILES']['INPROGRESS'] ),
+			"FILE_COMPLETED" => implode( "", $fileData['FILES']['COMPLETED'] ),
+			"FILE_QUEUED" => implode( "", $fileData['FILES']['QUEUED'] ),
 			"QUEUED_FILES" => $fileData['STATS']['QUEUED'],
 			"INPROGRESS_FILES" => $fileData['STATS']['INPROGRESS'],
 			"ERROR_FILES" => $fileData['STATS']['ERROR'],
