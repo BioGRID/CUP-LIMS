@@ -63,6 +63,7 @@ with Database.db as cursor :
 					
 				parserHandler.setFileState( row['file_id'], "inprogress", [] )
 			
+				# read entire file into list
 				lines = inFile.readlines( )
 				
 				firstLine = lines[0].split( "\t" )
