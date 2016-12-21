@@ -156,6 +156,14 @@
 				}
 			}
 		};
+		
+		fieldVals['experimentBG'] = {
+			validators: {
+				notEmpty: {
+					message: 'You must select at least one valid background file'
+				}
+			}
+		}
 			
 		$("#uploadForm").formValidation({
 			framework: 'bootstrap',
