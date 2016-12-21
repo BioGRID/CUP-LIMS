@@ -52,13 +52,17 @@
 				
 				// Test to see if we are still validated
 				$("#uploadForm").formValidation( 'revalidateField', 'experimentHasFile' );
+				$("#experimentBG").append( "<option value='" + file.name + "'>" + file.name + "</option>" ).prop( 'disabled', false );
+				
 				
 			},
 			canceled: function( file ) {
 				$("#uploadForm").formValidation( 'revalidateField', 'experimentHasFile' );
+				removeBackgroundOption( file );
 			},
 			error: function( file, message ) {
 				$("#uploadForm").formValidation( 'revalidateField', 'experimentHasFile' );
+				removeBackgroundOption( file );
 			}
 		});
 		
@@ -85,6 +89,8 @@
 		
 		expDropzone.on( "removedfile", function( file ) {
 			
+			removeBackgroundOption( file );
+			
 			if( !this.files.length ) {		
 				// Empty out to prevent form submission
 				$("#experimentHasFile").val( "" );
@@ -110,6 +116,15 @@
 			$("#uploadForm").formValidation( 'revalidateField', 'experimentHasFile' );
 			
 		});
+		
+	}
+	
+	function removeBackgroundOption( file ) {
+		
+		$("#experimentBG option[value='" + file.name + "']").remove( );
+		if( $("#experimentBG option").length <= 0 ) {
+			$("#experimentBG").prop( "disabled", true );
+		}
 		
 	}
 	
