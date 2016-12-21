@@ -212,6 +212,12 @@
 			}
 		});
 		
+		// Get multibackground select
+		submitSet['experimentBG'] = [];
+		$("#experimentBG option:selected").each( function( ) {
+			submitSet['experimentBG'].push( $(this).val( ) );
+		});
+		
 		// Convert to JSON
 		submitSet = JSON.stringify( submitSet );
 		
