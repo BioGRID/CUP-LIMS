@@ -59,7 +59,7 @@ class GeneSummaryHandler( ) :
 						logChange = self.calculateLog2FoldChange( readCount, bgRead, fileReadTotal, bgTotal )
 						
 						if logChange :
-							self.geneSummary[str(bgFileID)][str(geneID)]['log2fold'].add( logChange )
+							self.geneSummary[str(bgFileID)][str(geneID)]['log2fold'].append( logChange )
 						
 		self.processSummary( fileID )
 		
@@ -85,7 +85,10 @@ class GeneSummaryHandler( ) :
 		"""Generate a log2foldchange value"""
 		if bgReadCount > 0 :
 			print "log(" + str(readCount) + "/" + str(bgReadCount) + ") - log(" + str(readTotal) + "/" + str(bgReadTotal) + ")"
-			return math.log(readCount/bgReadCount, 2) - math.log(readTotal/bgReadTotal, 2)
+			
+			readScore = float(readCount) / float(bgReadCount)
+			totalScore = float(readTotal) / float(bgReadTotal)
+			return math.log(readScore, 2) - math.log(totalScore, 2)
 			
 		return False
 		
