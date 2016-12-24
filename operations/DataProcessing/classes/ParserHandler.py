@@ -18,3 +18,7 @@ class ParserHandler( ) :
 	def setFileState( self, fileID, state, messages ) :
 		self.cursor.execute( "UPDATE " + Config.DB_MAIN + ".files SET file_state=%s,file_state_msg=%s WHERE file_id=%s", [state, json.dumps(messages), fileID] )
 		self.db.commit( )
+		
+	def setFileReadTotal( self, fileID, readTotal ) :
+		self.cursor.execute( "UPDATE " + Config.DB_MAIN + ".files SET file_readtotal=%s WHERE file_id=%s", [readTotal, fileID] )
+		self.db.commit( )

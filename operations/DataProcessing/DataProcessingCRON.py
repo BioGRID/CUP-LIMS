@@ -11,8 +11,9 @@ import Config
 import Database
 import argparse
 import atexit, os, time
+import math
 
-from classes import Lookups, ParserHandler, TwoColumnParser
+from classes import Lookups, ParserHandler, TwoColumnParser, GeneSummaryHandler
 
 # Setup a PID file to prevent this CRON job from
 # executing multiple times if currently in progress
@@ -39,7 +40,7 @@ with Database.db as cursor :
 
 	lookups = Lookups.Lookups( Database.db )
 
-	cursor.execute( "SELECT file_id, file_name, file_state, experiment_id FROM " + Config.DB_MAIN + ".files WHERE file_state IN ('new','redo') AND file_status='active' ORDER BY experiment_id ASC" )
+	cursor.execute( "SELECT file_id, file_name, file_state, experiment_id, file_isbackground FROM " + Config.DB_MAIN + ".files WHERE file_state IN ('new','redo') AND file_status='active' ORDER BY experiment_id ASC, file_isbackground DESC LIMIT 2" )
 	
 	if cursor.rowcount > 0 :
 	
@@ -51,6 +52,13 @@ with Database.db as cursor :
 	
 		# Get sgRNA Hash
 		sgRNAs = lookups.buildSGRNAHash( )
+		
+		# Gene Summaries Handler
+		geneSummaryHandler = GeneSummaryHandler.GeneSummaryHandler( Database.db )
+		
+		# Background Data 
+		backgroundData = { }
+		backgroundTotals = { }
 	
 		for row in cursor.fetchall( ) :
 		
@@ -67,14 +75,28 @@ with Database.db as cursor :
 				lines = inFile.readlines( )
 				
 				firstLine = lines[0].split( "\t" )
+				reads = {}
+				readTotal = 0
+				errors = { }
 				if len(firstLine) == 2 :
 					# TWO COL FORMAT
 					twoColParser = TwoColumnParser.TwoColumnParser( row['file_id'], lines, Database.db, sgRNAs )
-					errors = twoColParser.parse( )
+					reads, readTotal, errors = twoColParser.parse( )
 					
-					if len(errors) > 0 :
-						parserHandler.setFileState( row['file_id'], "error", errors )
-					else :
-						parserHandler.setFileState( row['file_id'], "parsed", [] )
+					parserHandler.setFileReadTotal( row['file_id'], readTotal )
+					
+			if row['file_isbackground'] == 1 :
+				# Load Background Data
+				backgroundData[str(row['file_id'])] = reads
+				backgroundTotals[str(row['file_id'])] = readTotal
+			else :
+				# File data in reads
+				# step through backgrounds, perform calculations
+				geneSummaryHandler.buildGeneSummary( row['file_id'], reads, readTotal, backgroundData, backgroundTotals )
+			
+			if len(errors) > 0 :
+				parserHandler.setFileState( row['file_id'], "error", errors )
+			else :
+				parserHandler.setFileState( row['file_id'], "parsed", [] )
 					
 sys.exit(0)
