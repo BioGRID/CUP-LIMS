@@ -71,7 +71,12 @@ class ExperimentHandler {
 			
 			// Enter the list of files
 			foreach( $data->experimentFiles as $file ) {
-				$this->files->addFile( $experimentID, $data->experimentCode, $file );
+				$isBG = false;
+				if( in_array( $file, $data->experimentBG ) ) {
+					$isBG = true;
+				}
+				
+				$this->files->addFile( $experimentID, $data->experimentCode, $file, $isBG );
 			}
 			
 			$this->db->commit( );

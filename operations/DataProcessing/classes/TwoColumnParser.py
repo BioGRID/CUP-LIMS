@@ -13,12 +13,15 @@ class TwoColumnParser( ) :
 		self.cursor = self.db.cursor( )
 		self.sgRNAs = sgRNAs
 		self.errors = []
+		self.readTotal = 0
 	
 	def parse( self ) :
 		
 		"""Read in the data and dump it to the database"""
 		
 		self.errors = { }
+		self.readTotal = 0
+		reads = { }
 		
 		try :
 		
@@ -50,7 +53,13 @@ class TwoColumnParser( ) :
 				else :
 					sgRNAID = self.insertSGRNA( sgRNA )
 					
+				self.readTotal = self.readTotal + readCount
 				self.cursor.execute( "INSERT INTO " + Config.DB_MAIN + ".raw_reads VALUES( '0', %s, %s, %s )", [sgRNAID, readCount, self.fileID] )
+				
+				if str(sgRNAID) not in reads :
+					reads[str(sgRNAID)] = 0
+					
+				reads[str(sgRNAID)] = reads[str(sgRNAID)] + int(readCount)
 				
 			if len(self.errors) > 0 :
 				self.db.rollback( )
@@ -62,7 +71,7 @@ class TwoColumnParser( ) :
 			exctype, value = sys.exc_info( )[:2]
 			self.errors[lineNumber] = "UNEXPECTED ERROR: " + str(exctype);
 			
-		return self.errors
+		return reads, self.readTotal, self.errors
 		
 	def insertSGRNA( self, sgRNA ) :
 	

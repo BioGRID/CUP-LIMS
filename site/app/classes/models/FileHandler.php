@@ -142,7 +142,7 @@ class FileHandler {
 	 * home on the file system.
 	 */
 	 
-	public function addFile( $expID, $expCode, $filename ) {
+	public function addFile( $expID, $expCode, $filename, $isBG ) {
 		
 		// See if one with the same name already exists
 		$stmt = $this->db->prepare( "SELECT file_id FROM " . DB_MAIN . ".files WHERE file_name=? AND experiment_id=? LIMIT 1" );
@@ -158,10 +158,15 @@ class FileHandler {
 			
 			// Move File
 			if( $fileInfo = $this->moveFileToProcessing( $filename, $expCode )) {
+				
+				$bgVal = "0";
+				if( $isBG ) {
+					$bgVal = "1";
+				}
 		
 				// Create File
-				$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".files VALUES( '0', ?, ?, NOW( ), 'new','-', 'active', ?, ? )" );
-				$stmt->execute( array( $filename, $fileInfo['SIZE'], $expID, $_SESSION[SESSION_NAME]['ID'] ));
+				$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".files VALUES( '0', ?, ?, ?, '0', NOW( ), 'new','-', 'active', ?, ? )" );
+				$stmt->execute( array( $filename, $fileInfo['SIZE'], $bgVal, $expID, $_SESSION[SESSION_NAME]['ID'] ));
 				
 				// Fetch its new ID
 				$fileID = $this->db->lastInsertId( );

@@ -36,6 +36,10 @@
 					<input type='hidden' id='experimentCode' name='experimentCode' value='{{DATASET_CODE}}' />
 					<input type='hidden' id='experimentHasFile' name='experimentHasFile' value='' />
 				</div>
+				<div class='form-group col-lg-8 col-md-8'>
+					<label for='experimentBG' class='control-label'>Experiment Background (add background files above to populate this list)</label>
+					<select class='form-control' id='experimentBG' name='experimentBG' disabled='true' multiple></select>
+				</div>
 				<div class='marginTopSm col-lg-12 col-md-12'>
 					<button class='btn btn-success btn-lg' id='experimentUploadBtn' type='submit'><strong>Submit Experiment</strong> <i class='fa fa-check'></i></button>
 				</div>
