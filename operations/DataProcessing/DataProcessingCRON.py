@@ -40,7 +40,7 @@ with Database.db as cursor :
 
 	lookups = Lookups.Lookups( Database.db )
 
-	cursor.execute( "SELECT file_id, file_name, file_state, experiment_id, file_isbackground FROM " + Config.DB_MAIN + ".files WHERE file_state IN ('new','redo') AND file_status='active' ORDER BY experiment_id ASC, file_isbackground DESC LIMIT 2" )
+	cursor.execute( "SELECT file_id, file_name, file_state, experiment_id, file_isbackground FROM " + Config.DB_MAIN + ".files WHERE file_state IN ('new','redo') AND file_status='active' ORDER BY experiment_id ASC, file_isbackground DESC" )
 	
 	if cursor.rowcount > 0 :
 	
