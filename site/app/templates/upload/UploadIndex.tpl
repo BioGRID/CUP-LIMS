@@ -43,7 +43,7 @@
 				<div class='marginTopSm col-lg-12 col-md-12'>
 					<button class='btn btn-success btn-lg' id='experimentUploadBtn' type='submit'><strong>Submit Experiment</strong> <i class='fa fa-check'></i></button>
 				</div>
-			</div>
+			</form>
 		</div>
 	</div>
 	<div id='messages' class='container-fluid'></div>
