@@ -17,6 +17,7 @@ class AdminController extends lib\Controller {
 		parent::__construct( $twig );
 		
 		$addonJS = array( );
+		$addonJS[] = "bootstrap.min.js";
 		
 		$addonCSS = array( );
 		
@@ -60,7 +61,7 @@ class AdminController extends lib\Controller {
 		$addonJS = $this->footerParams->get( 'ADDON_JS' );
 		$addonJS[] = "formValidation/formValidation.min.js";
 		$addonJS[] = "formValidation/bootstrap.min.js";
-		$addonJS[] = "orca-admin-changePassword.js";
+		$addonJS[] = "admin/orca-admin-changePassword.js";
 		
 		// Add some Change Password Specific CSS
 		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );
@@ -81,10 +82,49 @@ class AdminController extends lib\Controller {
 			"USER_LIST" => $userList
 		);
 		
-		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Admin' />" );
+		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Admin/ChangePassword' />" );
 		$this->headerParams->set( "TITLE", "Change Password | " . CONFIG['WEB']['WEB_NAME'] );
 		
 		$this->renderView( "admin" . DS . "AdminChangePassword.tpl", $params, false );
+				
+	}
+	
+	/**
+	 * Manage Users
+	 * A tool for changing permissions and status levels of different users
+	 * of the system.
+	 */
+	
+	public function ManageUsers( ) {
+		
+		lib\Session::canAccess( "poweruser" );
+		
+		// Add some Change Password Specific JS
+		$addonJS = $this->footerParams->get( 'ADDON_JS' );
+		$addonJS[] = "jquery.dataTables.js";
+		$addonJS[] = "dataTables.bootstrap.js";
+		$addonJS[] = "admin/orca-admin-manageUsers.js";
+		
+		// Add some Change Password Specific CSS
+		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );
+		$addonCSS[] = "dataTables.bootstrap.css";
+		
+		$this->headerParams->set( 'ADDON_CSS', $addonCSS );
+		$this->footerParams->set( 'ADDON_JS', $addonJS );
+		
+		$userHandler = new models\UserHandler( );
+		$userCount = $userHandler->fetchUserCount( );
+				
+		$params = array(
+			"WEB_URL" => WEB_URL,
+			"IMG_URL" => IMG_URL,
+			"USER_COUNT" => $userCount
+		);
+		
+		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Admin/ManagerUsers' />" );
+		$this->headerParams->set( "TITLE", "Manage Users | " . CONFIG['WEB']['WEB_NAME'] );
+		
+		$this->renderView( "admin" . DS . "AdminManageUsers.tpl", $params, false );
 				
 	}
 

@@ -10,7 +10,7 @@ session_start( );
 require_once __DIR__ . '/../../app/lib/Bootstrap.php';
 
 use ORCA\app\lib;
-use ORCA\app\classes\models\UserHandler;
+use ORCA\app\classes\models;
 
 $postData = json_decode( $_POST['expData'], true );
 
@@ -50,6 +50,24 @@ if( isset( $postData['adminTool'] ) ) {
 			}
 			
 			echo json_encode( $results );
+			break;
+			
+		case 'manageUsersHeader' :
+			$userHandler = new models\UserHandler( );
+			$usersHeader = $userHandler->fetchManageUsersColumnDefinitions( );
+			echo json_encode( $usersHeader );
+			break;
+			
+		case 'manageUsersRows' :
+		
+			$draw = $postData['draw'];
+		
+			$userHandler = new models\UserHandler( );
+			$userRows = $userHandler->buildManageUserRows( $postData );
+			
+			$recordsFiltered = $userHandler->getUnfilteredUsersCount( $postData );
+			
+			echo json_encode( array( "draw" => $draw, "recordsTotal" => $postData['totalRecords'], "recordsFiltered" => $recordsFiltered, "data" => $userRows ));
 			break;
 			
 	}
