@@ -32,3 +32,8 @@ cp -rf node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker3.min.css 
 cp -rf node_modules/formvalidation/dist/js/formValidation.min.js ../www/js/formValidation/
 cp -rf node_modules/formvalidation/dist/js/framework/bootstrap.min.js ../www/js/formValidation/
 cp -rf node_modules/formvalidation/dist/css/formValidation.min.css ../www/css/formValidation/
+
+# ALERTIFY
+cp -rf node_modules/alertifyjs/build/alertify.min.js ../www/js/
+cp -rf node_modules/alertifyjs/build/css/alertify.min.css ../www/css/
+cp -rf node_modules/alertifyjs/build/css/themes/bootstrap.min.css ../www/css/alertify-bootstrap.min.css
