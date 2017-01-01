@@ -8,6 +8,7 @@ namespace ORCA\app\classes\models;
  */
 
 use \PDO;
+use ORCA\app\lib;
  
 class UserHandler {
 
@@ -16,6 +17,29 @@ class UserHandler {
 	public function __construct( ) {
 		$this->db = new PDO( DB_CONNECT, DB_USER, DB_PASS );
 		$this->db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+	}
+	
+	/**
+	 * Build a list of all user ids, user names, emails, and first and last names, last login, class, status
+	 */
+	 
+	public function fetchUserClasses( ) {
+		
+		$userClasses = array( "observer" );
+		
+		if( lib\Session::validateCredentials( "admin" ) ) {
+			$userClasses[] = "curator";
+			$userClasses[] = "poweruser";
+			$userClasses[] = "admin";
+		} else if( lib\Session::validateCredentials( "poweruser" ) ) {
+			$userClasses[] = "curator";
+			$userClasses[] = "poweruser";
+		} else if( lib\Session::validateCredentials( "admin" ) ) {
+			$userClasses[] = "curator";
+		}
+		
+		return $userClasses;
+		
 	}
 	
 	/**
@@ -49,8 +73,8 @@ class UserHandler {
 		$columns[3] = array( "title" => "Last Name", "data" => 3, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'user_lastname' );
 		$columns[4] = array( "title" => "Email", "data" => 4, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'user_email' );
 		$columns[5] = array( "title" => "Last Login", "data" => 5, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'user_lastlogin' );
-		$columns[6] = array( "title" => "Class", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'user_class' );
-		$columns[7] = array( "title" => "Status", "data" => 7, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'user_status' );
+		$columns[6] = array( "title" => "Class", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center userClass", "dbCol" => 'user_class' );
+		$columns[7] = array( "title" => "Status", "data" => 7, "orderable" => true, "sortable" => true, "className" => "text-center userStatus", "dbCol" => 'user_status' );
 		$columns[8] = array( "title" => "Options", "data" => 8, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
 		
 		return $columns;
@@ -133,19 +157,13 @@ class UserHandler {
 		
 		$options = array( );
 
-		$options[] = "<i class='fa fa-arrow-up fa-lg popoverData promoteUser text-info' data-userid='" . $userInfo->user_id . "' data-toggle='popover' title='Promote this Account' data-content='Click this button to Increase this users access level' data-placement='top'></i>";
-		$options[] = "<i class='fa fa-arrow-down fa-lg popoverData demoteUser text-primary' data-userid='" . $userInfo->user_id . "' data-toggle='popover' title='Demote this Account' data-content='Click this button to Decrease this users access level' data-placement='top'></i>";
+		$options[] = '<i class="optionIcon fa fa-arrow-up fa-lg popoverData classChange text-info" data-userid="' . $userInfo->user_id . '" title="Promote this Account" data-content="Click this to Increase user\'s access level" data-direction="promote"></i>';
+		$options[] = '<i class="optionIcon fa fa-arrow-down fa-lg popoverData classChange text-primary" data-userid="' . $userInfo->user_id . '" title="Demote this Account" data-content="Click this to Decrease user\'s access level" data-direction="demote"></i>';
 		
-		if( $userInfo->user_status == 'inactive' ) {
-			$options[] = "<i class='fa fa-times fa-lg popoverData text-danger disableUser hide' data-userid='" . $userInfo->user_id . "' data-toggle='popover' title='Disable this Account' data-content='Click this button to disable this users access to the LIMS' data-placement='top'></i>";
+		if( $userInfo->user_status == "active" ) {
+			$options[] = '<i class="optionIcon fa fa-times fa-lg popoverData text-danger statusChange" data-userid="' . $userInfo->user_id . '" title="Disable this Account" data-content="Click this to disable user\'s access to the ' . CONFIG['WEB']['WEB_NAME_ABBR'] . ' Website" data-status="inactive"></i>';
 		} else {
-			$options[] = "<i class='fa fa-times fa-lg popoverData text-danger disableUser' data-userid='" . $userInfo->user_id . "' data-toggle='popover' title='Disable this Account' data-content='Click this button to disable this users access to the LIMS' data-placement='top'></i>";
-		}
-		
-		if( $userInfo->user_status == 'active' ) {
-			$options[] = "<i class='fa fa-check fa-lg popoverData text-success enableUser hide' data-userid='" . $userInfo->user_id . "' data-toggle='popover' title='Activate this Account' data-content='Click this button to re-enable this users access to the LIMS' data-placement='top'></i>";
-		} else {
-			$options[] = "<i class='fa fa-check fa-lg popoverData text-success enableUser' data-userid='" . $userInfo->user_id . "' data-toggle='popover' title='Activate this Account' data-content='Click this button to re-enable this users access to the LIMS' data-placement='top'></i>";
+			$options[] = '<i class="optionIcon fa fa-check fa-lg popoverData text-success statusChange" data-userid="' . $userInfo->user_id . '" title="Enable this Account" data-content="Click this to disable user\'s access to the ' . CONFIG['WEB']['WEB_NAME_ABBR'] . ' Website" data-status="active"></i>';
 		}
 		
 		return implode( " ", $options );
