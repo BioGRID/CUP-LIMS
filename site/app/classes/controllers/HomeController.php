@@ -35,8 +35,7 @@ class HomeController extends lib\Controller {
 	 
 	 public function Member( ) {
 		 
-		print_r( PERMISSIONS );
-		lib\Session::canAccess( lib\Session::getPermission( 'VIEW HOME DASHBOARD' ));
+		lib\Session::canAccess( lib\Session::getPermission( 'VIEW DASHBOARD' ));
 		
 		$params = array( 
 			"WEB_NAME" => CONFIG['WEB']['WEB_NAME'],

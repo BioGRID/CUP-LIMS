@@ -31,8 +31,6 @@ if( !isset( $_SESSION['ORCA_PERMISSIONS'] ) || (strtotime( "-30 minutes" ) > $_S
 	$permissions['LAST_UPDATE'] = strtotime( "now" );
 	$_SESSION['ORCA_PERMISSIONS'] = $permissions;
 	
-	echo "UPDATING PERMISSIONS";
-	
 } else {
 	$permissions = $_SESSION['ORCA_PERMISSIONS'];
 }

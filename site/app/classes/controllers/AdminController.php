@@ -32,7 +32,7 @@ class AdminController extends lib\Controller {
 	
 	public function Index( ) {
 		
-		lib\Session::canAccess( "observer" );
+		lib\Session::canAccess( lib\Session::getPermission( 'VIEW ADMIN TOOLS' ));
 				
 		$params = array(
 			"WEB_URL" => WEB_URL,
@@ -54,7 +54,7 @@ class AdminController extends lib\Controller {
 	
 	public function ChangePassword( ) {
 		
-		lib\Session::canAccess( "observer" );
+		lib\Session::canAccess( lib\Session::getPermission( 'CHANGE PASSWORD' ));
 		
 		// Add some Change Password Specific JS
 		$addonJS = $this->footerParams->get( 'ADDON_JS' );
@@ -70,7 +70,7 @@ class AdminController extends lib\Controller {
 		$this->footerParams->set( 'ADDON_JS', $addonJS );
 		
 		$userList = array( );
-		if( lib\Session::validateCredentials( 'admin' )) {
+		if( lib\Session::validateCredentials( lib\Session::getPermission( 'CHANGE PASSWORD ALL' ))) {
 			$userHandler = new models\UserHandler( );
 			$userList = $userHandler->buildUserList( );
 		}
@@ -96,7 +96,7 @@ class AdminController extends lib\Controller {
 	
 	public function ManageUsers( ) {
 		
-		lib\Session::canAccess( "poweruser" );
+		lib\Session::canAccess( lib\Session::getPermission( 'MANAGE USERS' ));
 		
 		// Add some Manage Users Specific JS
 		$addonJS = $this->footerParams->get( 'ADDON_JS' );
@@ -140,7 +140,7 @@ class AdminController extends lib\Controller {
 	
 	public function AddUser( ) {
 		
-		lib\Session::canAccess( "poweruser" );
+		lib\Session::canAccess( lib\Session::getPermission( 'ADD USER' ));
 		
 		// Add some Change Password Specific JS
 		$addonJS = $this->footerParams->get( 'ADDON_JS' );
@@ -179,11 +179,12 @@ class AdminController extends lib\Controller {
 
 	 public function ManagePermissions( ) {
 		
-		lib\Session::canAccess( "admin" );
+		lib\Session::canAccess( lib\Session::getPermission( 'MANAGE PERMISSIONS' ));
 		
 		// Add some Manage Permissions Specific JS
 		$addonJS = $this->footerParams->get( 'ADDON_JS' );
-		$addonJS[] = "jquery.qtip.min.js";
+		$addonJS[] = "formValidation/formValidation.min.js";
+		$addonJS[] = "formValidation/bootstrap.min.js";
 		$addonJS[] = "jquery.dataTables.js";
 		$addonJS[] = "dataTables.bootstrap.js";
 		$addonJS[] = "alertify.min.js";
@@ -191,7 +192,7 @@ class AdminController extends lib\Controller {
 		
 		// Add some Manager Permissions Specific CSS
 		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );
-		$addonCSS[] = "jquery.qtip.min.css";
+		$addonCSS[] = "formValidation/formValidation.min.css";
 		$addonCSS[] = "dataTables.bootstrap.css";
 		$addonCSS[] = "alertify.min.css";
 		$addonCSS[] = "alertify-bootstrap.min.css";
@@ -201,11 +202,13 @@ class AdminController extends lib\Controller {
 		
 		$permHandler = new models\PermissionsHandler( );
 		$permCount = $permHandler->fetchPermissionCount( );
+		$permissionList=  $permHandler->getPermissionList( );
 				
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
-			"PERMISSION_COUNT" => $permCount
+			"PERMISSION_COUNT" => $permCount,
+			"PERMISSION_LIST" => $permissionList
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Admin/ManagePermissions' />" );

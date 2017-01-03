@@ -43,9 +43,9 @@ class ExperimentController extends lib\Controller {
 	
 	public function View( ) {
 		
-		lib\Session::canAccess( "observer" );
+		lib\Session::canAccess( lib\Session::getPermission( 'VIEW EXPERIMENTS' ));
 		
-		$isMember = lib\Session::validateCredentials( "curator" );
+		$isMember = lib\Session::validateCredentials( lib\Session::getPermission( 'VIEW UPLOAD TOOL' ));
 				
 		$params = array(
 			"WEB_URL" => WEB_URL,

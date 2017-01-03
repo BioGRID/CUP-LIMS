@@ -33,7 +33,7 @@ class FileProgressController extends lib\Controller {
 	
 	public function Index( ) {
 		
-		//lib\Session::canAccess( "curator" );
+		lib\Session::canAccess( lib\Session::getPermission( 'VIEW FILE PROGRESS' ));
 		$lookups = new models\Lookups( );
 		
 		// Fetch and Check Experiment ID

@@ -40,7 +40,7 @@ class UploadController extends lib\Controller {
 	
 	public function Index( ) {
 		
-		lib\Session::canAccess( lib\Session::getPermission( 'VIEW UPLOAD' ));
+		lib\Session::canAccess( lib\Session::getPermission( 'VIEW UPLOAD TOOL' ));
 		
 		$lookups = new models\Lookups( );
 		$cellLines = $lookups->buildCellLineHash( );
