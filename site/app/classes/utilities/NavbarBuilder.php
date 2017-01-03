@@ -96,7 +96,7 @@ class NavbarBuilder {
 				$showLink = true;
 			} else if( $linkInfo['STATUS'] == "observer" && $this->isLoggedIn ) {
 				$showLink = true;
-			} else if( $linkInfo['STATUS'] == "member" && $this->isLoggedIn && ($this->userLevel == "curator" || $this->userLevel == "poweruser" || $this->userLevel == "admin")) {
+			} else if( $linkInfo['STATUS'] == "curator" && $this->isLoggedIn && ($this->userLevel == "curator" || $this->userLevel == "poweruser" || $this->userLevel == "admin")) {
 				$showLink = true;
 			} else if( $linkInfo['STATUS'] == "poweruser" && $this->isLoggedIn && ($this->userLevel == "poweruser" || $this->userLevel == "admin") ) {
 				$showLink = true;

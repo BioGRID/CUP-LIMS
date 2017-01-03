@@ -40,7 +40,7 @@ if( isset( $postData['adminTool'] ) ) {
 					$results = array( "STATUS" => "error", "MESSAGE" => "The password you entered for 'current password' does not match your current password..." );
 				}
 				
-			} else if( lib\Session::validateCredentials( 'admin' ) && isset( $postData['newPassword'] ) && isset( $postData['userID'] )) {
+			} else if( lib\Session::validateCredentials( lib\Session::getPermission( 'CHANGE PASSWORD ALL' )) && isset( $postData['newPassword'] ) && isset( $postData['userID'] )) {
 				
 				// If permission level is high enough, this tool allows
 				// for changing of anyones password. Does not require
@@ -85,7 +85,7 @@ if( isset( $postData['adminTool'] ) ) {
 		case 'userClassChange' :
 		
 			$results = array( );
-			if( lib\Session::validateCredentials( 'poweruser' ) && isset( $postData['userID'] ) && isset( $postData['direction'] )) {
+			if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE USERS' )) && isset( $postData['userID'] ) && isset( $postData['direction'] )) {
 				$user = new lib\User( );
 				$newClass = $user->changeUserLevel( $postData['userID'], $postData['direction'] );
 				if( $newClass ) {
@@ -105,7 +105,7 @@ if( isset( $postData['adminTool'] ) ) {
 		case 'userStatusChange' :
 		
 			$results = array( );
-			if( lib\Session::validateCredentials( 'poweruser' ) && isset( $postData['userID'] ) && isset( $postData['status'] )) {
+			if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE USERS' )) && isset( $postData['userID'] ) && isset( $postData['status'] )) {
 				$user = new lib\User( );
 				$newStatus = $user->changeUserStatus( $postData['userID'], $postData['status'] );
 				if( $newStatus ) {
@@ -125,7 +125,7 @@ if( isset( $postData['adminTool'] ) ) {
 		case 'addNewUser' :
 		
 			$results = array( );
-			if( lib\Session::validateCredentials( 'poweruser' ) && isset( $postData['userName'] ) && isset( $postData['userPassword'] ) && isset( $postData['userFirstName'] ) && isset( $postData['userLastName'] ) && isset( $postData['userEmail'] ) && isset( $postData['userClass'] )) {
+			if( lib\Session::validateCredentials( lib\Session::getPermission( 'ADD USER' )) && isset( $postData['userName'] ) && isset( $postData['userPassword'] ) && isset( $postData['userFirstName'] ) && isset( $postData['userLastName'] ) && isset( $postData['userEmail'] ) && isset( $postData['userClass'] )) {
 				$user = new lib\User( );
 				
 				if( !$user->usernameExists( $postData['userName'] ) && !$user->emailExists( $postData['userEmail'] )) {
@@ -137,6 +137,65 @@ if( isset( $postData['adminTool'] ) ) {
 				
 			} else {
 				$results = array( "STATUS" => "ERROR", "MESSAGE" => "Unable to add a new user at this time, please try again later!" );
+			}
+			
+			echo json_encode( $results );
+			break;
+			
+		// Fetch the column header for the Manage Permissions
+		// Datatable with correct options
+		case 'managePermissionsHeader' :
+			$permHandler = new models\PermissionsHandler( );
+			$permHeader = $permHandler->fetchManagePermissionsColumnDefinitions( );
+			echo json_encode( $permHeader );
+			break;
+		
+		// Fetch user rows for the Manage Permissions
+		// tool for display in Datatables
+		case 'managePermissionsRows' :
+			$draw = $postData['draw'];
+			
+			$permHandler = new models\PermissionsHandler( );
+			$permRows = $permHandler->buildManagePermissionsRows( $postData );
+			$recordsFiltered = $permHandler->getUnfilteredPermissionsCount( $postData );
+			
+			echo json_encode( array( "draw" => $draw, "recordsTotal" => $postData['totalRecords'], "recordsFiltered" => $recordsFiltered, "data" => $permRows ));
+			break;
+			
+		// Change a permission level for a given permission
+		// setting option
+		case 'permissionLevelChange' :
+		
+			$results = array( );
+			if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE PERMISSIONS' )) && isset( $postData['permission'] ) && isset( $postData['level'] )) {
+				$permHandler = new models\PermissionsHandler( );
+				$newPerm = $permHandler->changePermissionLevel( $postData['permission'], $postData['level'] );
+				if( $newPerm ) {
+					$results = array( "STATUS" => "SUCCESS", "MESSAGE" => "Successfully Changed Permission Level" );
+				} else {
+					$results = array( "STATUS" => "ERROR", "MESSAGE" => "You do not have High Enough Permissions to Perform this Action" );
+				}
+			} else {
+				$results = array( "STATUS" => "ERROR", "MESSAGE" => "You do not have Valid Permission to Perform this Action" );
+			}
+			
+			echo json_encode( $results );
+			break;
+			
+		// Add a new permission to the permissions table
+		case 'addPermission' :
+			$results = array( );
+			if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE PERMISSIONS' )) && isset( $postData['permissionName'] ) && isset( $postData['permissionDesc'] ) && isset( $postData['permissionLevel'] ) && isset( $postData['permissionCategory'] )) {
+				$permHandler = new models\PermissionsHandler( );
+				
+				if( $permHandler->addPermission( $postData['permissionName'], $postData['permissionDesc'], $postData['permissionLevel'], $postData['permissionCategory'] )) {
+					$results = array( "STATUS" => "SUCCESS", "MESSAGE" => "Successfully Added New Permission" );
+				} else {
+					$results = array( "STATUS" => "ERROR", "MESSAGE" => "The Permission Name/Category Name you Entered Already Exists" );
+				}
+				
+			} else {
+				$results = array( "STATUS" => "ERROR", "MESSAGE" => "Unable to add a new permission at this time, please try again later!" );
 			}
 			
 			echo json_encode( $results );
