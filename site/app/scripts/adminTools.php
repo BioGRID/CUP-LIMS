@@ -141,6 +141,46 @@ if( isset( $postData['adminTool'] ) ) {
 			
 			echo json_encode( $results );
 			break;
+			
+		// Fetch the column header for the Manage Permissions
+		// Datatable with correct options
+		case 'managePermissionsHeader' :
+			$permHandler = new models\PermissionsHandler( );
+			$permHeader = $permHandler->fetchManagePermissionsColumnDefinitions( );
+			echo json_encode( $permHeader );
+			break;
+		
+		// Fetch user rows for the Manage Permissions
+		// tool for display in Datatables
+		case 'managePermissionsRows' :
+			$draw = $postData['draw'];
+			
+			$permHandler = new models\PermissionsHandler( );
+			$permRows = $permHandler->buildManagePermissionsRows( $postData );
+			$recordsFiltered = $permHandler->getUnfilteredPermissionsCount( $postData );
+			
+			echo json_encode( array( "draw" => $draw, "recordsTotal" => $postData['totalRecords'], "recordsFiltered" => $recordsFiltered, "data" => $permRows ));
+			break;
+			
+		// Change a permission level for a given permission
+		// setting option
+		case 'permissionLevelChange' :
+		
+			$results = array( );
+			if( lib\Session::validateCredentials( 'poweruser' ) && isset( $postData['permission'] ) && isset( $postData['level'] )) {
+				$permHandler = new models\PermissionsHandler( );
+				$newPerm = $permHandler->changePermissionLevel( $postData['permission'], $postData['level'] );
+				if( $newPerm ) {
+					$results = array( "STATUS" => "SUCCESS", "MESSAGE" => "Successfully Changed Permission Level" );
+				} else {
+					$results = array( "STATUS" => "ERROR", "MESSAGE" => "You do not have High Enough Permissions to Perform this Action" );
+				}
+			} else {
+				$results = array( "STATUS" => "ERROR", "MESSAGE" => "You do not have Valid Permission to Perform this Action" );
+			}
+			
+			echo json_encode( $results );
+			break;
 	}
 }
 

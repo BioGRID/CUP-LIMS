@@ -98,7 +98,7 @@ class AdminController extends lib\Controller {
 		
 		lib\Session::canAccess( "poweruser" );
 		
-		// Add some Change Password Specific JS
+		// Add some Manage Users Specific JS
 		$addonJS = $this->footerParams->get( 'ADDON_JS' );
 		$addonJS[] = "jquery.qtip.min.js";
 		$addonJS[] = "jquery.dataTables.js";
@@ -106,7 +106,7 @@ class AdminController extends lib\Controller {
 		$addonJS[] = "alertify.min.js";
 		$addonJS[] = "admin/orca-admin-manageUsers.js";
 		
-		// Add some Change Password Specific CSS
+		// Add some Manage Users Specific CSS
 		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );
 		$addonCSS[] = "jquery.qtip.min.css";
 		$addonCSS[] = "dataTables.bootstrap.css";
@@ -170,7 +170,51 @@ class AdminController extends lib\Controller {
 		$this->renderView( "admin" . DS . "AdminAddUser.tpl", $params, false );
 				
 	}
+	
+	/**
+	 * Manage Permissions
+	 * A tool for adding and managing permission values and the settings 
+	 * each one is configured to
+	 */
 
+	 public function ManagePermissions( ) {
+		
+		lib\Session::canAccess( "admin" );
+		
+		// Add some Manage Permissions Specific JS
+		$addonJS = $this->footerParams->get( 'ADDON_JS' );
+		$addonJS[] = "jquery.qtip.min.js";
+		$addonJS[] = "jquery.dataTables.js";
+		$addonJS[] = "dataTables.bootstrap.js";
+		$addonJS[] = "alertify.min.js";
+		$addonJS[] = "admin/orca-admin-managePermissions.js";
+		
+		// Add some Manager Permissions Specific CSS
+		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );
+		$addonCSS[] = "jquery.qtip.min.css";
+		$addonCSS[] = "dataTables.bootstrap.css";
+		$addonCSS[] = "alertify.min.css";
+		$addonCSS[] = "alertify-bootstrap.min.css";
+		
+		$this->headerParams->set( 'ADDON_CSS', $addonCSS );
+		$this->footerParams->set( 'ADDON_JS', $addonJS );
+		
+		$permHandler = new models\PermissionsHandler( );
+		$permCount = $permHandler->fetchPermissionCount( );
+				
+		$params = array(
+			"WEB_URL" => WEB_URL,
+			"IMG_URL" => IMG_URL,
+			"PERMISSION_COUNT" => $permCount
+		);
+		
+		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Admin/ManagePermissions' />" );
+		$this->headerParams->set( "TITLE", "Manage Permissions | " . CONFIG['WEB']['WEB_NAME'] );
+		
+		$this->renderView( "admin" . DS . "AdminManagePermissions.tpl", $params, false );
+				
+	}
+	 
 }
 
 ?>
