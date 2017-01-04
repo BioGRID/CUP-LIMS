@@ -13,7 +13,7 @@
 		</div>
 	
 		<h3>{{ WEB_NAME_ABBR }} Dashboard</h3>
-		<div class='subhead'>Welcome Back <strong>{{FIRSTNAME}} {{LASTNAME}}</strong></div>
+		<div class='subhead'>Welcome Back - <strong>{{FIRSTNAME}} {{LASTNAME}}</strong></div>
 	</div>
 </div>
 
@@ -27,7 +27,7 @@
 						17
 					</span>	
 				</span>
-				<span class="text">In Progress</span>
+				<span class="text">Files In Progress</span>
 			</a>
 			<a href="#" class="shortcut-link">
 				<span class="shortcut-icon">
@@ -47,7 +47,7 @@
 				</span>
 				<span class="text">Alerts</span>
 			</a>
-			<a href="#" class="shortcut-link">
+			<a href="{{ WEB_URL }}/Admin" class="shortcut-link">
 				<span class="shortcut-icon">
 					<i class="fa fa-gear"></i>
 				</span>

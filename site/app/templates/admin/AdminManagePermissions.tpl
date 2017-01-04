@@ -40,21 +40,4 @@
 	<div id='messages' class='container-fluid marginTopSm'></div>
 </div>
 
-<div id='managerPermissionsWrap' class='greyBG marginTopSm paddingLg marginBotSm'>
-	<div class='container-fluid'>
-		<div class='pull-right col-lg-3 col-md-4 col-sm-5 col-xs-6' style='padding-right: 0'>
-			<div class='input-group marginBotSm marginTopSm'>
-				<input type="text" name='managePermissionsFilter' id='managePermissionsFilter' class="form-control" placeholder="Enter Filter Term" value="" autofocus>
-				<span class='input-group-btn'>
-					<button class='btn btn-success' id='managePermissionsFilterSubmit'>Filter <i class='fa fa-check'></i></button>
-				</span>
-			</div>
-		</div>
-		<h3>Current Permission Settings</h3>
-		<span id='managePermissionsFilterData' class='subheadSmall'></span>
-		<div class='col-lg-12 col-md-12 col-sm-12 col-xs-12 paddingLeftNone paddingRightNone'>
-			<table id='managePermissionsTable' class='table table-striped table-bordered table-responsive table-condensed' width="100%"></table>
-		</div>
-		<input type='hidden' id='permissionsCount' value='{{ PERMISSION_COUNT }}' />
-	</div>
-</div>
+{% include 'blocks/ORCADataTableBlock.tpl' %}

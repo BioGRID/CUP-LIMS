@@ -60,26 +60,6 @@ if( isset( $postData['adminTool'] ) ) {
 			echo json_encode( $results );
 			break;
 		
-		// Fetch the column header for the Manage Users
-		// Datatable with correct options
-		case 'manageUsersHeader' :
-			$userHandler = new models\UserHandler( );
-			$usersHeader = $userHandler->fetchManageUsersColumnDefinitions( );
-			echo json_encode( $usersHeader );
-			break;
-		
-		// Fetch user rows for the Manage Users
-		// tool for display in Datatables
-		case 'manageUsersRows' :
-			$draw = $postData['draw'];
-			
-			$userHandler = new models\UserHandler( );
-			$userRows = $userHandler->buildManageUserRows( $postData );
-			$recordsFiltered = $userHandler->getUnfilteredUsersCount( $postData );
-			
-			echo json_encode( array( "draw" => $draw, "recordsTotal" => $postData['totalRecords'], "recordsFiltered" => $recordsFiltered, "data" => $userRows ));
-			break;
-		
 		// Change the User Class Up or Down
 		// for promoting/demoting users
 		case 'userClassChange' :
@@ -140,26 +120,6 @@ if( isset( $postData['adminTool'] ) ) {
 			}
 			
 			echo json_encode( $results );
-			break;
-			
-		// Fetch the column header for the Manage Permissions
-		// Datatable with correct options
-		case 'managePermissionsHeader' :
-			$permHandler = new models\PermissionsHandler( );
-			$permHeader = $permHandler->fetchManagePermissionsColumnDefinitions( );
-			echo json_encode( $permHeader );
-			break;
-		
-		// Fetch user rows for the Manage Permissions
-		// tool for display in Datatables
-		case 'managePermissionsRows' :
-			$draw = $postData['draw'];
-			
-			$permHandler = new models\PermissionsHandler( );
-			$permRows = $permHandler->buildManagePermissionsRows( $postData );
-			$recordsFiltered = $permHandler->getUnfilteredPermissionsCount( $postData );
-			
-			echo json_encode( array( "draw" => $draw, "recordsTotal" => $postData['totalRecords'], "recordsFiltered" => $recordsFiltered, "data" => $permRows ));
 			break;
 			
 		// Change a permission level for a given permission

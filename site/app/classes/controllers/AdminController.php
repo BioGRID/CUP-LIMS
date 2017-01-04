@@ -104,8 +104,9 @@ class AdminController extends lib\Controller {
 		$addonJS[] = "jquery.dataTables.js";
 		$addonJS[] = "dataTables.bootstrap.js";
 		$addonJS[] = "alertify.min.js";
+		$addonJS[] = "orca-dataTableBlock.js";
 		$addonJS[] = "admin/orca-admin-manageUsers.js";
-		
+
 		// Add some Manage Users Specific CSS
 		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );
 		$addonCSS[] = "jquery.qtip.min.css";
@@ -122,7 +123,8 @@ class AdminController extends lib\Controller {
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
-			"USER_COUNT" => $userCount
+			"TABLE_TITLE" => "Current Users",
+			"ROW_COUNT" => $userCount
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Admin/ManagerUsers' />" );
@@ -188,6 +190,7 @@ class AdminController extends lib\Controller {
 		$addonJS[] = "jquery.dataTables.js";
 		$addonJS[] = "dataTables.bootstrap.js";
 		$addonJS[] = "alertify.min.js";
+		$addonJS[] = "orca-dataTableBlock.js";
 		$addonJS[] = "admin/orca-admin-managePermissions.js";
 		
 		// Add some Manager Permissions Specific CSS
@@ -207,7 +210,8 @@ class AdminController extends lib\Controller {
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
-			"PERMISSION_COUNT" => $permCount,
+			"TABLE_TITLE" => "Current Permissions",
+			"ROW_COUNT" => $permCount,
 			"PERMISSION_LIST" => $permissionList
 		);
 		
