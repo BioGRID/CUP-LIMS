@@ -18,8 +18,13 @@ class ExperimentController extends lib\Controller {
 		parent::__construct( $twig );
 		
 		$addonJS = array( );
+		$addonJS[] = "jquery.dataTables.js";
+		$addonJS[] = "dataTables.bootstrap.js";
+		$addonJS[] = "orca-dataTableBlock.js";
+		$addonJS[] = "orca-experiment.js";
 		
 		$addonCSS = array( );
+		$addonCSS[] = "dataTables.bootstrap.css";
 		
 		$this->headerParams->set( 'ADDON_CSS', $addonCSS );
 		$this->footerParams->set( 'ADDON_JS', $addonJS );
@@ -50,6 +55,8 @@ class ExperimentController extends lib\Controller {
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
+			"TABLE_TITLE" => "Loaded Experiments",
+			"ROW_COUNT" => 10,
 			"WEB_NAME_ABBR" => CONFIG['WEB']['WEB_NAME_ABBR'],
 			"UPLOAD_VALID" => $isMember
 		);
