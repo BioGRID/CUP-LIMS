@@ -17,8 +17,8 @@
 			sortCol: 0, 
 			sortDir: "ASC", 
 			pageLength: 100,
-			colTool: "managePermissionsHeader", 
-			rowTool: "managePermissionsRows", 
+			colTool: "manageExperimentHeader", 
+			rowTool: "manageExperimentRows", 
 			optionsCallback: function( datatable ) {
 				//initializePermissionChangeOptions( datatable );
 			}
