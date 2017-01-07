@@ -11,6 +11,9 @@
 		<h3>{{ TABLE_TITLE }} </h3>
 		<span class='subheadSmall orcaDataTableFilterOutput'></span>
 		<div class='col-lg-12 col-md-12 col-sm-12 col-xs-12 paddingLeftNone paddingRightNone'>
+			{% if SHOW_TOOLBAR %}
+				{% include 'blocks/ORCADataTableToolbar.tpl' %}
+			{% endif %}
 			<table class='orcaDataTable table table-striped table-bordered table-responsive table-condensed' width="100%"></table>
 		</div>
 		<input type='hidden' class='orcaRowCount' value='{{ ROW_COUNT }}' />

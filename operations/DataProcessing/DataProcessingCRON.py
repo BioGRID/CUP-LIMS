@@ -59,8 +59,7 @@ with Database.db as cursor :
 		# Background Data 
 		backgroundData = { }
 		backgroundTotals = { }
-		
-		
+			
 		prevExpID = "0"
 		for row in cursor.fetchall( ) :
 		
@@ -109,5 +108,9 @@ with Database.db as cursor :
 			# Set the prevExpID to the current one
 			# before iterating the loop
 			prevExpID = str(row['experiment_id'])
+			
+		# update the experiment_filestate to loaded
+		cursor.execute( "UPDATE " + Config.DB_MAIN + ".experiments SET experiment_filestate='loaded' WHERE experiment_id=%s", [prevExpID] )
+		Database.db.commit( )
 					
 sys.exit(0)

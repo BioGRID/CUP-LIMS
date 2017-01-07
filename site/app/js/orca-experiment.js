@@ -14,11 +14,12 @@
 
 	$(function( ) {
 		$(".datatableBlock").orcaDataTableBlock({ 
-			sortCol: 0, 
-			sortDir: "ASC", 
+			sortCol: 4, 
+			sortDir: "desc", 
 			pageLength: 100,
-			colTool: "manageExperimentHeader", 
-			rowTool: "manageExperimentRows", 
+			colTool: "experimentHeader", 
+			rowTool: "experimentRows", 
+			hasToolbar: true,
 			optionsCallback: function( datatable ) {
 				//initializePermissionChangeOptions( datatable );
 			}

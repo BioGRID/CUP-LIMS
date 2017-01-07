@@ -31,6 +31,7 @@
 			filterSubmit: base.$el.find( ".orcaDataTableFilterSubmit" ),
 			filterText: base.$el.find( ".orcaDataTableFilterText" ),
 			tableRowCount: base.$el.find( ".orcaRowCount" ),
+			toolbar: base.$el.find( ".orcaDataTableToolbar" )
 		};
 		
 		/** 
@@ -84,6 +85,20 @@
 				}
 			});
 			
+			// Setup Check All Button on Toolbar
+			if( base.options.hasToolbar ) {
+				base.components.toolbar.find( ".orcaDataTableCheckAll" ).click( function( ) {
+					var statusText = $(this).attr( "data-status" );
+					
+					if( statusText == "check" ) {
+						base.setCheckAllStatus( "uncheck", true );
+					} else if( statusText == "uncheck" ) {
+						base.setCheckAllStatus( "check", false );
+					}
+					
+				});
+			}
+			
 		};
 		
 		/**
@@ -101,7 +116,7 @@
 					columns: data,
 					pageLength: base.options.pageLength,
 					deferRender: true,
-					order: [[base.options.sortCol,base.options.sortDir]],
+					order: [base.options.sortCol,base.options.sortDir],
 					language: {
 						processing: "Loading Data... <i class='fa fa-spinner fa-pulse fa-lg'></i>"
 					},
@@ -135,6 +150,15 @@
 		base.filterGlobal = function( filterVal, isRegex, isSmartSearch ) {
 			base.components.table.DataTable( ).search( filterVal, isRegex, isSmartSearch, true ).draw( );
 		}
+		
+		/**
+		 * Set the check all button status to the values passed in
+		 */
+		 
+		base.setCheckAllStatus = function( statusText, propVal ) {
+			base.components.table.find( ".orcaDataTableRowCheck" ).prop( "checked", propVal );
+			base.components.toolbar.find( ".orcaDataTableCheckAll" ).attr( "data-status", statusText );
+		}
 	
 		base.init( );
 	
@@ -145,7 +169,8 @@
 		sortDir: "ASC",
 		pageLength: 100,
 		colTool: "",
-		rowTool: ""
+		rowTool: "",
+		hasToolbar: false
 	};
 
 	$.fn.orcaDataTableBlock = function( options ) {
