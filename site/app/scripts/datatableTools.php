@@ -58,6 +58,26 @@ if( isset( $postData['tool'] ) ) {
 			echo json_encode( array( "draw" => $draw, "recordsTotal" => $postData['totalRecords'], "recordsFiltered" => $recordsFiltered, "data" => $permRows ));
 			break;
 			
+		// Fetch the column header for the Manage Permissions
+		// Datatable with correct options
+		case 'experimentHeader' :
+			$expHandler = new models\ExperimentHandler( );
+			$expHeader = $expHandler->fetchExperimentColumnDefinitions( );
+			echo json_encode( $expHeader );
+			break;
+		
+		// Fetch user rows for the Manage Permissions
+		// tool for display in Datatables
+		case 'experimentRows' :
+			$draw = $postData['draw'];
+			
+			$expHandler = new models\ExperimentHandler( );
+			$expRows = $expHandler->buildExperimentRows( $postData );
+			$recordsFiltered = $expHandler->getUnfilteredExperimentCount( $postData );
+			
+			echo json_encode( array( "draw" => $draw, "recordsTotal" => $postData['totalRecords'], "recordsFiltered" => $recordsFiltered, "data" => $expRows ));
+			break;
+			
 	}
 }
 

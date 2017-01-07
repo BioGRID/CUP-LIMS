@@ -59,10 +59,16 @@ with Database.db as cursor :
 		# Background Data 
 		backgroundData = { }
 		backgroundTotals = { }
-	
+			
+		prevExpID = "0"
 		for row in cursor.fetchall( ) :
 		
 			expCode = expCodes[str(row['experiment_id'])]
+			
+			# Test to see if the experiment ID we're on to now has changed
+			# if it has, update the experiment_filestate to loaded
+			if str(row['experiment_id']) != "0" and str(row['experiment_id']) != prevExpID :
+				cursor.execute( "UPDATE " + Config.DB_MAIN + ".experiments SET experiment_filestate='loaded' WHERE experiment_id=%s", [prevExpID] )
 		
 			with open( Config.PROCESSED_DIR + "/" + expCode + "/" + row['file_name'] ) as inFile :
 				# PROCESS FILE
@@ -98,5 +104,13 @@ with Database.db as cursor :
 				parserHandler.setFileState( row['file_id'], "error", errors )
 			else :
 				parserHandler.setFileState( row['file_id'], "parsed", [] )
+				
+			# Set the prevExpID to the current one
+			# before iterating the loop
+			prevExpID = str(row['experiment_id'])
+			
+		# update the experiment_filestate to loaded
+		cursor.execute( "UPDATE " + Config.DB_MAIN + ".experiments SET experiment_filestate='loaded' WHERE experiment_id=%s", [prevExpID] )
+		Database.db.commit( )
 					
 sys.exit(0)
