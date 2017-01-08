@@ -291,6 +291,8 @@ class ExperimentHandler {
 		));
 		
 		return implode( "", $buttons );
+		
+	}
 	
 }
 
