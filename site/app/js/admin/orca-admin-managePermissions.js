@@ -52,8 +52,6 @@
 				dataType: 'json'
 			}).done( function( results ) {
 				
-				console.log( results );
-				
 				if( results['STATUS'] == "SUCCESS" ) {
 					alertify.success( results['MESSAGE'] );
 					datatable.draw( false );

@@ -22,6 +22,7 @@
 			hasToolbar: true,
 			optionsCallback: function( datatable ) {
 				initializeViewFilesButton( );
+				initializeDisableCheckedExperimentsButton( datatable );
 			}
 		});
 	});
@@ -35,14 +36,14 @@
 		$(".datatableBlock").on( "click", ".experimentViewFilesBtn", function( ) {
 			
 			var table = $(this).closest( ".orcaDataTableTools" ).find( ".orcaDataTable" );
-			var fileIDs = [];
+			var expIDs = [];
 			table.find( ".orcaDataTableRowCheck:checked" ).each( function( ) {
-				fileIDs.push( $(this).val( ) );
+				expIDs.push( $(this).val( ) );
 			});
 
-			if( fileIDs.length ) {
-				console.log( baseURL + "/Files?files=" + fileIDs.join( "," ) );
-				window.location = baseURL + "/Files?files=" + fileIDs.join( "," );
+			if( expIDs.length ) {
+				console.log( baseURL + "/Files?exps=" + expIDs.join( "," ) );
+				window.location = baseURL + "/Files?exps=" + expIDs.join( "," );
 			} else {
 				alertify.alert( "No Experiments Selected", "Please check the box next to one or more experiments before clicking view files" );
 			}
@@ -51,6 +52,47 @@
 		
 	}
 	
+	/**
+	 * Setup the functionality for the disable checked experiments
+	 */
+	 
+	function initializeDisableCheckedExperimentsButton( datatable ) {
+		
+		$(".datatableBlock").on( "click", ".experimentDisableChecked", function( ) {
+			
+			console.log( "HERE I BE" );
+			
+			var table = $(this).closest( ".orcaDataTableTools" ).find( ".orcaDataTable" );
+			
+			var submitSet = { };
+			submitSet['exps'] = [];
+			submitSet['tool'] = "disableExperiment";
+			
+			table.find( ".orcaDataTableRowCheck:checked" ).each( function( ) {
+				submitSet['exps'].push( $(this).val( ) );
+			});
+			
+			//Convert to JSON
+			submitSet = JSON.stringify( submitSet );
 
+			$.ajax({
+				url: baseURL + 'scripts/experimentTools.php',
+				type: 'POST',
+				data: { 'expData': submitSet}, 
+				dataType: 'json'
+			}).done( function( results ) {
+				
+				if( results['STATUS'] == "SUCCESS" ) {
+					alertify.success( results['MESSAGE'] );
+					datatable.draw( false );
+				} else {
+					alertify.alert( "An Error Occurred", results['MESSAGE'] );
+				}
+				
+			});
+			
+		});
+		
+	}
 	
 }));
