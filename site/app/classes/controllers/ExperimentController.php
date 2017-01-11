@@ -20,11 +20,14 @@ class ExperimentController extends lib\Controller {
 		$addonJS = array( );
 		$addonJS[] = "jquery.dataTables.js";
 		$addonJS[] = "dataTables.bootstrap.js";
+		$addonJS[] = "alertify.min.js";
 		$addonJS[] = "orca-dataTableBlock.js";
 		$addonJS[] = "orca-experiment.js";
 		
 		$addonCSS = array( );
 		$addonCSS[] = "dataTables.bootstrap.css";
+		$addonCSS[] = "alertify.min.css";
+		$addonCSS[] = "alertify-bootstrap.min.css";
 		
 		$this->headerParams->set( 'ADDON_CSS', $addonCSS );
 		$this->footerParams->set( 'ADDON_JS', $addonJS );

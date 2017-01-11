@@ -273,7 +273,7 @@ class ExperimentHandler {
 		
 		$view = "blocks" . DS . "ORCADataTableToolbarButton.tpl";
 		$buttons[] = $this->twig->render( $view, array( 
-			"BTN_CLASS" => "btn-info",
+			"BTN_CLASS" => "btn-info experimentViewFilesBtn",
 			"BTN_LINK" => "",
 			"BTN_ID" => "experimentViewFilesBtn",
 			"BTN_ICON" => "fa-file-text",

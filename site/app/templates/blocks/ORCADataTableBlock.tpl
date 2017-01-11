@@ -10,7 +10,7 @@
 		</div>
 		<h3>{{ TABLE_TITLE }} </h3>
 		<span class='subheadSmall orcaDataTableFilterOutput'></span>
-		<div class='col-lg-12 col-md-12 col-sm-12 col-xs-12 paddingLeftNone paddingRightNone'>
+		<div class='col-lg-12 col-md-12 col-sm-12 col-xs-12 paddingLeftNone paddingRightNone orcaDataTableTools'>
 			{% if SHOW_TOOLBAR %}
 				{% include 'blocks/ORCADataTableToolbar.tpl' %}
 			{% endif %}

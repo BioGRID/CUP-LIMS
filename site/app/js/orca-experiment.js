@@ -21,9 +21,36 @@
 			rowTool: "experimentRows", 
 			hasToolbar: true,
 			optionsCallback: function( datatable ) {
-				//initializePermissionChangeOptions( datatable );
+				initializeViewFilesButton( );
 			}
 		});
 	});
+	
+	/**
+	 * Setup the functionality for viewing files 
+	 */
+	 
+	function initializeViewFilesButton( ) {
+		
+		$(".datatableBlock").on( "click", ".experimentViewFilesBtn", function( ) {
+			
+			var table = $(this).closest( ".orcaDataTableTools" ).find( ".orcaDataTable" );
+			var fileIDs = [];
+			table.find( ".orcaDataTableRowCheck:checked" ).each( function( ) {
+				fileIDs.push( $(this).val( ) );
+			});
+
+			if( fileIDs.length ) {
+				console.log( baseURL + "/Files?files=" + fileIDs.join( "," ) );
+				window.location = baseURL + "/Files?files=" + fileIDs.join( "," );
+			} else {
+				alertify.alert( "No Experiments Selected", "Please check the box next to one or more experiments before clicking view files" );
+			}
+			
+		});
+		
+	}
+	
+
 	
 }));
