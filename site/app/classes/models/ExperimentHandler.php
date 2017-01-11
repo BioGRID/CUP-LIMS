@@ -110,7 +110,6 @@ class ExperimentHandler {
 		$columns[5] = array( "title" => "Files", "data" => 5, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'experiment_filecount' );
 		$columns[6] = array( "title" => "File State", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'experiment_filestate' );
 		$columns[7] = array( "title" => "User", "data" => 7, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'user_name' );
-		$columns[8] = array( "title" => "Options", "data" => 8, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
 		
 		return $columns;
 		
@@ -134,7 +133,6 @@ class ExperimentHandler {
 			$column[] = $expInfo->experiment_filecount;
 			$column[] = $expInfo->experiment_filestate;
 			$column[] = $expInfo->user_name;
-			$column[] = $this->buildExperimentOptions( $expInfo );
 			$rows[] = $column;
 		}
 		
@@ -159,8 +157,9 @@ class ExperimentHandler {
 		$query .= " FROM " . DB_MAIN . ".experiments exp LEFT JOIN cell_lines cl ON (exp.experiment_cellline = cl.cell_line_id) LEFT JOIN users u ON (exp.user_id = u.user_id)";
 		
 		$options = array( );
+		$query .= " WHERE experiment_status='active'";
 		if( isset( $params['search'] ) && strlen($params['search']['value']) > 0 ) {
-			$query .= " WHERE experiment_name LIKE ? OR experiment_desc LIKE ? OR cell_line_name LIKE ? OR experiment_filecount=? OR experiment_filestate=? OR experiment_rundate=? OR user_name LIKE ?";
+			$query .= " AND (experiment_name LIKE ? OR experiment_desc LIKE ? OR cell_line_name LIKE ? OR experiment_filecount=? OR experiment_filestate=? OR experiment_rundate=? OR user_name LIKE ?)";
 			array_push( $options, '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', $params['search']['value'], $params['search']['value'], $params['search']['value'], '%' . $params['search']['value'] . '%' );
 		}
 		
@@ -227,27 +226,6 @@ class ExperimentHandler {
 	}
 	
 	/**
-	 * Build out the options for the experiment listing table
-	 */
-	 
-	private function buildExperimentOptions( $userInfo ) {
-		
-		$options = array( );
-
-		// $options[] = '<i class="optionIcon fa fa-arrow-up fa-lg popoverData classChange text-info" data-userid="' . $userInfo->user_id . '" title="Promote this Account" data-content="Click this to Increase user\'s access level" data-direction="promote"></i>';
-		// $options[] = '<i class="optionIcon fa fa-arrow-down fa-lg popoverData classChange text-primary" data-userid="' . $userInfo->user_id . '" title="Demote this Account" data-content="Click this to Decrease user\'s access level" data-direction="demote"></i>';
-		
-		// if( $userInfo->user_status == "active" ) {
-			// $options[] = '<i class="optionIcon fa fa-times fa-lg popoverData text-danger statusChange" data-userid="' . $userInfo->user_id . '" title="Disable this Account" data-content="Click this to disable user\'s access to the ' . CONFIG['WEB']['WEB_NAME_ABBR'] . ' Website" data-status="inactive"></i>';
-		// } else {
-			// $options[] = '<i class="optionIcon fa fa-check fa-lg popoverData text-success statusChange" data-userid="' . $userInfo->user_id . '" title="Enable this Account" data-content="Click this to disable user\'s access to the ' . CONFIG['WEB']['WEB_NAME_ABBR'] . ' Website" data-status="active"></i>';
-		// }
-		
-		return implode( " ", $options );
-		
-	}
-	
-	/**
 	 * Get a count of all experiments available
 	 */
 	 
@@ -273,7 +251,7 @@ class ExperimentHandler {
 		
 		$view = "blocks" . DS . "ORCADataTableToolbarButton.tpl";
 		$buttons[] = $this->twig->render( $view, array( 
-			"BTN_CLASS" => "btn-info",
+			"BTN_CLASS" => "btn-info experimentViewFilesBtn",
 			"BTN_LINK" => "",
 			"BTN_ID" => "experimentViewFilesBtn",
 			"BTN_ICON" => "fa-file-text",
@@ -286,12 +264,25 @@ class ExperimentHandler {
 			"BTN_ICON" => "fa-cog",
 			"BTN_TEXT" => "Tools",
 			"LINKS" => array( 
-				"experimentDisableChecked" => array( "linkHREF" => "", "linkText" => "Disable Checked Experiments" )
+				"experimentDisableChecked" => array( "linkHREF" => "", "linkText" => "Disable Checked Experiments", "linkClass" => "experimentDisableChecked" )
 			)
 		));
 		
 		return implode( "", $buttons );
+		
+	}
 	
+	/**
+	 * Disable experiments specified by ID passed in as an array
+	 */
+	
+	public function disableExperiments( $expIDs ) {
+		
+		$querySet = array_fill( 0, sizeof( $expIDs ), "?" );
+		$stmt = $this->db->prepare( "UPDATE " . DB_MAIN . ".experiments SET experiment_status='inactive' WHERE experiment_id IN (" . implode( ",", $querySet ) . ")" );
+		$stmt->execute( $expIDs );
+		
+	}
 }
 
 ?>
