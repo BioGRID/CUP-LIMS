@@ -58,7 +58,7 @@ if( isset( $postData['tool'] ) ) {
 			echo json_encode( array( "draw" => $draw, "recordsTotal" => $postData['totalRecords'], "recordsFiltered" => $recordsFiltered, "data" => $permRows ));
 			break;
 			
-		// Fetch the column header for the Manage Permissions
+		// Fetch the column header for the experiment view
 		// Datatable with correct options
 		case 'experimentHeader' :
 			$expHandler = new models\ExperimentHandler( );
@@ -66,7 +66,7 @@ if( isset( $postData['tool'] ) ) {
 			echo json_encode( $expHeader );
 			break;
 		
-		// Fetch user rows for the Manage Permissions
+		// Fetch rows for the experiment view
 		// tool for display in Datatables
 		case 'experimentRows' :
 			$draw = $postData['draw'];
@@ -76,6 +76,26 @@ if( isset( $postData['tool'] ) ) {
 			$recordsFiltered = $expHandler->getUnfilteredExperimentCount( $postData );
 			
 			echo json_encode( array( "draw" => $draw, "recordsTotal" => $postData['totalRecords'], "recordsFiltered" => $recordsFiltered, "data" => $expRows ));
+			break;
+			
+		// Fetch column header for the files view
+		// Datatable with correct options
+		case 'filesHeader' :
+			$fileHandler = new models\FileHandler( );
+			$fileHeader = $fileHandler->fetchFilesViewColumnDefinitions( );
+			echo json_encode( $fileHeader );
+			break;
+			
+		// Fetch rows for the files view
+		// tool for display in Datatables
+		case 'filesRows' :
+			$draw = $postData['draw'];
+			
+			$fileHandler = new models\FileHandler( );
+			$fileRows = $fileHandler->buildFileRows( $postData );
+			$recordsFiltered = $fileHandler->getUnfilteredFileCount( $postData );
+			
+			echo json_encode( array( "draw" => $draw, "recordsTotal" => $postData['totalRecords'], "recordsFiltered" => $recordsFiltered, "data" => $fileRows ));
 			break;
 			
 	}

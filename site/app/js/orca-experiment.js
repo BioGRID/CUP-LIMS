@@ -42,8 +42,8 @@
 			});
 
 			if( expIDs.length ) {
-				console.log( baseURL + "/Files?exps=" + expIDs.join( "," ) );
-				window.location = baseURL + "/Files?exps=" + expIDs.join( "," );
+				console.log( baseURL + "/Files?expIDs=" + expIDs.join( "|" ) );
+				window.location = baseURL + "/Files?expIDs=" + expIDs.join( "|" );
 			} else {
 				alertify.alert( "No Experiments Selected", "Please check the box next to one or more experiments before clicking view files" );
 			}

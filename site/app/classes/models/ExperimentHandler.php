@@ -10,6 +10,7 @@ namespace ORCA\app\classes\models;
 
 use \PDO;
 use ORCA\app\classes\models;
+use ORCA\app\lib;
  
 class ExperimentHandler {
 
@@ -249,24 +250,28 @@ class ExperimentHandler {
 		
 		$buttons = array( );
 		
-		$view = "blocks" . DS . "ORCADataTableToolbarButton.tpl";
-		$buttons[] = $this->twig->render( $view, array( 
-			"BTN_CLASS" => "btn-info experimentViewFilesBtn",
-			"BTN_LINK" => "",
-			"BTN_ID" => "experimentViewFilesBtn",
-			"BTN_ICON" => "fa-file-text",
-			"BTN_TEXT" => "View Files"
-		));
+		if( lib\Session::validateCredentials( lib\Session::getPermission( 'VIEW FILES' )) ) {
+			$view = "blocks" . DS . "ORCADataTableToolbarButton.tpl";
+			$buttons[] = $this->twig->render( $view, array( 
+				"BTN_CLASS" => "btn-info experimentViewFilesBtn",
+				"BTN_LINK" => "",
+				"BTN_ID" => "experimentViewFilesBtn",
+				"BTN_ICON" => "fa-file-text",
+				"BTN_TEXT" => "View Files"
+			));
+		}
 		
-		$view = "blocks" . DS . "ORCADataTableToolbarDropdown.tpl";
-		$buttons[] = $this->twig->render( $view, array(
-			"BTN_CLASS" => "btn-danger",
-			"BTN_ICON" => "fa-cog",
-			"BTN_TEXT" => "Tools",
-			"LINKS" => array( 
-				"experimentDisableChecked" => array( "linkHREF" => "", "linkText" => "Disable Checked Experiments", "linkClass" => "experimentDisableChecked" )
-			)
-		));
+		if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE EXPERIMENTS' )) ) {
+			$view = "blocks" . DS . "ORCADataTableToolbarDropdown.tpl";
+			$buttons[] = $this->twig->render( $view, array(
+				"BTN_CLASS" => "btn-danger",
+				"BTN_ICON" => "fa-cog",
+				"BTN_TEXT" => "Tools",
+				"LINKS" => array(
+					"experimentDisableChecked" => array( "linkHREF" => "", "linkText" => "Disable Checked Experiments", "linkClass" => "experimentDisableChecked" )
+				)
+			));
+		}
 		
 		return implode( "", $buttons );
 		
