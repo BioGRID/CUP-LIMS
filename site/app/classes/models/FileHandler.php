@@ -242,13 +242,12 @@ class FileHandler {
 		$columns = array( );
 		$columns[0] = array( "title" => "", "data" => 0, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
 		$columns[1] = array( "title" => "Name", "data" => 1, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'file_name' );
-		$columns[2] = array( "title" => "Size", "data" => 2, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'file_size' );
-		$columns[3] = array( "title" => "Background", "data" => 3, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_isbackground' );
-		$columns[4] = array( "title" => "Total Reads", "data" => 4, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'file_readtotal' );
-		$columns[5] = array( "title" => "Date", "data" => 5, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_addeddate' );
-		$columns[6] = array( "title" => "State", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_state' );
-		$columns[7] = array( "title" => "Experiment", "data" => 7, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'experiment_name' );
-		$columns[8] = array( "title" => "Options", "data" => 8, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
+		$columns[2] = array( "title" => "Size", "data" => 2, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_size' );
+		$columns[3] = array( "title" => "Total Reads", "data" => 3, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_readtotal' );
+		$columns[4] = array( "title" => "Date", "data" => 4, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_addeddate' );
+		$columns[5] = array( "title" => "State", "data" => 5, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_state' );
+		$columns[6] = array( "title" => "Experiment", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'experiment_name' );
+		$columns[7] = array( "title" => "Options", "data" => 7, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
 		
 		return $columns;
 		
@@ -264,15 +263,31 @@ class FileHandler {
 		$rows = array( );
 		foreach( $fileList as $fileID => $fileInfo ) {
 			$column = array( );
-			$column[] = "<input type='checkbox' class='orcaDataTableRowCheck' value='" . $fileID . "' />";
+			
+			if( $fileInfo->file_state == "parsed" ) {
+				$column[] = "<input type='checkbox' class='orcaDataTableRowCheck' value='" . $fileID . "' />";
+			} else {
+				$column[] = "";
+			}
+			
 			$column[] = $fileInfo->file_name;
-			$column[] = $fileInfo->file_size;
-			$column[] = $fileInfo->file_isbackground;
-			$column[] = $fileInfo->file_readtotal;
+			$column[] = $this->formatBytes( $fileInfo->file_size );
+			$column[] = number_format( $fileInfo->file_readtotal, 0, ".", "," );
 			$column[] = $fileInfo->file_addeddate;
-			$column[] = $fileInfo->file_state;
+			
+			if( $fileInfo->file_state == "parsed" ) {
+				$column[] = "<strong><span class='text-success'>" . $fileInfo->file_state . " <i class='fa fa-check'></i></span></strong>";
+			} else {
+				$column[] = "<strong><span class='text-danger'>" . $fileInfo->file_state . " <i class='fa fa-warning'></i></span></strong>";
+			}
+			
 			$column[] = $fileInfo->experiment_name;
 			$column[] = "";
+			
+			if( $fileInfo->file_state != "parsed" ) {
+				$column['DT_RowClass'] = "orcaUnparsedFile";
+			}
+			
 			$rows[] = $column;
 		}
 		
@@ -286,6 +301,11 @@ class FileHandler {
 	 */
 	 
 	private function buildFilesDataTableQuery( $params, $countOnly = false ) {
+		
+		$includeBG = false;
+		if( isset( $params['includeBG'] ) && $params['includeBG'] == true ) {
+			$includeBG = true;
+		}
 		
 		$query = "SELECT ";
 		if( $countOnly ) {
@@ -302,12 +322,17 @@ class FileHandler {
 		# every file
 		$options = array( );
 		$query .= " WHERE file_status='active'";
+		
+		if( !$includeBG ) {
+			$query .= " AND file_isbackground='0'";
+		}
+		
 		if( isset( $params['expIDs'] )) {
 			$idSet = explode( "|", $params['expIDs'] );
 			if( sizeof( $idSet ) > 0 ) {
 				$options = $idSet;
 				$varSet = array_fill( 0, sizeof( $idSet ), "?" );
-				$query .= " AND experiment_id IN (" . implode( ",", $varSet ) . ")";
+				$query .= " AND f.experiment_id IN (" . implode( ",", $varSet ) . ")";
 			}
 		}
 		
@@ -385,14 +410,46 @@ class FileHandler {
 	 * Get a count of all files available
 	 */
 	 
-	public function fetchFileCount( ) {
+	public function fetchFileCount( $expIDs, $includeBG = false ) {
 		
-		$stmt = $this->db->prepare( "SELECT COUNT(*) as fileCount FROM " . DB_MAIN . ".files" );
-		$stmt->execute( );
+		$query = "SELECT COUNT(*) as fileCount FROM " . DB_MAIN . ".files WHERE file_status='active'";
+
+		if( !$includeBG ) {
+			$query .= " AND file_isbackground='0'";
+		}
+		
+		$options = array( );
+		if( sizeof( $expIDs ) > 0 ) {
+			$options = $expIDs;
+			$varSet = array_fill( 0, sizeof( $options ), "?" );
+			$query .= " AND experiment_id IN (" . implode( ",", $varSet ) . ")";
+		}
+		
+		$stmt = $this->db->prepare( $query );
+		$stmt->execute( $options );
 		
 		$row = $stmt->fetch( PDO::FETCH_OBJ );
 		
 		return $row->fileCount;
+		
+	}
+	
+	/**
+	 * Convert a file size represented in bytes to a 
+	 * more human readable alternative
+	 */
+	
+	public function formatBytes( $bytes, $precision = 2 ) { 
+	
+		$units = array( 'B', 'KB', 'MB', 'GB', 'TB' ); 
+
+		$bytes = max( $bytes, 0 ); 
+		$pow = floor(( $bytes ? log( $bytes ) : 0) / log( 1024 )); 
+		$pow = min( $pow, count( $units ) - 1); 
+
+		$bytes /= pow( 1024, $pow );
+
+		return round( $bytes, $precision ) . ' ' . $units[$pow]; 
 		
 	}
 	

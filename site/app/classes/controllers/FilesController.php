@@ -54,20 +54,31 @@ class FilesController extends lib\Controller {
 		lib\Session::canAccess( lib\Session::getPermission( 'VIEW FILES' ));
 		
 		$fileHandler = new models\FileHandler( );
-		$fileCount = $fileHandler->fetchFileCount( );
 		$buttons = array( );//$expHandler->fetchExperimentToolbar( );
 		
+		$expIDs = array( );
 		if( isset( $_GET['expIDs'] )) {
 			$expIDs = explode( "|", $_GET['expIDs'] );
 		}
-				
+		
+		$includeBG = false;
+		$incBGString = "false";
+		if( isset( $_GET['includeBG'] ) && $_GET['includeBG'] == "true" ) {
+			$includeBG = true;
+			$incBGString = "true";
+		}
+		
+		$fileCount = $fileHandler->fetchFileCount( $expIDs, $includeBG );
+				 
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
-			"TABLE_TITLE" => "File List",
+			"TABLE_TITLE" => "Raw File List",
 			"ROW_COUNT" => $fileCount,
 			"WEB_NAME_ABBR" => CONFIG['WEB']['WEB_NAME_ABBR'],
 			"SHOW_TOOLBAR" => false,
+			"EXP_IDS" => implode( '|', $expIDs ),
+			"INCLUDE_BG" => $incBGString,
 			"BUTTONS" => $buttons
 		);
 		

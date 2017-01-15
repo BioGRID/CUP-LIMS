@@ -4,6 +4,7 @@
 		<div class='subheadLarge'>The following is a listing of the files associated with your previously selected experiments.</div>
 	</div>
 </div>
-
+<input type='hidden' id='expIDs' value='{{ EXP_IDS }}' />
+<input type='hidden' id='includeBG' value='{{ INCLUDE_BG }}' />
 {% include 'blocks/ORCADataTableBlock.tpl' %}
 
