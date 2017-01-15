@@ -150,6 +150,17 @@ i {
 		tr.orcaUnparsedFile {
 			background-color: @gray-light;
 		}
+		
+		a { 
+			cursor: pointer;
+			color: #6ca4f7;
+			font-weight: bold;
+			&:hover {
+				text-decoration: none;
+				color: darken( #6ca4f7, 30% );
+			}
+		}
+			
 	}
 	
 	.orcaDataTableToolbar { 
@@ -158,6 +169,16 @@ i {
 		border-radius: 5px;
 		a { cursor: pointer; }
 		a:hover { text-decoration: none; }
+	}
+}
+
+.orcaDetailBlockWrap {
+	.orcaDetailBoxes {
+		.orcaDetailBox {
+			.form-control[readonly] {
+				background-color: #FFF !important;
+			}
+		}
 	}
 }
 

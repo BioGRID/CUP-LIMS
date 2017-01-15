@@ -9,6 +9,7 @@ namespace ORCA\app\classes\models;
  */
 
 use \PDO;
+use ORCA\app\lib;
  
 class FileHandler {
 
@@ -270,7 +271,8 @@ class FileHandler {
 				$column[] = "";
 			}
 			
-			$column[] = $fileInfo->file_name;
+			$column[] = "<a href='" . WEB_URL . "/Files/View?id=" . $fileInfo->file_id . "' title='" . $fileInfo->file_name . "'>" . $fileInfo->file_name . "</a>";
+			
 			$column[] = $this->formatBytes( $fileInfo->file_size );
 			$column[] = number_format( $fileInfo->file_readtotal, 0, ".", "," );
 			$column[] = $fileInfo->file_addeddate;
@@ -281,8 +283,8 @@ class FileHandler {
 				$column[] = "<strong><span class='text-danger'>" . $fileInfo->file_state . " <i class='fa fa-warning'></i></span></strong>";
 			}
 			
-			$column[] = $fileInfo->experiment_name;
-			$column[] = "";
+			$column[] = "<a href='" . WEB_URL . "/Experiment/View?id=" . $fileInfo->experiment_id . "' title='" . $fileInfo->experiment_name . "'>" . $fileInfo->experiment_name . "</a>";
+			$column[] = $this->buildFilesTableOptions( $fileInfo );
 			
 			if( $fileInfo->file_state != "parsed" ) {
 				$column['DT_RowClass'] = "orcaUnparsedFile";
@@ -311,7 +313,7 @@ class FileHandler {
 		if( $countOnly ) {
 			$query .= " count(*) as rowCount";
 		} else {
-			$query .= " f.*, exp.experiment_name";
+			$query .= " f.*, exp.experiment_name, exp.experiment_code";
 		}
 		
 		$query .= " FROM " . DB_MAIN . ".files f LEFT JOIN experiments exp ON (f.experiment_id=exp.experiment_id)";
@@ -450,6 +452,60 @@ class FileHandler {
 		$bytes /= pow( 1024, $pow );
 
 		return round( $bytes, $precision ) . ' ' . $units[$pow]; 
+		
+	}
+	
+	/**
+	 * Fetch the set of toolbar buttons for the raw file list view
+	 */
+	 
+	public function fetchFileToolbar( ) {
+		
+		$buttons = array( );
+		
+		// if( lib\Session::validateCredentials( lib\Session::getPermission( 'VIEW FILES' )) ) {
+			// $view = "blocks" . DS . "ORCADataTableToolbarButton.tpl";
+			// $buttons[] = $this->twig->render( $view, array( 
+				// "BTN_CLASS" => "btn-info experimentViewFilesBtn",
+				// "BTN_LINK" => "",
+				// "BTN_ID" => "experimentViewFilesBtn",
+				// "BTN_ICON" => "fa-file-text",
+				// "BTN_TEXT" => "View Files"
+			// ));
+		// }
+		
+		// if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE EXPERIMENTS' )) ) {
+			// $view = "blocks" . DS . "ORCADataTableToolbarDropdown.tpl";
+			// $buttons[] = $this->twig->render( $view, array(
+				// "BTN_CLASS" => "btn-danger",
+				// "BTN_ICON" => "fa-cog",
+				// "BTN_TEXT" => "Tools",
+				// "LINKS" => array(
+					// "experimentDisableChecked" => array( "linkHREF" => "", "linkText" => "Disable Checked Experiments", "linkClass" => "experimentDisableChecked" )
+				// )
+			// ));
+		// }
+		
+		return implode( "", $buttons );
+		
+	}
+	
+	/**
+	 * Build out the options for the Files Table Field
+	 */
+	 
+	private function buildFilesTableOptions( $fileInfo ) {
+		
+		$options = array( );
+
+		if( lib\Session::validateCredentials( lib\Session::getPermission( 'DOWNLOAD FILES' )) ) {
+			$options[] = '<a href="' . UPLOAD_PROCESSED_URL . "/" . $fileInfo->experiment_code . "/" . $fileInfo->file_name . '" title="' . $fileInfo->file_name . '" target="_BLANK"><i class="optionIcon fa fa-download fa-lg popoverData fileDownload text-info" data-title="Download Raw Data" data-content="Click to download this raw data file."></i></a>';
+		}
+		
+		$options[] = '<a href="' . WEB_URL . "/Files/View?id=" . $fileInfo->file_id . '" title="' . $fileInfo->file_name . '"><i class="optionIcon fa fa-search-plus fa-lg popoverData fileView text-primary" data-title="View File Details" data-content="Click to view this raw data file in expanded details."></i></a>';
+
+		
+		return implode( " ", $options );
 		
 	}
 	

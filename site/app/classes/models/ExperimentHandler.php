@@ -46,6 +46,24 @@ class ExperimentHandler {
 		
 	}
 	
+	/**
+	 * Fetch information about a cell line based on the passed in
+	 * cell line ID, return false if non-existant
+	 */
+	
+	public function fetchCellLine( $cellLineID ) {
+		
+		$stmt = $this->db->prepare( "SELECT * FROM " . DB_MAIN . ".cell_lines WHERE cell_line_id=? LIMIT 1" );
+		$stmt->execute( array( $cellLineID ) );
+		
+		if( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
+			return $row;
+		} 
+		
+		return false;
+		
+	}
+	
 	/** 
 	 * Insert an experiment into the database if one with the same
 	 * name doesn't already exist.

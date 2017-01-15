@@ -18,6 +18,7 @@ class FilesController extends lib\Controller {
 		parent::__construct( $twig );
 		
 		$addonJS = array( );
+		$addonJS[] = "jquery.qtip.min.js";
 		$addonJS[] = "jquery.dataTables.js";
 		$addonJS[] = "dataTables.bootstrap.js";
 		$addonJS[] = "alertify.min.js";
@@ -25,6 +26,7 @@ class FilesController extends lib\Controller {
 		$addonJS[] = "orca-files.js";
 		
 		$addonCSS = array( );
+		$addonCSS[] = "jquery.qtip.min.css";
 		$addonCSS[] = "dataTables.bootstrap.css";
 		$addonCSS[] = "alertify.min.css";
 		$addonCSS[] = "alertify-bootstrap.min.css";
@@ -40,21 +42,21 @@ class FilesController extends lib\Controller {
 	 */
 	 
 	public function Index( ) {
-		$this->View( );
+		$this->Listing( );
 	}
 	
 	/**
-	 * View
+	 * Listing
 	 * Main view for the files page. Presents a table of files for a set of experiments
 	 * with the ability to search, sort, browse results.
 	 */
 	
-	public function View( ) {
+	public function Listing( ) {
 		
 		lib\Session::canAccess( lib\Session::getPermission( 'VIEW FILES' ));
 		
 		$fileHandler = new models\FileHandler( );
-		$buttons = array( );//$expHandler->fetchExperimentToolbar( );
+		$buttons = $fileHandler->fetchFileToolbar( );
 		
 		$expIDs = array( );
 		if( isset( $_GET['expIDs'] )) {
@@ -76,7 +78,7 @@ class FilesController extends lib\Controller {
 			"TABLE_TITLE" => "Raw File List",
 			"ROW_COUNT" => $fileCount,
 			"WEB_NAME_ABBR" => CONFIG['WEB']['WEB_NAME_ABBR'],
-			"SHOW_TOOLBAR" => false,
+			"SHOW_TOOLBAR" => true,
 			"EXP_IDS" => implode( '|', $expIDs ),
 			"INCLUDE_BG" => $incBGString,
 			"BUTTONS" => $buttons
