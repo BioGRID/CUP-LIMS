@@ -211,6 +211,24 @@ class UserHandler {
 		
 	}
 	
+	/**
+	 * Fetch information about a user based on the passed in
+	 * user ID, return false if non-existant
+	 */
+	
+	public function fetchUser( $userID ) {
+		
+		$stmt = $this->db->prepare( "SELECT * FROM " . DB_MAIN . ".users WHERE user_id=? LIMIT 1" );
+		$stmt->execute( array( $userID ) );
+		
+		if( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
+			return $row;
+		} 
+		
+		return false;
+		
+	}
+	
 }
 
 ?>

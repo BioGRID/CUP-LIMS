@@ -18,13 +18,14 @@ class ExperimentController extends lib\Controller {
 		parent::__construct( $twig );
 		
 		$addonJS = array( );
+		$addonJS[] = "jquery.qtip.min.js";
 		$addonJS[] = "jquery.dataTables.js";
 		$addonJS[] = "dataTables.bootstrap.js";
 		$addonJS[] = "alertify.min.js";
 		$addonJS[] = "orca-dataTableBlock.js";
-		$addonJS[] = "orca-experiment.js";
 		
 		$addonCSS = array( );
+		$addonCSS[] = "jquery.qtip.min.css";
 		$addonCSS[] = "dataTables.bootstrap.css";
 		$addonCSS[] = "alertify.min.css";
 		$addonCSS[] = "alertify-bootstrap.min.css";
@@ -40,18 +41,23 @@ class ExperimentController extends lib\Controller {
 	 */
 	 
 	public function Index( ) {
-		$this->View( );
+		$this->Listing( );
 	}
 	
 	/**
-	 * View
+	 * Listing
 	 * Main view for the experiment page. Presents a table of uploaded experiments
 	 * with the ability to search, sort, browse results.
 	 */
 	
-	public function View( ) {
+	public function Listing( ) {
 		
 		lib\Session::canAccess( lib\Session::getPermission( 'VIEW EXPERIMENTS' ));
+		
+		$addonJS = $this->footerParams->get( 'ADDON_JS' );
+		$addonJS[] = "orca-experiment.js";
+		
+		$this->footerParams->set( 'ADDON_JS', $addonJS );
 		
 		$isMember = lib\Session::validateCredentials( lib\Session::getPermission( 'VIEW UPLOAD TOOL' ));
 		
@@ -71,9 +77,88 @@ class ExperimentController extends lib\Controller {
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Experiment' />" );
-		$this->headerParams->set( "TITLE", "View Experiments | " . CONFIG['WEB']['WEB_NAME'] );
+		$this->headerParams->set( "TITLE", "Experiment Listing | " . CONFIG['WEB']['WEB_NAME'] );
 		
-		$this->renderView( "experiment" . DS . "ExperimentIndex.tpl", $params, false );
+		$this->renderView( "experiment" . DS . "ExperimentListing.tpl", $params, false );
+				
+	}
+	
+	/**
+	 * View
+	 * A summary view showing various details about 1 particular
+	 * experiment, including the list of files it represents
+	 */
+	
+	public function View( ) {
+		
+		lib\Session::canAccess( lib\Session::getPermission( 'VIEW EXPERIMENTS' ));
+		
+		// Add the files JS so we can display the files table
+		$addonJS = $this->footerParams->get( 'ADDON_JS' );
+		$addonJS[] = "orca-files.js";
+		
+		$this->footerParams->set( 'ADDON_JS', $addonJS );
+		
+		// If we're not passed an ID, show 404
+		if( !isset( $_GET['id'] ) || !is_numeric( $_GET['id'] )) {
+			lib\Session::sendPageNotFound( );
+		}
+		
+		$expHandler = new models\ExperimentHandler( );
+		$expInfo = $expHandler->fetchExperiment( $_GET['id'] );
+		
+		// If we got an id but it's invalid
+		// show 404 error
+		if( !$expInfo ) {
+			lib\Session::sendPageNotFound( );
+		}
+		
+		// Setup data to display
+		$expDetails = array( );
+		$expDetails[] = array( "HEADER" => "ID", "BODY" => $expInfo->experiment_id, "ID" => "experiment_id", "SIZE" => "third" );
+		$expDetails[] = array( "HEADER" => "Name", "BODY" => $expInfo->experiment_name, "ID" => "experiment_name", "SIZE" => "twothird" );
+		$expDetails[] = array( "HEADER" => "Description", "BODY" => $expInfo->experiment_desc, "ID" => "experiment_desc" );
+		
+		$cellLineInfo = $expHandler->fetchCellLine( $expInfo->experiment_cellline );
+		$cellLine = "-";
+		if( $cellLineInfo ) {
+			$cellLine = $cellLineInfo->cell_line_name;
+		}
+			
+		$expDetails[] = array( "HEADER" => "Cell Line", "BODY" => $cellLine, "ID" => "experiment_cellline", "SIZE" => "third" );
+			
+		$expDetails[] = array( "HEADER" => "Run Date", "BODY" => $expInfo->experiment_rundate, "ID" => "experiment_rundate", "SIZE" => "third" );
+		$expDetails[] = array( "HEADER" => "Uploaded Date", "BODY" => $expInfo->experiment_addeddate, "ID" => "experiment_addeddate", "SIZE" => "third" );
+		$expDetails[] = array( "HEADER" => "Files Uploaded", "BODY" => $expInfo->experiment_filecount, "ID" => "experiment_filecount", "SIZE" => "third" );
+		$expDetails[] = array( "HEADER" => "File State", "BODY" => $expInfo->experiment_filestate, "ID" => "experiment_filestate", "SIZE" => "third" );
+		
+		$user = "-";
+		$userHandler = new models\UserHandler( );
+		$userInfo = $userHandler->fetchUser( $expInfo->user_id );
+		if( $userInfo ) {
+			$user = $userInfo->user_firstname . " " . $userInfo->user_lastname . " (" . $userInfo->user_name . ")";
+		}
+		
+		$expDetails[] = array( "HEADER" => "Uploading User", "BODY" => $user, "ID" => "user_id", "SIZE" => "third" );
+				
+		$params = array(
+			"WEB_URL" => WEB_URL,
+			"IMG_URL" => IMG_URL,
+			"TITLE" => "Experiment Details",
+			"SUBHEAD" => "The following is a detail summary for the experiment (<span class='text-success'>#" . $expInfo->experiment_id . "</span>): <strong><span class='text-success'>" . $expInfo->experiment_name . "</span></strong>",
+			"EXPERIMENT_NAME" => $expInfo->experiment_name,
+			"EXPERIMENT_ID" => $expInfo->experiment_id,
+			"DETAILS" => $expDetails,
+			"ROW_COUNT" => 10,
+			"WEB_NAME_ABBR" => CONFIG['WEB']['WEB_NAME_ABBR'],
+			"SHOW_TOOLBAR" => true,
+			"BUTTONS" => array( )
+		);
+		
+		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Experiment' />" );
+		$this->headerParams->set( "TITLE", "Experiment: " . $expInfo->experiment_name . " | " . CONFIG['WEB']['WEB_NAME'] );
+		
+		$this->renderView( "experiment" . DS . "ExperimentView.tpl", $params, false );
 				
 	}
 

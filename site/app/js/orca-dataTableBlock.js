@@ -52,6 +52,7 @@
 		base.fetchCols = function( ) {
 			
 			var submitSet = { 'tool' : base.options.colTool };
+			$.extend( submitSet, base.options.addonParams );
 			submitSet = JSON.stringify( submitSet );
 			
 			return $.ajax({
@@ -126,6 +127,7 @@
 						data: function( d ) {  
 							d.tool = base.options.rowTool;
 							d.totalRecords = base.components.tableRowCount.val( );
+							$.extend( d, base.options.addonParams );
 							d.expData = JSON.stringify( d );
 						}
 					},
@@ -170,6 +172,7 @@
 		pageLength: 100,
 		colTool: "",
 		rowTool: "",
+		addonParams: { },
 		hasToolbar: false
 	};
 

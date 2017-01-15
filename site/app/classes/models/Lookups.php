@@ -6,7 +6,8 @@ namespace ORCA\app\classes\models;
  * Lookups
  * This class is for creating quick lookup hashes
  * that can be used to speed up various operations
- * and limit SQL connections required.
+ * and limit SQL connections required. It also contains functions
+ * for looking up annotation table details.
  */
 
 use \PDO;
