@@ -271,7 +271,11 @@ class FileHandler {
 				$column[] = "";
 			}
 			
-			$column[] = "<a href='" . WEB_URL . "/Files/View?id=" . $fileInfo->file_id . "' title='" . $fileInfo->file_name . "'>" . $fileInfo->file_name . "</a>";
+			$formattedName = "<a href='" . WEB_URL . "/Files/View?id=" . $fileInfo->file_id . "' title='" . $fileInfo->file_name . "'>" . $fileInfo->file_name . "</a>";
+			if( $fileInfo->file_isbackground == '1' ) {
+				$formattedName .= " [background]";
+			}
+			$column[] = $formattedName;
 			
 			$column[] = $this->formatBytes( $fileInfo->file_size );
 			$column[] = number_format( $fileInfo->file_readtotal, 0, ".", "," );

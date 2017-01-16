@@ -306,6 +306,44 @@ class ExperimentHandler {
 		$stmt->execute( $expIDs );
 		
 	}
+	
+	/**
+	 * Fetch formatted experiment format details
+	 */
+	 
+	public function fetchFormattedExperimentDetails( $expInfo ) {
+	
+		// Setup data to display
+		$expDetails = array( );
+		$expDetails[] = array( "HEADER" => "ID", "BODY" => $expInfo->experiment_id, "ID" => "experiment_id", "SIZE" => "third" );
+		$expDetails[] = array( "HEADER" => "Name", "BODY" => $expInfo->experiment_name, "ID" => "experiment_name", "SIZE" => "twothird" );
+		$expDetails[] = array( "HEADER" => "Description", "BODY" => $expInfo->experiment_desc, "ID" => "experiment_desc" );
+
+		$cellLineInfo = $this->fetchCellLine( $expInfo->experiment_cellline );
+		$cellLine = "-";
+		if( $cellLineInfo ) {
+			$cellLine = $cellLineInfo->cell_line_name;
+		}
+
+		$expDetails[] = array( "HEADER" => "Cell Line", "BODY" => $cellLine, "ID" => "experiment_cellline", "SIZE" => "third" );
+
+		$expDetails[] = array( "HEADER" => "Run Date", "BODY" => $expInfo->experiment_rundate, "ID" => "experiment_rundate", "SIZE" => "third" );
+		$expDetails[] = array( "HEADER" => "Uploaded Date", "BODY" => $expInfo->experiment_addeddate, "ID" => "experiment_addeddate", "SIZE" => "third" );
+		$expDetails[] = array( "HEADER" => "Files Uploaded", "BODY" => $expInfo->experiment_filecount, "ID" => "experiment_filecount", "SIZE" => "third" );
+		$expDetails[] = array( "HEADER" => "File State", "BODY" => $expInfo->experiment_filestate, "ID" => "experiment_filestate", "SIZE" => "third" );
+
+		$user = "-";
+		$userHandler = new models\UserHandler( );
+		$userInfo = $userHandler->fetchUser( $expInfo->user_id );
+		if( $userInfo ) {
+			$user = $userInfo->user_firstname . " " . $userInfo->user_lastname . " (" . $userInfo->user_name . ")";
+		}
+
+		$expDetails[] = array( "HEADER" => "Uploading User", "BODY" => $user, "ID" => "user_id", "SIZE" => "third" );
+		
+		return $expDetails;
+		
+	}
 }
 
 ?>

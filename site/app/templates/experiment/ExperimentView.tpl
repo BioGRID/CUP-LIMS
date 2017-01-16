@@ -6,7 +6,10 @@
 </div>
 
 {% include 'detailBlock/DetailBlock.tpl' %}
-{% include 'blocks/ORCADataTableBlock.tpl' %}
 
-<input type='hidden' id='expIDs' value='{{ EXP_IDS }}' />
-<input type='hidden' id='includeBG' value='{{ INCLUDE_BG }}' />
+{% if SHOW_FILES %}
+	{% include 'blocks/ORCADataTableBlock.tpl' %}
+
+	<input type='hidden' id='expIDs' value='{{ EXP_IDS }}' />
+	<input type='hidden' id='includeBG' value='{{ INCLUDE_BG }}' />
+{% endif %}
