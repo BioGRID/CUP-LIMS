@@ -150,7 +150,13 @@ class ExperimentHandler {
 			$column[] = $expInfo->cell_line_name;
 			$column[] = $expInfo->experiment_rundate;
 			$column[] = $expInfo->experiment_filecount;
-			$column[] = $expInfo->experiment_filestate;
+			
+			if( $expInfo->experiment_filestate == "loaded" ) {
+				$column[] = "<strong><span class='text-success'>" . $expInfo->experiment_filestate . " <i class='fa fa-check'></i></span> [<a href='" . WEB_URL . "/FileProgress?expID=" . $expID . "' title='" . $expInfo->experiment_name . " File State'>view</a>]</strong>";
+			} else {
+				$column[] = "<strong><span class='text-danger'><a href='" . WEB_URL . "/FileProgress?expID=" . $expID . "' title='" . $expInfo->experiment_name . " File State'>" . $expInfo->experiment_filestate . " <i class='fa fa-spin fa-spinner'></i></a></span></strong>";
+			} 
+			
 			$column[] = $expInfo->user_name;
 			$rows[] = $column;
 		}
