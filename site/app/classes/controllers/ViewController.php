@@ -76,11 +76,16 @@ class ViewController extends lib\Controller {
 		$this->footerParams->set( 'ADDON_JS', $addonJS );
 		
 		$fileIDs = explode( "|", $_GET['fileIDs'] );
-		$values = $_GET['values'];;
+		$values = $_GET['values'];
+		
+		$viewHandler = new models\ViewHandler( );
+		$viewInfo = $viewHandler->addView( $fileIDs, "1", $values );
 				 
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
+			"VIEW_ID" => $viewInfo['ID'],
+			"VIEW_CODE" => $viewInfo['CODE'],
 			"PROGRESS_TITLE" => "Matrix View Generating...",
 			"PROGRESS_BODY" => "Your selected view is being generated. This process can sometimes take up to 5 minutes, based on complexity, so please be patient and <strong>do not leave this page</strong>. This progress indicator will be removed upon completed generation of the view."
 		);

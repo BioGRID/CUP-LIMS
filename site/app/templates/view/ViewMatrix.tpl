@@ -7,3 +7,6 @@
 
 {% include 'blocks/ORCADataTableBlock.tpl' %}
 {% include 'blocks/ORCAViewProgress.tpl' %}
+
+<input type='hidden' id='viewID' name='viewID' value='{{ VIEW_ID }}' />
+<input type='hidden' id='viewCode' name='viewCode' value='{{ VIEW_CODE }}' />
