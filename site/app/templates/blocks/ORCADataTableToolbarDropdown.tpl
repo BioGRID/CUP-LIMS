@@ -3,9 +3,21 @@
 	<ul class='dropdown-menu'>
 		{% for LINK_ID, LINK_INFO in LINKS %}
 			{% if LINK_INFO.linkHREF %}
-				<li><a id='{{ LINK_ID }}' class='{{ LINK_INFO.linkClass }}' href='{{ LINK_INFO.linkHREF }}'>{{ LINK_INFO.linkText }}</a></li>
+				<li><a id='{{ LINK_ID }}' class='{{ LINK_INFO.linkClass }}' href='{{ LINK_INFO.linkHREF }}'
+					{% if LINK_INFO.linkData %}
+						{% for LINKDATA_ID, LINKDATA_VAL in LINK_INFO.linkData %}
+							data-{{ LINKDATA_ID }}='{{ LINKDATA_VAL|raw }}' 
+						{% endfor %}
+					{% endif %}
+				>{{ LINK_INFO.linkText }}</a></li>
 			{% else %}
-				<li><a id='{{ LINK_ID }}' class='{{ LINK_INFO.linkClass }}'>{{ LINK_INFO.linkText }}</a></li>
+				<li><a id='{{ LINK_ID }}' class='{{ LINK_INFO.linkClass }}'
+					{% if LINK_INFO.linkData %}
+						{% for LINKDATA_ID, LINKDATA_VAL in LINK_INFO.linkData %}
+							data-{{ LINKDATA_ID }}='{{ LINKDATA_VAL|raw }}' 
+						{% endfor %}
+					{% endif %}
+				>{{ LINK_INFO.linkText }}</a></li>
 			{% endif %}
 		{% endfor %}
 	</ul>

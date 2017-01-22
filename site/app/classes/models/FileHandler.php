@@ -478,17 +478,17 @@ class FileHandler {
 			// ));
 		// }
 		
-		// if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE EXPERIMENTS' )) ) {
-			// $view = "blocks" . DS . "ORCADataTableToolbarDropdown.tpl";
-			// $buttons[] = $this->twig->render( $view, array(
-				// "BTN_CLASS" => "btn-danger",
-				// "BTN_ICON" => "fa-cog",
-				// "BTN_TEXT" => "Tools",
-				// "LINKS" => array(
-					// "experimentDisableChecked" => array( "linkHREF" => "", "linkText" => "Disable Checked Experiments", "linkClass" => "experimentDisableChecked" )
-				// )
-			// ));
-		// }
+		if( lib\Session::validateCredentials( lib\Session::getPermission( 'CREATE VIEW' )) ) {
+			$view = "blocks" . DS . "ORCADataTableToolbarDropdown.tpl";
+			$buttons[] = $this->twig->render( $view, array(
+				"BTN_CLASS" => "btn-info",
+				"BTN_ICON" => "fa-table",
+				"BTN_TEXT" => "Matrix View",
+				"LINKS" => array(
+					"viewMatrixLog2" => array( "linkHREF" => "", "linkText" => "View Files in Log2 Matrix", "linkClass" => "viewClick", "linkData" => array( "type" => "1", "values" => "1" ))
+				)
+			));
+		}
 		
 		return implode( "", $buttons );
 		
