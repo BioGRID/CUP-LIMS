@@ -32,7 +32,7 @@ class ViewController extends lib\Controller {
 	 
 	public function Index( ) {
 		
-		if( isset( $_GET['type'] ) && isset( $_GET['values'] )) {
+		if( isset( $_GET['type'] )) {
 			if( $_GET['type'] == "1" ) {
 				$this->Matrix( );
 			}
@@ -51,41 +51,44 @@ class ViewController extends lib\Controller {
 	
 	public function Matrix( ) {
 		
-		lib\Session::canAccess( lib\Session::getPermission( 'VIEW FILES' ));
+		lib\Session::canAccess( lib\Session::getPermission( 'CREATE VIEW' ));
 		
-		$fileHandler = new models\FileHandler( );
-		$buttons = $fileHandler->fetchFileToolbar( );
-		
-		$expIDs = array( );
-		if( isset( $_GET['expIDs'] )) {
-			$expIDs = explode( "|", $_GET['expIDs'] );
+		// If we're not passed a numeric values and a set of file ids, show 404
+		if( !isset( $_GET['fileIDs'] ) || !isset( $_GET['values'] ) || !is_numeric( $_GET['values'] )) {
+			lib\Session::sendPageNotFound( );
 		}
 		
-		$includeBG = false;
-		$incBGString = "false";
-		if( isset( $_GET['includeBG'] ) && $_GET['includeBG'] == "true" ) {
-			$includeBG = true;
-			$incBGString = "true";
-		}
+		// Add some Change Password Specific JS
+		$addonJS = $this->footerParams->get( 'ADDON_JS' );
+		$addonJS[] = "jquery.dataTables.js";
+		$addonJS[] = "dataTables.bootstrap.js";
+		$addonJS[] = "alertify.min.js";
+		$addonJS[] = "orca-dataTableBlock.js";
+		$addonJS[] = "view/orca-view-matrix.js";
 		
-		$fileCount = $fileHandler->fetchFileCount( $expIDs, $includeBG );
+		// Add some Change Password Specific CSS
+		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );
+		$addonCSS[] = "dataTables.bootstrap.css";
+		$addonCSS[] = "alertify.min.css";
+		$addonCSS[] = "alertify-bootstrap.min.css";
+		
+		$this->headerParams->set( 'ADDON_CSS', $addonCSS );
+		$this->footerParams->set( 'ADDON_JS', $addonJS );
+		
+		$fileIDs = explode( "|", $_GET['fileIDs'] );
+		$values = $_GET['values'];;
 				 
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
-			"TABLE_TITLE" => "Raw File List",
-			"ROW_COUNT" => $fileCount,
-			"WEB_NAME_ABBR" => CONFIG['WEB']['WEB_NAME_ABBR'],
-			"SHOW_TOOLBAR" => true,
-			"EXP_IDS" => implode( '|', $expIDs ),
-			"INCLUDE_BG" => $incBGString,
-			"BUTTONS" => $buttons
+			"PROGRESS_TITLE" => "Matrix View Generating...",
+			"PROGRESS_BODY" => "Your selected view is being generated. This process can sometimes take up to 5 minutes, based on complexity, so please be patient and <strong>do not leave this page</strong>. This progress indicator will be removed upon completed generation of the view."
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Files' />" );
 		$this->headerParams->set( "TITLE", "View Files | " . CONFIG['WEB']['WEB_NAME'] );
 		
-		$this->renderView( "files" . DS . "FilesIndex.tpl", $params, false );
+		$this->renderView( "view" . DS . "ViewMatrix.tpl", $params, false );
 				
 	}
 
