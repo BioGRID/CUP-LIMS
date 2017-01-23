@@ -236,8 +236,7 @@
 				alertIcon = "fa-warning";
 				$("#addViewForm").formValidation( 'disableSubmitButtons', false );
 			} else if( data["STATUS"] == "SUCCESS" ) {
-				$("#addViewForm").trigger( "reset" );
-				$("#addViewForm").data('formValidation').resetForm( );
+				window.location = baseURL + "View?viewID=" + data['ID'];
 			}
 			
 			$("#messages").html( '<div class="alert alert-' + alertType + '" role="alert"><i class="fa ' + alertIcon + ' fa-lg"></i> ' + data['MESSAGE'] + '</div></div>' );

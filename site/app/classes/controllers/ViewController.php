@@ -32,10 +32,8 @@ class ViewController extends lib\Controller {
 	 
 	public function Index( ) {
 		
-		if( isset( $_GET['type'] )) {
-			if( $_GET['type'] == "1" ) {
-				$this->Matrix( );
-			}
+		if( isset( $_GET['viewID'] )) {
+			echo "VIEWING!";
 		} else {
 			lib\Session::sendPageNotFound( );
 		}

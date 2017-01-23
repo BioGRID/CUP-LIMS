@@ -32,7 +32,7 @@ if( isset( $postData['tool'] ) ) {
 				$viewHandler = new models\ViewHandler( );
 				
 				if( $data = $viewHandler->addView( $postData['viewName'], $postData['viewDesc'], $postData['viewType'], $postData['viewValue'], $postData['viewFiles'] )) {
-					$results = array( "STATUS" => "SUCCESS", "MESSAGE" => "Successfully Added New View", "DATA" => $data );
+					$results = array( "STATUS" => "SUCCESS", "MESSAGE" => "Successfully Added New View", "ID" => $data['ID'] );
 				} else {
 					$results = array( "STATUS" => "ERROR", "MESSAGE" => "The View Name you Entered Already Exists" );
 				}
