@@ -285,6 +285,17 @@ class ExperimentHandler {
 			));
 		}
 		
+		if( lib\Session::validateCredentials( lib\Session::getPermission( 'CREATE VIEW' )) ) {
+			$view = "blocks" . DS . "ORCADataTableToolbarButton.tpl";
+			$buttons[] = $this->twig->render( $view, array( 
+				"BTN_CLASS" => "btn-orca2 experimentCreateViewBtn",
+				"BTN_LINK" => "",
+				"BTN_ID" => "experimentCreateViewBtn",
+				"BTN_ICON" => "fa-bar-chart",
+				"BTN_TEXT" => "Create View"
+			));
+		}
+		
 		if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE EXPERIMENTS' )) ) {
 			$view = "blocks" . DS . "ORCADataTableToolbarDropdown.tpl";
 			$buttons[] = $this->twig->render( $view, array(

@@ -41,6 +41,11 @@
          "SESSION_NAME"                 : "ORCA_USER",
          "PERSISTENT_TIMEOUT"           : 604800,
          "COOKIE_NAME"                  : "ORCA"
-    }
+    },
+	
+	"VIEWGENERATOR" : {
+		"HOST"                          : "localhost",
+		"PORT"                          : 5808
+	}
 
 }

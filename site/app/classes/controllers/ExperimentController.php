@@ -68,7 +68,7 @@ class ExperimentController extends lib\Controller {
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
-			"TABLE_TITLE" => "Loaded Experiments",
+			"TABLE_TITLE" => "Experiment List",
 			"ROW_COUNT" => $expCount,
 			"WEB_NAME_ABBR" => CONFIG['WEB']['WEB_NAME_ABBR'],
 			"UPLOAD_VALID" => $isMember,

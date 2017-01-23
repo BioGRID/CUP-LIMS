@@ -5,6 +5,8 @@
  * and process the results
  */
 
+session_start( );
+ 
 require_once __DIR__ . '/../../app/lib/Bootstrap.php';
 
 use ORCA\app\lib;
@@ -21,6 +23,25 @@ if( isset( $postData['tool'] ) ) {
 			$viewHandler = new models\ViewHandler( );
 			$viewState = $viewHandler->fetchViewState( $postData['viewID'] );
 			echo json_encode( array( "STATE" => $viewState ) );
+			break;
+			
+		// Add a new view to the view table
+		case 'addView' :
+			$results = array( );
+			if( lib\Session::validateCredentials( lib\Session::getPermission( 'CREATE VIEW' )) && isset( $postData['viewName'] ) && isset( $postData['viewDesc'] ) && isset( $postData['viewType'] ) && isset( $postData['viewValue'] ) && isset( $postData['viewFiles'] )) {
+				$viewHandler = new models\ViewHandler( );
+				
+				if( $data = $viewHandler->addView( $postData['viewName'], $postData['viewDesc'], $postData['viewType'], $postData['viewValue'], $postData['viewFiles'] )) {
+					$results = array( "STATUS" => "SUCCESS", "MESSAGE" => "Successfully Added New View", "DATA" => $data );
+				} else {
+					$results = array( "STATUS" => "ERROR", "MESSAGE" => "The View Name you Entered Already Exists" );
+				}
+				
+			} else {
+				$results = array( "STATUS" => "ERROR", "MESSAGE" => "Unable to add a new view at this time, please try again later!" );
+			}
+			
+			echo json_encode( $results );
 			break;
 			
 	}

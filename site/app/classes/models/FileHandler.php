@@ -238,7 +238,7 @@ class FileHandler {
 	 * Fetch column headers for an experiment files listing DataTable
 	 */
 	 
-	 public function fetchFilesViewColumnDefinitions( ) {
+	 public function fetchFilesViewColumnDefinitions( $showBGSelect = false ) {
 	 
 		$columns = array( );
 		$columns[0] = array( "title" => "", "data" => 0, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
@@ -250,7 +250,51 @@ class FileHandler {
 		$columns[6] = array( "title" => "Experiment", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'experiment_name' );
 		$columns[7] = array( "title" => "Options", "data" => 7, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
 		
+		if( $showBGSelect ) {
+			$columns[8] = array( "title" => "Background", "data" => 8, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
+		}
+		
 		return $columns;
+		
+	}
+	
+	/**
+	 * Fetch list of backgrounds broken down by experiment ids
+	 */
+	 
+	public function buildBGList( $params, $separated = false ) {
+		
+		$query = "SELECT file_id, file_name, experiment_id FROM " . DB_MAIN . ".files WHERE file_status='active' AND file_isbackground='1'";
+		
+		$idSet = array( );
+		if( isset( $params['expIDs'] )) {
+			$idSet = explode( "|", $params['expIDs'] );
+			if( sizeof( $idSet ) > 0 ) {
+				$options = $idSet;
+				$varSet = array_fill( 0, sizeof( $idSet ), "?" );
+				$query .= " AND experiment_id IN (" . implode( ",", $varSet ) . ")";
+			}
+		}
+		
+		$stmt = $this->db->prepare( $query );
+		$stmt->execute( $idSet );
+		
+		$bgList = array( );
+		while( $row = $stmt->fetch( PDO::FETCH_OBJ )) {
+			
+			if( $separated ) {
+				if( !isset( $bgList[$row->experiment_id] )) {
+					$bgList[$row->experiment_id] = array( );
+				}
+			
+				$bgList[$row->experiment_id][] = $row;
+				
+			} else {
+				$bgList[0][] = $row;
+			}
+		}
+		
+		return $bgList;
 		
 	}
 	
@@ -261,6 +305,11 @@ class FileHandler {
 	 public function buildFileRows( $params ) {
 		
 		$fileList = $this->buildCustomizedFileList( $params );
+		$bgList = array( );
+		if( isset( $params['showBGSelect'] ) && $params['showBGSelect'] == "true" ) {
+			$bgList = $this->buildBGList( $params, true );
+		}
+		
 		$rows = array( );
 		foreach( $fileList as $fileID => $fileInfo ) {
 			$column = array( );
@@ -290,6 +339,10 @@ class FileHandler {
 			$column[] = "<a href='" . WEB_URL . "/Experiment/View?id=" . $fileInfo->experiment_id . "' title='" . $fileInfo->experiment_name . "'>" . $fileInfo->experiment_name . "</a>";
 			$column[] = $this->buildFilesTableOptions( $fileInfo );
 			
+			if( isset( $params['showBGSelect'] ) && $params['showBGSelect'] == "true" ) {
+				$column[] = $this->generateBGSelect( $bgList, $fileInfo->experiment_id, "", false, false );
+			}
+			
 			if( $fileInfo->file_state != "parsed" ) {
 				$column['DT_RowClass'] = "orcaUnparsedFile";
 			}
@@ -298,6 +351,36 @@ class FileHandler {
 		}
 		
 		return $rows;
+		
+	}
+	
+	/**
+	 * Build a select list of backgrounds based on the passed in list
+	 */
+	 
+	private function generateBGSelect( $bgList, $expID, $selectClass = "", $skipAll = false, $forToolbar = false ) {
+		$selectOptions = array( );
+		if( !$skipAll ) {
+			$selectOptions['ALL'] = "ALL Backgrounds";
+		}
+		
+		if( isset( $bgList[$expID] )) {
+			foreach( $bgList[$expID] as $bgInfo ) {
+				$selectOptions[$bgInfo->file_id] = $bgInfo->file_name;
+			}
+		}
+		
+		$view = "blocks" . DS . "ORCASelect.tpl";
+		if( $forToolbar ) {
+			$view = "blocks" . DS . "ORCADataTableToolbarSelect.tpl";
+		}
+		
+		$select = $this->twig->render( $view, array(
+			"OPTIONS" => $selectOptions,
+			"SELECT_CLASS" => $selectClass
+		));
+		
+		return $select;
 		
 	}
 	
@@ -457,6 +540,20 @@ class FileHandler {
 
 		return round( $bytes, $precision ) . ' ' . $units[$pow]; 
 		
+	}
+	
+	/**
+	 * Fetch a toolbar with buttons only available when adding a view
+	 */
+	 
+	public function fetchFileToolbarForAddView( $expIDs ) {
+		$buttons = array( );
+		
+		$bgList = $this->buildBGList( array( "expIDs" => implode( "|", $expIDs )), false );
+		$selectList = $this->generateBGSelect( $bgList, 0, "pull-right col-lg-2 col-md-3 col-sm-4 col-xs-6", false, true );
+		$buttons[] = $selectList;
+		
+		return implode( "", $buttons );
 	}
 	
 	/**

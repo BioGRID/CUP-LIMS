@@ -28,16 +28,22 @@ class ViewHandler {
 	 * Insert a new view into the database if one with the same
 	 * options doesn't already exist and isn't out of date. 
 	 */
-	 
-	public function addView( $files, $typeID, $valueID ) {
+	
+	public function addView( $viewName, $viewDesc, $typeID, $valueID, $files ) {
+		
+		$fileSet = array( );
+		foreach( $files as $fileInfo ) {
+			$fileSet[$fileInfo['fileID']] = $fileInfo['backgroundID'];
+		}
 		
 		// Make sure files are always listed in the same order
-		sort( $files, SORT_NUMERIC );
+		ksort( $fileSet, SORT_NUMERIC );
+		$fileSet = json_encode( $fileSet );
 		
 		// See if one with the same parameters already exists
 		// and is new enough to not have been pruned
 		$stmt = $this->db->prepare( "SELECT view_id, view_code FROM " . DB_MAIN . ".views WHERE view_type_id=? AND view_value_id=? AND view_files=? AND view_status='active' LIMIT 1" );
-		$stmt->execute( array( $typeID, $valueID, implode( "|", $files ) ));
+		$stmt->execute( array( $typeID, $valueID, $fileSet ));
 		
 		// If it exists, return the view code and update
 		// the last viewed status
@@ -56,10 +62,42 @@ class ViewHandler {
 		// so we don't accidentally overlap onto other tables
 		$viewCode = uniqid( );
 		
-		$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".views VALUES( '0', ?, ?, ?, ?, ?, '0000-00-00 00:00:00', NOW( ), 'building', 'active', ? )" );
-		$stmt->execute( array( $viewCode, $typeID, $valueID, implode( "|", $files ), "summary", $_SESSION[SESSION_NAME]['ID'] ));
+		$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".views VALUES( '0', ?, ?, ?, ?, ?, ?, ?, '0000-00-00 00:00:00', NOW( ), 'building', 'active', ? )" );
+		$stmt->execute( array( $viewName, $viewDesc, $viewCode, $typeID, $valueID, $fileSet, "summary", $_SESSION[SESSION_NAME]['ID'] ));
 		return array( "ID" => $this->db->lastInsertId( ), "CODE" => $viewCode );
 		
+	}
+	
+	/**
+	 * Fetch list of View Types
+	 */
+	 
+	public function fetchViewTypes( ) {
+		$stmt = $this->db->prepare( "SELECT view_type_id, view_type_name FROM " . DB_MAIN . ".view_types WHERE view_type_status='active' ORDER BY view_type_name ASC" );
+		$stmt->execute( );
+		
+		$viewTypes = array( );
+		while( $row = $stmt->fetch( PDO::FETCH_OBJ )) {
+			$viewTypes[$row->view_type_id] = $row->view_type_name;
+		}
+		
+		return $viewTypes;
+	}
+	
+	/**
+	 * Fetch list of View Values
+	 */
+	 
+	public function fetchViewValues( ) {
+		$stmt = $this->db->prepare( "SELECT view_value_id, view_value_name FROM " . DB_MAIN . ".view_values WHERE view_value_status='active' ORDER BY view_value_name ASC" );
+		$stmt->execute( );
+		
+		$viewValues = array( );
+		while( $row = $stmt->fetch( PDO::FETCH_OBJ )) {
+			$viewValues[$row->view_value_id] = $row->view_value_name;
+		}
+		
+		return $viewValues;
 	}
 	
 	/** 

@@ -43,6 +43,77 @@ class ViewController extends lib\Controller {
 	}
 	
 	/**
+	 * Create
+	 * Tools to create a new view and select the appropriate
+	 * configuration parameters to generate it
+	 */
+	 
+	public function Create( ) {
+		
+		lib\Session::canAccess( lib\Session::getPermission( 'CREATE VIEW' ));
+		
+		// If we're not passed an ID, show 404
+		if( !isset( $_GET['expIDs'] )) {
+			lib\Session::sendPageNotFound( );
+		}
+		
+		$expIDs = explode( "|", $_GET['expIDs'] );
+		
+		// Add some Manage Permissions Specific JS
+		$addonJS = $this->footerParams->get( 'ADDON_JS' );
+		$addonJS[] = "jquery.qtip.min.js";
+		$addonJS[] = "formValidation/formValidation.min.js";
+		$addonJS[] = "formValidation/bootstrap.min.js";
+		$addonJS[] = "jquery.dataTables.js";
+		$addonJS[] = "dataTables.bootstrap.js";
+		$addonJS[] = "alertify.min.js";
+		$addonJS[] = "orca-dataTableBlock.js";
+		$addonJS[] = "view/orca-view-create.js";
+		
+		// Add some Manager Permissions Specific CSS
+		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );
+		$addonCSS[] = "jquery.qtip.min.css";
+		$addonCSS[] = "formValidation/formValidation.min.css";
+		$addonCSS[] = "dataTables.bootstrap.css";
+		$addonCSS[] = "alertify.min.css";
+		$addonCSS[] = "alertify-bootstrap.min.css";
+		
+		$this->headerParams->set( 'ADDON_CSS', $addonCSS );
+		$this->footerParams->set( 'ADDON_JS', $addonJS );
+		
+		// Fetch requirements for building the file listing
+		$fileHandler = new models\FileHandler( );
+		$fileCount = $fileHandler->fetchFileCount( $expIDs, false );
+		$buttons = $fileHandler->fetchFileToolbarForAddView( $expIDs );
+		$showFiles = true;
+		
+		// Fetch View Lists for Building Form
+		$viewHandler = new models\ViewHandler( );
+		$viewTypes = $viewHandler->fetchViewTypes( );
+		$viewValues = $viewHandler->fetchViewValues( );
+		
+		
+		$params = array(
+			"WEB_URL" => WEB_URL,
+			"IMG_URL" => IMG_URL,
+			"TABLE_TITLE" => "Select Files and Backgrounds for View",
+			"ROW_COUNT" => $fileCount,
+			"SHOW_TOOLBAR" => true,
+			"INCLUDE_BG" => "false",
+			"SHOW_FILES" => $showFiles,
+			"VIEW_TYPES" => $viewTypes,
+			"VIEW_VALUES" => $viewValues,
+			"BUTTONS" => $buttons
+		);
+		
+		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/View/Create' />" );
+		$this->headerParams->set( "TITLE", "Create View | " . CONFIG['WEB']['WEB_NAME'] );
+		
+		$this->renderView( "view" . DS . "ViewCreate.tpl", $params, false );
+		
+	}
+	
+	/**
 	 * Matrix
 	 * This view generates a jquery datatable that presents an NxN Matrix
 	 * where summary genes make up the Y axis and individual files make up the 
