@@ -22,6 +22,7 @@
 			hasToolbar: true,
 			optionsCallback: function( datatable ) {
 				initializeViewFilesButton( );
+				initializeCreateViewButton( );
 				initializeDisableCheckedExperimentsButton( datatable );
 			}
 		});
@@ -46,6 +47,31 @@
 				window.location = baseURL + "Files?expIDs=" + expIDs.join( "|" );
 			} else {
 				alertify.alert( "No Experiments Selected", "Please check the box next to one or more experiments before clicking view files" );
+			}
+			
+		});
+		
+	}
+	
+	/**
+	 * Setup the functionality for creating a view 
+	 */
+	 
+	function initializeCreateViewButton( ) {
+		
+		$(".datatableBlock").on( "click", ".experimentCreateViewBtn", function( ) {
+			
+			var table = $(this).closest( ".orcaDataTableTools" ).find( ".orcaDataTable" );
+			var expIDs = [];
+			table.find( ".orcaDataTableRowCheck:checked" ).each( function( ) {
+				expIDs.push( $(this).val( ) );
+			});
+
+			if( expIDs.length ) {
+				console.log( baseURL + "View/Create?expIDs=" + expIDs.join( "|" ) );
+				window.location = baseURL + "View/Create?expIDs=" + expIDs.join( "|" );
+			} else {
+				alertify.alert( "No Experiments Selected", "Please check the box next to one or more experiments before clicking create view" );
 			}
 			
 		});

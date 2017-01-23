@@ -82,7 +82,11 @@ if( isset( $postData['tool'] ) ) {
 		// Datatable with correct options
 		case 'filesHeader' :
 			$fileHandler = new models\FileHandler( );
-			$fileHeader = $fileHandler->fetchFilesViewColumnDefinitions( );
+			$showBGSelect = false;
+			if( isset( $postData['showBGSelect'] ) && $postData['showBGSelect'] == "true" ) {
+				$showBGSelect = true;
+			}
+			$fileHeader = $fileHandler->fetchFilesViewColumnDefinitions( $showBGSelect );
 			echo json_encode( $fileHeader );
 			break;
 			

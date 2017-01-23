@@ -32,11 +32,47 @@
 			addonParams: { "expIDs" : expIDs, "includeBG" : includeBG },
 			optionsCallback: function( datatable ) {
 				initializeOptionPopups( );
+				initializeFilesButtons( );
 			}
 		});
 	});
 	
-		/**
+	/**
+	 * Setup Buttons on the files Toolbar
+	 */
+	 
+	function initializeFilesButtons( ) {
+		initializeViewFilesButtons( );
+	}
+	
+	/**
+	 * Setup the functionality for creating a view from selected files 
+	 */
+	 
+	function initializeViewFilesButtons( ) {
+		
+		$(".datatableBlock").on( "click", ".viewClick", function( ) {
+			
+			var type = $(this).data( "type" );
+			var values = $(this).data( "values" );
+			var table = $(this).closest( ".orcaDataTableTools" ).find( ".orcaDataTable" );
+			var fileIDs = [];
+			table.find( ".orcaDataTableRowCheck:checked" ).each( function( ) {
+				fileIDs.push( $(this).val( ) );
+			});
+
+			if( fileIDs.length ) {
+				console.log( baseURL + "View?fileIDs=" + fileIDs.join( "|" ) + "&type=" + type + "&values=" + values );
+				window.location = baseURL + "View?fileIDs=" + fileIDs.join( "|" ) + "&type=" + type + "&values=" + values;
+			} else {
+				alertify.alert( "No Files Selected", "Please check the box next to one or more files before clicking on an available view option" );
+			}
+			
+		});
+		
+	}
+	
+	/**
 	 * Setup tooltips for the options in the options column
 	 */
 	 

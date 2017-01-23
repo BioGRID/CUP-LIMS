@@ -150,7 +150,13 @@ class ExperimentHandler {
 			$column[] = $expInfo->cell_line_name;
 			$column[] = $expInfo->experiment_rundate;
 			$column[] = $expInfo->experiment_filecount;
-			$column[] = $expInfo->experiment_filestate;
+			
+			if( $expInfo->experiment_filestate == "loaded" ) {
+				$column[] = "<strong><span class='text-success'>" . $expInfo->experiment_filestate . " <i class='fa fa-check'></i></span> [<a href='" . WEB_URL . "/FileProgress?expID=" . $expID . "' title='" . $expInfo->experiment_name . " File State'>view</a>]</strong>";
+			} else {
+				$column[] = "<strong><span class='text-danger'><a href='" . WEB_URL . "/FileProgress?expID=" . $expID . "' title='" . $expInfo->experiment_name . " File State'>" . $expInfo->experiment_filestate . " <i class='fa fa-spin fa-spinner'></i></a></span></strong>";
+			} 
+			
 			$column[] = $expInfo->user_name;
 			$rows[] = $column;
 		}
@@ -279,6 +285,17 @@ class ExperimentHandler {
 			));
 		}
 		
+		if( lib\Session::validateCredentials( lib\Session::getPermission( 'CREATE VIEW' )) ) {
+			$view = "blocks" . DS . "ORCADataTableToolbarButton.tpl";
+			$buttons[] = $this->twig->render( $view, array( 
+				"BTN_CLASS" => "btn-orca2 experimentCreateViewBtn",
+				"BTN_LINK" => "",
+				"BTN_ID" => "experimentCreateViewBtn",
+				"BTN_ICON" => "fa-bar-chart",
+				"BTN_TEXT" => "Create View"
+			));
+		}
+		
 		if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE EXPERIMENTS' )) ) {
 			$view = "blocks" . DS . "ORCADataTableToolbarDropdown.tpl";
 			$buttons[] = $this->twig->render( $view, array(
@@ -304,6 +321,44 @@ class ExperimentHandler {
 		$querySet = array_fill( 0, sizeof( $expIDs ), "?" );
 		$stmt = $this->db->prepare( "UPDATE " . DB_MAIN . ".experiments SET experiment_status='inactive' WHERE experiment_id IN (" . implode( ",", $querySet ) . ")" );
 		$stmt->execute( $expIDs );
+		
+	}
+	
+	/**
+	 * Fetch formatted experiment format details
+	 */
+	 
+	public function fetchFormattedExperimentDetails( $expInfo ) {
+	
+		// Setup data to display
+		$expDetails = array( );
+		$expDetails[] = array( "HEADER" => "ID", "BODY" => $expInfo->experiment_id, "ID" => "experiment_id", "SIZE" => "third" );
+		$expDetails[] = array( "HEADER" => "Name", "BODY" => $expInfo->experiment_name, "ID" => "experiment_name", "SIZE" => "twothird" );
+		$expDetails[] = array( "HEADER" => "Description", "BODY" => $expInfo->experiment_desc, "ID" => "experiment_desc" );
+
+		$cellLineInfo = $this->fetchCellLine( $expInfo->experiment_cellline );
+		$cellLine = "-";
+		if( $cellLineInfo ) {
+			$cellLine = $cellLineInfo->cell_line_name;
+		}
+
+		$expDetails[] = array( "HEADER" => "Cell Line", "BODY" => $cellLine, "ID" => "experiment_cellline", "SIZE" => "third" );
+
+		$expDetails[] = array( "HEADER" => "Run Date", "BODY" => $expInfo->experiment_rundate, "ID" => "experiment_rundate", "SIZE" => "third" );
+		$expDetails[] = array( "HEADER" => "Uploaded Date", "BODY" => $expInfo->experiment_addeddate, "ID" => "experiment_addeddate", "SIZE" => "third" );
+		$expDetails[] = array( "HEADER" => "Files Uploaded", "BODY" => $expInfo->experiment_filecount, "ID" => "experiment_filecount", "SIZE" => "third" );
+		$expDetails[] = array( "HEADER" => "File State", "BODY" => $expInfo->experiment_filestate, "ID" => "experiment_filestate", "SIZE" => "third" );
+
+		$user = "-";
+		$userHandler = new models\UserHandler( );
+		$userInfo = $userHandler->fetchUser( $expInfo->user_id );
+		if( $userInfo ) {
+			$user = $userInfo->user_firstname . " " . $userInfo->user_lastname . " (" . $userInfo->user_name . ")";
+		}
+
+		$expDetails[] = array( "HEADER" => "Uploading User", "BODY" => $user, "ID" => "user_id", "SIZE" => "third" );
+		
+		return $expDetails;
 		
 	}
 }

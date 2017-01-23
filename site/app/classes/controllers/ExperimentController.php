@@ -68,7 +68,7 @@ class ExperimentController extends lib\Controller {
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
-			"TABLE_TITLE" => "Loaded Experiments",
+			"TABLE_TITLE" => "Experiment List",
 			"ROW_COUNT" => $expCount,
 			"WEB_NAME_ABBR" => CONFIG['WEB']['WEB_NAME_ABBR'],
 			"UPLOAD_VALID" => $isMember,
@@ -92,13 +92,7 @@ class ExperimentController extends lib\Controller {
 	public function View( ) {
 		
 		lib\Session::canAccess( lib\Session::getPermission( 'VIEW EXPERIMENTS' ));
-		
-		// Add the files JS so we can display the files table
-		$addonJS = $this->footerParams->get( 'ADDON_JS' );
-		$addonJS[] = "orca-files.js";
-		
-		$this->footerParams->set( 'ADDON_JS', $addonJS );
-		
+	
 		// If we're not passed an ID, show 404
 		if( !isset( $_GET['id'] ) || !is_numeric( $_GET['id'] )) {
 			lib\Session::sendPageNotFound( );
@@ -113,33 +107,22 @@ class ExperimentController extends lib\Controller {
 			lib\Session::sendPageNotFound( );
 		}
 		
-		// Setup data to display
-		$expDetails = array( );
-		$expDetails[] = array( "HEADER" => "ID", "BODY" => $expInfo->experiment_id, "ID" => "experiment_id", "SIZE" => "third" );
-		$expDetails[] = array( "HEADER" => "Name", "BODY" => $expInfo->experiment_name, "ID" => "experiment_name", "SIZE" => "twothird" );
-		$expDetails[] = array( "HEADER" => "Description", "BODY" => $expInfo->experiment_desc, "ID" => "experiment_desc" );
+		// Get a set of experiment fields to display
+		$expDetails = $expHandler->fetchFormattedExperimentDetails( $expInfo );
 		
-		$cellLineInfo = $expHandler->fetchCellLine( $expInfo->experiment_cellline );
-		$cellLine = "-";
-		if( $cellLineInfo ) {
-			$cellLine = $cellLineInfo->cell_line_name;
-		}
+		$showFiles = false;
+		if( lib\Session::validateCredentials( lib\Session::getPermission( 'VIEW FILES' )) ) {
+			// Fetch requirements for building the file listing
+			$fileHandler = new models\FileHandler( );
+			$fileCount = $fileHandler->fetchFileCount( array( $_GET['id'] ), true );
+			$showFiles = true;
 			
-		$expDetails[] = array( "HEADER" => "Cell Line", "BODY" => $cellLine, "ID" => "experiment_cellline", "SIZE" => "third" );
+			// Add the files JS so we can display the files table
+			$addonJS = $this->footerParams->get( 'ADDON_JS' );
+			$addonJS[] = "orca-files.js";
 			
-		$expDetails[] = array( "HEADER" => "Run Date", "BODY" => $expInfo->experiment_rundate, "ID" => "experiment_rundate", "SIZE" => "third" );
-		$expDetails[] = array( "HEADER" => "Uploaded Date", "BODY" => $expInfo->experiment_addeddate, "ID" => "experiment_addeddate", "SIZE" => "third" );
-		$expDetails[] = array( "HEADER" => "Files Uploaded", "BODY" => $expInfo->experiment_filecount, "ID" => "experiment_filecount", "SIZE" => "third" );
-		$expDetails[] = array( "HEADER" => "File State", "BODY" => $expInfo->experiment_filestate, "ID" => "experiment_filestate", "SIZE" => "third" );
-		
-		$user = "-";
-		$userHandler = new models\UserHandler( );
-		$userInfo = $userHandler->fetchUser( $expInfo->user_id );
-		if( $userInfo ) {
-			$user = $userInfo->user_firstname . " " . $userInfo->user_lastname . " (" . $userInfo->user_name . ")";
+			$this->footerParams->set( 'ADDON_JS', $addonJS );
 		}
-		
-		$expDetails[] = array( "HEADER" => "Uploading User", "BODY" => $user, "ID" => "user_id", "SIZE" => "third" );
 				
 		$params = array(
 			"WEB_URL" => WEB_URL,
@@ -149,10 +132,14 @@ class ExperimentController extends lib\Controller {
 			"EXPERIMENT_NAME" => $expInfo->experiment_name,
 			"EXPERIMENT_ID" => $expInfo->experiment_id,
 			"DETAILS" => $expDetails,
-			"ROW_COUNT" => 10,
+			"ROW_COUNT" => $fileCount,
 			"WEB_NAME_ABBR" => CONFIG['WEB']['WEB_NAME_ABBR'],
-			"SHOW_TOOLBAR" => true,
-			"BUTTONS" => array( )
+			"SHOW_TOOLBAR" => false,
+			"EXP_IDS" => $_GET['id'],
+			"INCLUDE_BG" => "true",
+			"TABLE_TITLE" => "Raw File List",
+			"BUTTONS" => array( ),
+			"SHOW_FILES" => $showFiles
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Experiment' />" );
