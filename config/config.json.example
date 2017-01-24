@@ -5,7 +5,8 @@
         "DB_PORT"                       : "DATABSE PORT",
         "DB_PASS"                       : "DATABASE PASSWORD",
         "DB_QUICK"                      : "DATABASE FOR QUICK ANNOTATION",
-        "DB_ORCA"                       : "DATABASE FOR ORCA"
+        "DB_ORCA"                       : "DATABASE FOR ORCA",
+		"DB_ORCA_VIEWS"                 : "DATABASE FOR ORCA GENERATED VIEWS"
     },
     
     "WEB" : {

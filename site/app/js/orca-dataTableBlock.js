@@ -18,7 +18,8 @@
 		
 		base.data = { 
 			id: base.$el.attr( "id" ),
-			baseURL: $("head base").attr( "href" )
+			baseURL: $("head base").attr( "href" ),
+			checkedBoxes: { }
 		};
 		
 		/**
@@ -100,6 +101,17 @@
 				});
 			}
 			
+			// Setup storage of checked boxes
+			base.components.table.on( "change", ".orcaDataTableRowCheck", function( ) {
+				if( $(this).prop( "checked" ) ) {
+					console.log( "TRUE" );
+					base.data.checkedBoxes[$(this).val( )] = true;
+				} else {
+					console.log( "FALSE" );
+					base.data.checkedBoxes[$(this).val( )] = false;
+				}
+			});
+			
 		};
 		
 		/**
@@ -127,6 +139,7 @@
 						data: function( d ) {  
 							d.tool = base.options.rowTool;
 							d.totalRecords = base.components.tableRowCount.val( );
+							d.checkedBoxes = base.data.checkedBoxes;
 							$.extend( d, base.options.addonParams );
 							d.expData = JSON.stringify( d );
 						}
@@ -161,7 +174,7 @@
 			base.components.table.find( ".orcaDataTableRowCheck" ).prop( "checked", propVal );
 			base.components.toolbar.find( ".orcaDataTableCheckAll" ).attr( "data-status", statusText );
 		}
-	
+		
 		base.init( );
 	
 	};

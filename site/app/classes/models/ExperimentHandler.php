@@ -144,7 +144,18 @@ class ExperimentHandler {
 		$rows = array( );
 		foreach( $expList as $expID => $expInfo ) {
 			$column = array( );
-			$column[] = "<input type='checkbox' class='orcaDataTableRowCheck' value='" . $expID . "' />";
+			
+			$checkedBoxes = array( );
+			if( isset( $params['checkedBoxes'] )) {
+				$checkedBoxes = $params['checkedBoxes'];
+			}
+			
+			if( isset( $checkedBoxes[$expID] ) && $checkedBoxes[$expID] ) {
+				$column[] = "<input type='checkbox' class='orcaDataTableRowCheck' value='" . $expID . "' checked />";
+			} else {
+				$column[] = "<input type='checkbox' class='orcaDataTableRowCheck' value='" . $expID . "' />";
+			}
+			
 			$column[] = $expInfo->experiment_name;
 			$column[] = $expInfo->experiment_desc;
 			$column[] = $expInfo->cell_line_name;

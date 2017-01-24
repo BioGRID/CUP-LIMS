@@ -61,9 +61,10 @@ class ViewHandler {
 		// a unique name for the table
 		// so we don't accidentally overlap onto other tables
 		$viewCode = uniqid( );
+		$emptyArray = json_encode( array( ) );
 		
-		$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".views VALUES( '0', ?, ?, ?, ?, ?, ?, ?, '0000-00-00 00:00:00', NOW( ), 'building', 'active', ? )" );
-		$stmt->execute( array( $viewName, $viewDesc, $viewCode, $typeID, $valueID, $fileSet, "summary", $_SESSION[SESSION_NAME]['ID'] ));
+		$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".views VALUES( '0', ?, ?, ?, ?, ?, ?, ?, '0000-00-00 00:00:00', NOW( ), 'building', 'active', ?, ?, ? )" );
+		$stmt->execute( array( $viewName, $viewDesc, $viewCode, $typeID, $valueID, $fileSet, "summary", $emptyArray, $emptyArray, $_SESSION[SESSION_NAME]['ID'] ));
 		return array( "ID" => $this->db->lastInsertId( ), "CODE" => $viewCode );
 		
 	}

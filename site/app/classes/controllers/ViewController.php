@@ -90,7 +90,6 @@ class ViewController extends lib\Controller {
 		$viewTypes = $viewHandler->fetchViewTypes( );
 		$viewValues = $viewHandler->fetchViewValues( );
 		
-		
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
@@ -101,6 +100,7 @@ class ViewController extends lib\Controller {
 			"SHOW_FILES" => $showFiles,
 			"VIEW_TYPES" => $viewTypes,
 			"VIEW_VALUES" => $viewValues,
+			"EXP_IDS" => implode( "|", $expIDs ),
 			"BUTTONS" => $buttons
 		);
 		

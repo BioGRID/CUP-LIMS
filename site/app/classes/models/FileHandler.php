@@ -314,8 +314,17 @@ class FileHandler {
 		foreach( $fileList as $fileID => $fileInfo ) {
 			$column = array( );
 			
+			$checkedBoxes = array( );
+			if( isset( $params['checkedBoxes'] )) {
+				$checkedBoxes = $params['checkedBoxes'];
+			}
+			
 			if( $fileInfo->file_state == "parsed" ) {
-				$column[] = "<input type='checkbox' class='orcaDataTableRowCheck' value='" . $fileID . "' />";
+				if( isset( $checkedBoxes[$fileID] ) && $checkedBoxes[$fileID] ) {
+					$column[] = "<input type='checkbox' class='orcaDataTableRowCheck' value='" . $fileID . "' checked />";
+				} else {
+					$column[] = "<input type='checkbox' class='orcaDataTableRowCheck' value='" . $fileID . "' />";
+				}
 			} else {
 				$column[] = "";
 			}
@@ -360,14 +369,34 @@ class FileHandler {
 	 
 	private function generateBGSelect( $bgList, $expID, $selectClass = "", $skipAll = false, $forToolbar = false ) {
 		$selectOptions = array( );
-		if( !$skipAll ) {
-			$selectOptions['ALL'] = "ALL Backgrounds";
-		}
 		
 		if( isset( $bgList[$expID] )) {
+			
+			$allList = array( );
+			$nameTest = array( );
 			foreach( $bgList[$expID] as $bgInfo ) {
-				$selectOptions[$bgInfo->file_id] = $bgInfo->file_name;
+				
+				$addOption = true;
+				if( $forToolbar ) {
+					if( isset( $nameTest[$bgInfo->file_name] ) ) {
+						$addOption = false;
+					} else {
+						$nameTest[$bgInfo->file_name] = "";
+					}
+				}
+				
+				if( $addOption ) {
+					$selectOptions[$bgInfo->file_id] = array( "SELECTED" => "", "NAME" => $bgInfo->file_name );
+				}
+				$allList[] = $bgInfo->file_id;
 			}
+			
+			if( !$skipAll && sizeof( $bgList[$expID] ) > 1 ) {
+				$selectOptions[implode( "|", $allList )] = array( "SELECTED" => "selected", "NAME" => "ALL Backgrounds" );;
+			}
+			
+		} else {
+			$selectOptions["0"] = array( "SELECTED" => "", "NAME" => "No Backgrounds" );
 		}
 		
 		$view = "blocks" . DS . "ORCASelect.tpl";
