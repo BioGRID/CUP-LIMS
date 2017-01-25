@@ -34,14 +34,38 @@ class Lookups( ) :
 			
 		return mapping
 		
-	def buildSGRNAToGeneHash( self ) :
+	def buildSGRNAGroupHash( self ) :
+	
+		mapping = { }
+		self.cursor.execute( "SELECT sgrna_group_id, sgrna_group_reference, sgrna_group_reference_type FROM " + Config.DB_MAIN + ".sgRNA_groups" )
+		
+		for row in self.cursor.fetchall( ) :
+			mapping[str(row['sgrna_group_id'])] = row
+			
+		return mapping
+		
+	def buildSGRNAIDtoSGRNAGroupHash( self ) :
 	
 		"""Build a set of sgRNAs mapped to gene IDs"""
 		
 		mapping = { }
-		self.cursor.execute( "SELECT sgrna_id, sgrna_identifier_value FROM " + Config.DB_MAIN + ".sgRNA_identifiers WHERE sgrna_identifier_type='BioGRID Gene ID'" )
+		self.cursor.execute( "SELECT sgrna_id, sgrna_group_id FROM " + Config.DB_MAIN + ".sgRNA_group_mappings WHERE sgrna_group_mapping_status='active'" )
 		
 		for row in self.cursor.fetchall( ) :
-			mapping[str(row['sgrna_id'])] = str(row['sgrna_identifier_value'])
+			mapping[str(row['sgrna_id'])] = str(row['sgrna_group_id'])
 			
 		return mapping
+		
+	def buildFileHash( self, fileIDs ) :
+		"""Build a set of file details indexed by file ID"""
+		formatFileIDs = ','.join( ['%s'] * len( fileIDs ))
+		query = "SELECT * FROM " + Config.DB_MAIN + ".files WHERE file_id IN (%s)"
+		query = query % formatFileIDs
+		self.cursor.execute( query, tuple( fileIDs ))
+		
+		files = { }
+		for row in self.cursor.fetchall( ) :
+			files[str(row['file_id'])] = row
+			
+		return files
+		
