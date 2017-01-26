@@ -18,6 +18,7 @@ class ViewGenerator( ) :
 		self.lookups = Lookups.Lookups( self.db )
 		self.sgRNAToGroup = self.lookups.buildSGRNAIDtoSGRNAGroupHash( )
 		self.sgRNAGroups = self.lookups.buildSGRNAGroupHash( )
+		self.sgRNAGroupToBioGRID = self.lookups.buildGroupIDToBioGRIDAnnotation( )
 		self.matrixView = None
 		self.rawData = RawDataHandler.RawDataHandler( self.db )
 	
@@ -48,23 +49,24 @@ class ViewGenerator( ) :
 				self.rawData.loadRawData( allFiles )
 		
 				# View Type 1 is a Matrix View
+				viewDetails = { }
 				if str(view['view_type_id']) == "1" :
 					self.buildMatrixView( view, fileMap, allFiles )
-					print "MATRIX VIEW"
 				else :
 					# Unknown View Type, Do Nothing, Leave it Queued
 					continue
 					
-			#self.updateViewState( view['view_id'], 'complete' )
+			self.updateViewState( view['view_id'], 'complete' )
 			
 	def buildMatrixView( self, view, fileMap, allFiles ) :
 	
 		"""Create a matrix view using the appropriate classes"""
 		if self.matrixView == None :
-			self.matrixView = MatrixView.MatrixView( self.db, self.sgRNAToGroup, self.sgRNAGroups )
+			self.matrixView = MatrixView.MatrixView( self.db, self.sgRNAToGroup, self.sgRNAGroups, self.sgRNAGroupToBioGRID )
 		
 		fileHash = self.lookups.buildFileHash( allFiles )
-		self.matrixView.build( view, fileMap, self.rawData, fileHash )
+		viewDetails = self.matrixView.build( view, fileMap, self.rawData, fileHash )
+		self.updateViewDetails( view['view_id'], viewDetails )
 			
 	def viewExists( self, viewCode ) :
 		"""Test to see if a view already exists as a table"""
@@ -79,6 +81,12 @@ class ViewGenerator( ) :
 		"""Change the state of a given view"""
 		with self.db as cursor :
 			cursor.execute( "UPDATE " + Config.DB_MAIN + ".views SET view_state=%s WHERE view_id=%s", [viewState, viewID] )
+			self.db.commit( )
+			
+	def updateViewDetails( self, viewID, viewDetails ) :
+		"""Change the details of a given view"""
+		with self.db as cursor :
+			cursor.execute( "UPDATE " + Config.DB_MAIN + ".views SET view_details=%s WHERE view_id=%s", [json.dumps(viewDetails), viewID] )
 			self.db.commit( )
 		
 	def fetchQueuedViews( self ) :

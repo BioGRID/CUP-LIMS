@@ -56,6 +56,16 @@ class Lookups( ) :
 			
 		return mapping
 		
+	def buildGroupIDToBioGRIDAnnotation( self ) :
+		"""Build a quick lookup of BioGRID annotation for groups with a BioGRID ID reference"""
+		mapping = { }
+		self.cursor.execute( "SELECT o.sgrna_group_id, o.sgrna_group_reference, p.systematic_name, p.official_symbol, p.aliases, p.definition, p.organism_id, p.organism_common_name, p.organism_official_name, p.organism_abbreviation, p.organism_strain FROM " + Config.DB_MAIN + ".sgRNA_groups o LEFT JOIN " + Config.DB_QUICK + ".quick_annotation p ON (o.sgrna_group_reference=p.gene_id) WHERE o.sgrna_group_reference_type='BIOGRID'" )
+		
+		for row in self.cursor.fetchall( ) :
+			mapping[str(row['sgrna_group_id'])] = row
+			
+		return mapping
+		
 	def buildFileHash( self, fileIDs ) :
 		"""Build a set of file details indexed by file ID"""
 		formatFileIDs = ','.join( ['%s'] * len( fileIDs ))

@@ -32,8 +32,22 @@ class ViewController extends lib\Controller {
 	 
 	public function Index( ) {
 		
-		if( isset( $_GET['viewID'] )) {
-			echo "VIEWING!";
+		lib\Session::canAccess( lib\Session::getPermission( 'VIEW VIEW' ));
+		
+		if( isset( $_GET['viewID'] ) && is_numeric( $_GET['viewID'] )) {
+			$viewHandler = new models\ViewHandler( );
+			$view = $viewHandler->fetchView( $_GET['viewID'] );
+			
+			if( $view ) {
+				// View Type 1 is a Matrix View
+				if( $view->view_type_id == "1" ) {
+					$this->Matrix( );
+				}
+			} else {
+				// Can't find the view specified by this ID
+				lib\Session::sendPageNotFound( );
+			}
+			
 		} else {
 			lib\Session::sendPageNotFound( );
 		}
@@ -120,10 +134,10 @@ class ViewController extends lib\Controller {
 	
 	public function Matrix( ) {
 		
-		lib\Session::canAccess( lib\Session::getPermission( 'CREATE VIEW' ));
+		lib\Session::canAccess( lib\Session::getPermission( 'VIEW VIEW' ));
 		
 		// If we're not passed a numeric values and a set of file ids, show 404
-		if( !isset( $_GET['fileIDs'] ) || !isset( $_GET['values'] ) || !is_numeric( $_GET['values'] )) {
+		if( !isset( $_GET['viewID'] ) || !is_numeric( $_GET['viewID'] )) {
 			lib\Session::sendPageNotFound( );
 		}
 		
@@ -133,7 +147,8 @@ class ViewController extends lib\Controller {
 		$addonJS[] = "dataTables.bootstrap.js";
 		$addonJS[] = "alertify.min.js";
 		$addonJS[] = "orca-dataTableBlock.js";
-		$addonJS[] = "view/orca-view-matrix.js";
+		$addonJS[] = "view/orca-view.js";
+		//$addonJS[] = "view/orca-view-matrix.js";
 		
 		// Add some Change Password Specific CSS
 		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );
@@ -144,19 +159,15 @@ class ViewController extends lib\Controller {
 		$this->headerParams->set( 'ADDON_CSS', $addonCSS );
 		$this->footerParams->set( 'ADDON_JS', $addonJS );
 		
-		$fileIDs = explode( "|", $_GET['fileIDs'] );
-		$values = $_GET['values'];
-		
 		$viewHandler = new models\ViewHandler( );
-		$viewInfo = $viewHandler->addView( $fileIDs, "1", $values );
-				 
+		$view = $viewHandler->fetchView( $_GET['viewID'] );		
+		
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
-			"VIEW_ID" => $viewInfo['ID'],
-			"VIEW_CODE" => $viewInfo['CODE'],
-			"PROGRESS_TITLE" => "Matrix View Generating...",
-			"PROGRESS_BODY" => "Your selected view is being generated. This process can sometimes take up to 5 minutes, based on complexity, so please be patient and <strong>do not leave this page</strong>. This progress indicator will be removed upon completed generation of the view."
+			"VIEW_ID" => $view->view_id,
+			"VIEW_CODE" => $view->view_code,
+			"VIEW_STATE" => $view->view_state
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Files' />" );

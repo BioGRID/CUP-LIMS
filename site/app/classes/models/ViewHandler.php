@@ -101,6 +101,22 @@ class ViewHandler {
 		return $viewValues;
 	}
 	
+	/**
+	 * Fetch view information out of the database
+	 */
+	 
+	public function fetchView( $viewID ) {
+		$stmt = $this->db->prepare( "SELECT * FROM " . DB_MAIN . ".views WHERE view_id=?" );
+		$stmt->execute( array( $viewID ) );
+		
+		if( $stmt->rowCount( ) > 0 ) {
+			$row = $stmt->fetch( PDO::FETCH_OBJ );
+			return $row;
+		}
+		
+		return false;
+	}
+	
 	/** 
 	 * Change the last viewed date for a view
 	 * the view_lastviewed parameter is used to determine

@@ -9,13 +9,14 @@ class MatrixView( ) :
 
 	"""Generate a matrix view table based on passed in parameters"""
 
-	def __init__( self, db, sgRNAToGroup, sgRNAGroups ) :
+	def __init__( self, db, sgRNAToGroup, sgRNAGroups, sgRNAGroupToBioGRID ) :
 		self.db = db
 		self.cursor = self.db.cursor( )
 		self.conditionReference = { }
 		self.conditionBlock = []
 		self.sgRNAToGroup = sgRNAToGroup
 		self.sgRNAGroups = sgRNAGroups
+		self.sgRNAGroupToBioGRID = sgRNAGroupToBioGRID
 		self.matrix = { }
 		self.logPad = 1
 		self.colCount = 12
@@ -45,6 +46,21 @@ class MatrixView( ) :
 			
 		# Collapse down conditions into mean values
 		self.processView( view )
+		
+		# Return reference details
+		referenceHash = self.buildReferenceHash( fileHash )
+		return referenceHash
+		
+	def buildReferenceHash( self, fileHash ) :
+		"""Create a lookup has that maps condition columns to the set of files that comprised it"""
+		referenceHash = { }
+		for fileRef, condName in self.conditionReference.items( ) :
+			fileInfo = fileRef.split( "|" )
+			file = fileHash[fileInfo[0]]
+			bgFile = fileHash[fileInfo[1]]
+			referenceHash[condName] = { "FILE" : { "ID" : file['file_id'], "NAME" : file['file_name'], "EXP_ID" : file['experiment_id'] }, "BG" : { "ID" : bgFile['file_id'], "NAME" : bgFile['file_name'], "EXP_ID" : bgFile['experiment_id'] } }
+		
+		return referenceHash
 	
 	def generateGroupSummary( self, view, fileID, backgroundID, rawData, fileHash ) :
 	
@@ -107,7 +123,11 @@ class MatrixView( ) :
 			groupInfo = self.sgRNAGroups[groupID]
 			
 			# Initialize with basic annotation data
-			row = [groupInfo['sgrna_group_id'], groupInfo['sgrna_group_reference'], groupInfo['sgrna_group_reference_type'], "-", "-", "-", "-", "0", "-", "-", "-", "-"]
+			if groupID in self.sgRNAGroupToBioGRID :
+				biogridAnn = self.sgRNAGroupToBioGRID[groupID]
+				row = [groupInfo['sgrna_group_id'], groupInfo['sgrna_group_reference'], groupInfo['sgrna_group_reference_type'], biogridAnn['official_symbol'], biogridAnn['systematic_name'], biogridAnn['aliases'], biogridAnn['definition'], biogridAnn['organism_id'], biogridAnn['organism_common_name'], biogridAnn['organism_official_name'], biogridAnn['organism_abbreviation'], biogridAnn['organism_strain']]
+			else :
+				row = [groupInfo['sgrna_group_id'], groupInfo['sgrna_group_reference'], groupInfo['sgrna_group_reference_type'], "-", "-", "-", "-", "0", "-", "-", "-", "-"]
 			
 			# Perform any remaining calculations on results
 			for conditionRef, conditionScores in conditions.items( ) :
@@ -163,11 +183,10 @@ class MatrixView( ) :
 			conditionCount = conditionCount + 1
 			
 		self.colCount = self.colCount + len(self.conditionBlock)
-		print self.conditionBlock
 		
 		query = query + ",".join( tableFields )
 		query = query + ",PRIMARY KEY (sgrna_group_id)"
-		query = query + ") ENGINE=MyISAM DEFAULT CHARSET=latin1;"
+		query = query + ") ENGINE=INNODB DEFAULT CHARSET=latin1;"
 		
 		self.cursor.execute( query )
 		
