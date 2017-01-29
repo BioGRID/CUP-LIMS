@@ -14,16 +14,7 @@
 
 	$(function( ) {
 		
-		var progressBox = alertify.alert( ).setting({
-			'message': $(".orcaViewProgressWrap").html( ),
-			'closable' : false,
-			'basic' : true,
-			'padding' : true,
-			'movable' : false,
-			'overflow' : true
-		}).show( );
-		
-		initializeView( progressBox );
+		console.log( "MATRIX BABY" );
 		
 	});
 	

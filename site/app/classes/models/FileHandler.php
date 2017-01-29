@@ -264,15 +264,26 @@ class FileHandler {
 	 
 	public function buildBGList( $params, $separated = false ) {
 		
+		$isExp = true;
+		if( isset( $params['type'] ) && $params['type'] == "file" ) {
+			$isExp = false;
+		}
+		
 		$query = "SELECT file_id, file_name, experiment_id FROM " . DB_MAIN . ".files WHERE file_status='active' AND file_isbackground='1'";
 		
 		$idSet = array( );
-		if( isset( $params['expIDs'] )) {
-			$idSet = explode( "|", $params['expIDs'] );
+		if( isset( $params['ids'] )) {
+			$idSet = explode( "|", $params['ids'] );
 			if( sizeof( $idSet ) > 0 ) {
-				$options = $idSet;
-				$varSet = array_fill( 0, sizeof( $idSet ), "?" );
-				$query .= " AND experiment_id IN (" . implode( ",", $varSet ) . ")";
+				if( $isExp ) {
+					$options = $idSet;
+					$varSet = array_fill( 0, sizeof( $idSet ), "?" );
+					$query .= " AND experiment_id IN (" . implode( ",", $varSet ) . ")";
+				} else {
+					$options = $idSet;
+					$varSet = array_fill( 0, sizeof( $idSet ), "?" );
+					$query .= " AND file_id IN (" . implode( ",", $varSet ) . ")";
+				}
 			}
 		}
 		
@@ -425,6 +436,11 @@ class FileHandler {
 			$includeBG = true;
 		}
 		
+		$isExp = true;
+		if( isset( $params['type'] ) && $params['type'] == "file" ) {
+			$isExp = false;
+		}
+		
 		$query = "SELECT ";
 		if( $countOnly ) {
 			$query .= " count(*) as rowCount";
@@ -445,12 +461,18 @@ class FileHandler {
 			$query .= " AND file_isbackground='0'";
 		}
 		
-		if( isset( $params['expIDs'] )) {
-			$idSet = explode( "|", $params['expIDs'] );
+		if( isset( $params['ids'] )) {
+			$idSet = explode( "|", $params['ids'] );
 			if( sizeof( $idSet ) > 0 ) {
-				$options = $idSet;
-				$varSet = array_fill( 0, sizeof( $idSet ), "?" );
-				$query .= " AND f.experiment_id IN (" . implode( ",", $varSet ) . ")";
+				if( $isExp ) {
+					$options = $idSet;
+					$varSet = array_fill( 0, sizeof( $idSet ), "?" );
+					$query .= " AND f.experiment_id IN (" . implode( ",", $varSet ) . ")";
+				} else {
+					$options = $idSet;
+					$varSet = array_fill( 0, sizeof( $idSet ), "?" );
+					$query .= " AND f.file_id IN (" . implode( ",", $varSet ) . ")";
+				}
 			}
 		}
 		
@@ -528,7 +550,7 @@ class FileHandler {
 	 * Get a count of all files available
 	 */
 	 
-	public function fetchFileCount( $expIDs, $includeBG = false ) {
+	public function fetchFileCount( $ids, $includeBG = false, $isExp = true ) {
 		
 		$query = "SELECT COUNT(*) as fileCount FROM " . DB_MAIN . ".files WHERE file_status='active'";
 
@@ -537,11 +559,17 @@ class FileHandler {
 		}
 		
 		$options = array( );
-		if( sizeof( $expIDs ) > 0 ) {
-			$options = $expIDs;
-			$varSet = array_fill( 0, sizeof( $options ), "?" );
-			$query .= " AND experiment_id IN (" . implode( ",", $varSet ) . ")";
-		}
+		if( sizeof( $ids ) > 0 ) {
+			if( $isExp ) {
+				$options = $ids;
+				$varSet = array_fill( 0, sizeof( $options ), "?" );
+				$query .= " AND experiment_id IN (" . implode( ",", $varSet ) . ")";
+			} else {
+				$options = $ids;
+				$varSet = array_fill( 0, sizeof( $options ), "?" );
+				$query .= " AND file_id IN (" . implode( ",", $varSet ) . ")";
+			}
+		} 
 		
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( $options );

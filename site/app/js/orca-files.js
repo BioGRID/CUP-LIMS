@@ -14,8 +14,9 @@
 
 	$(function( ) {
 		
-		var expIDs = $("#expIDs").val( );
+		var IDs = $("#ids").val( );
 		var incBG = $("#includeBG").val( );
+		var type = $("#type").val( ); 
 		
 		var includeBG = false;
 		if( incBG == "true" ) {
@@ -29,7 +30,7 @@
 			colTool: "filesHeader", 
 			rowTool: "filesRows", 
 			hasToolbar: true,
-			addonParams: { "expIDs" : expIDs, "includeBG" : includeBG },
+			addonParams: { "ids" : IDs, "includeBG" : includeBG, "type" : type },
 			optionsCallback: function( datatable ) {
 				initializeOptionPopups( );
 				initializeFilesButtons( );

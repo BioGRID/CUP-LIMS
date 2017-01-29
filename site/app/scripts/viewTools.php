@@ -44,6 +44,27 @@ if( isset( $postData['tool'] ) ) {
 			echo json_encode( $results );
 			break;
 			
+		// Disable a view in the database
+		case 'disableView' :
+			
+			$results = array( );
+			if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE VIEWS' )) && isset( $postData['views'] )) {
+			
+				if( sizeof( $postData['views'] ) > 0 ) {
+					$viewHandler = new models\ViewHandler( );
+					$viewHandler->disableViews( $postData['views'] );
+					$results = array( "STATUS" => "SUCCESS", "MESSAGE" => "Views successfully disabled" );
+				} else {
+					$results = array( "STATUS" => "ERROR", "MESSAGE" => "No view ids were specified. Nothing done..." );
+				}
+				
+			} else {
+				$results = array( "STATUS" => "ERROR", "MESSAGE" => "You do not have Valid Permission to Perform this Action" );
+			}
+				
+			echo json_encode( $results );
+			break;
+			
 	}
 }
 

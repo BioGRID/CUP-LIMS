@@ -32,7 +32,7 @@ class ViewController extends lib\Controller {
 	 
 	public function Index( ) {
 		
-		lib\Session::canAccess( lib\Session::getPermission( 'VIEW VIEW' ));
+		lib\Session::canAccess( lib\Session::getPermission( 'VIEW VIEWS' ));
 		
 		if( isset( $_GET['viewID'] ) && is_numeric( $_GET['viewID'] )) {
 			$viewHandler = new models\ViewHandler( );
@@ -49,8 +49,58 @@ class ViewController extends lib\Controller {
 			}
 			
 		} else {
-			lib\Session::sendPageNotFound( );
+			$this->Listing( );
 		}
+		
+	}
+	
+	/**
+	 * Listing
+	 * Generate a listing of views that are available for browsing
+	 */
+	 
+	public function Listing( ) {
+		
+		lib\Session::canAccess( lib\Session::getPermission( 'VIEW VIEWS' ));
+		
+		$addonJS = $this->footerParams->get( 'ADDON_JS' );
+		$addonJS[] = "jquery.qtip.min.js";
+		$addonJS[] = "jquery.dataTables.js";
+		$addonJS[] = "dataTables.bootstrap.js";
+		$addonJS[] = "alertify.min.js";
+		$addonJS[] = "orca-dataTableBlock.js";
+		$addonJS[] = "view/orca-view-listing.js";
+		
+		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );
+		$addonCSS[] = "jquery.qtip.min.css";
+		$addonCSS[] = "dataTables.bootstrap.css";
+		$addonCSS[] = "alertify.min.css";
+		$addonCSS[] = "alertify-bootstrap.min.css";
+		
+		$this->headerParams->set( 'ADDON_CSS', $addonCSS );
+		$this->footerParams->set( 'ADDON_JS', $addonJS );
+		
+		$canCreateView = lib\Session::validateCredentials( lib\Session::getPermission( 'CREATE VIEWS' ));
+		
+		$expHandler = new models\ViewHandler( );
+		$expCount = $expHandler->fetchViewCount( );
+		$buttons = $expHandler->fetchViewToolbar( );
+				
+		$params = array(
+			"WEB_URL" => WEB_URL,
+			"IMG_URL" => IMG_URL,
+			"TABLE_TITLE" => "Custom Views",
+			"ROW_COUNT" => $expCount,
+			"WEB_NAME_ABBR" => CONFIG['WEB']['WEB_NAME_ABBR'],
+			"VIEW_CREATE_VALID" => $canCreateView,
+			"SHOW_TOOLBAR" => true,
+			"BUTTONS" => $buttons
+		);
+		
+		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/View' />" );
+		$this->headerParams->set( "TITLE", "View Listing | " . CONFIG['WEB']['WEB_NAME'] );
+		
+		$this->renderView( "view" . DS . "ViewListing.tpl", $params, false );
 		
 	}
 	
@@ -62,7 +112,7 @@ class ViewController extends lib\Controller {
 	 
 	public function Create( ) {
 		
-		lib\Session::canAccess( lib\Session::getPermission( 'CREATE VIEW' ));
+		lib\Session::canAccess( lib\Session::getPermission( 'CREATE VIEWS' ));
 		
 		// If we're not passed an ID, show 404
 		if( !isset( $_GET['expIDs'] )) {
@@ -134,7 +184,7 @@ class ViewController extends lib\Controller {
 	
 	public function Matrix( ) {
 		
-		lib\Session::canAccess( lib\Session::getPermission( 'VIEW VIEW' ));
+		lib\Session::canAccess( lib\Session::getPermission( 'VIEW VIEWS' ));
 		
 		// If we're not passed a numeric values and a set of file ids, show 404
 		if( !isset( $_GET['viewID'] ) || !is_numeric( $_GET['viewID'] )) {

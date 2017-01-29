@@ -14,22 +14,19 @@
 
 	$(function( ) {
 		
-		var viewState = $("#viewState").val( );
+		var progressBox = alertify.alert( ).setting({
+			'message': $(".orcaViewProgressWrap").html( ),
+			'closable' : false,
+			'basic' : true,
+			'padding' : true,
+			'movable' : false,
+			'overflow' : true
+		}).show( );
 		
-		if( viewState == "building" ) {
-			var progressBox = alertify.alert( ).setting({
-				'message': $(".orcaViewProgressWrap").html( ),
-				'closable' : false,
-				'basic' : true,
-				'padding' : true,
-				'movable' : false,
-				'overflow' : true
-			}).show( );
-			
-			setInterval( function( ) {
-				window.location.reload( );
-			}, 30000 );
-		}
+		setInterval( function( ) {
+			window.location.reload( );
+		}, 30000 );
+		
 	});
 	
 }));

@@ -102,6 +102,26 @@ if( isset( $postData['tool'] ) ) {
 			echo json_encode( array( "draw" => $draw, "recordsTotal" => $postData['totalRecords'], "recordsFiltered" => $recordsFiltered, "data" => $fileRows ));
 			break;
 			
+		// Fetch the column header for the view listing
+		// Datatable with correct options
+		case 'viewHeader' :
+			$viewHandler = new models\ViewHandler( );
+			$viewHeader = $viewHandler->fetchViewColumnDefinitions( );
+			echo json_encode( $viewHeader );
+			break;
+		
+		// Fetch rows for the view listing
+		// tool for display in Datatables
+		case 'viewRows' :
+			$draw = $postData['draw'];
+			
+			$viewHandler = new models\ViewHandler( );
+			$viewRows = $viewHandler->buildViewRows( $postData );
+			$recordsFiltered = $viewHandler->getUnfilteredViewCount( $postData );
+			
+			echo json_encode( array( "draw" => $draw, "recordsTotal" => $postData['totalRecords'], "recordsFiltered" => $recordsFiltered, "data" => $viewRows ));
+			break;
+			
 	}
 }
 
