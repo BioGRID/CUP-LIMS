@@ -30,9 +30,6 @@
 				window.location.reload( );
 			}, 30000 );
 		}
-		
-		//initializeView( progressBox );
-		
 	});
 	
 }));

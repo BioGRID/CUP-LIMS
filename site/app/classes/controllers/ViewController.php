@@ -141,14 +141,21 @@ class ViewController extends lib\Controller {
 			lib\Session::sendPageNotFound( );
 		}
 		
+		$viewHandler = new models\ViewHandler( );
+		$view = $viewHandler->fetchView( $_GET['viewID'] );	
+		
 		// Add some Change Password Specific JS
 		$addonJS = $this->footerParams->get( 'ADDON_JS' );
 		$addonJS[] = "jquery.dataTables.js";
 		$addonJS[] = "dataTables.bootstrap.js";
 		$addonJS[] = "alertify.min.js";
 		$addonJS[] = "orca-dataTableBlock.js";
-		$addonJS[] = "view/orca-view.js";
-		//$addonJS[] = "view/orca-view-matrix.js";
+		
+		if( $view->view_state == "building" ) {
+			$addonJS[] = "view/orca-view.js";
+		} else {
+			$addonJS[] = "view/orca-view-matrix.js";
+		}
 		
 		// Add some Change Password Specific CSS
 		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );
@@ -158,9 +165,6 @@ class ViewController extends lib\Controller {
 		
 		$this->headerParams->set( 'ADDON_CSS', $addonCSS );
 		$this->footerParams->set( 'ADDON_JS', $addonJS );
-		
-		$viewHandler = new models\ViewHandler( );
-		$view = $viewHandler->fetchView( $_GET['viewID'] );		
 		
 		$params = array(
 			"WEB_URL" => WEB_URL,
