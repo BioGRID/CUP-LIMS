@@ -19,7 +19,9 @@ class MatrixView( ) :
 		self.sgRNAGroupToBioGRID = sgRNAGroupToBioGRID
 		self.matrix = { }
 		self.logPad = 1
-		self.colCount = 12
+		self.colCount = 13
+		self.max = 0
+		self.min = 0
 		
 	def build( self, view, fileMap, rawData, fileHash ) :
 		"""Create a matrix view table based on the view information passed in"""
@@ -48,7 +50,10 @@ class MatrixView( ) :
 		self.processView( view )
 		
 		# Return reference details
-		referenceHash = self.buildReferenceHash( fileHash )
+		referenceHash = { }
+		referenceHash['FILES'] = self.buildReferenceHash( fileHash )
+		referenceHash['MAX'] = self.max
+		referenceHash['MIN'] = self.min
 		return referenceHash
 		
 	def buildReferenceHash( self, fileHash ) :
@@ -121,19 +126,31 @@ class MatrixView( ) :
 		for groupID, conditions in self.matrix.items( ) :
 			conditionSet = { }
 			groupInfo = self.sgRNAGroups[groupID]
+			groupName = groupInfo['sgrna_group_reference']
 			
 			# Initialize with basic annotation data
 			if groupID in self.sgRNAGroupToBioGRID :
 				biogridAnn = self.sgRNAGroupToBioGRID[groupID]
-				row = [groupInfo['sgrna_group_id'], groupInfo['sgrna_group_reference'], groupInfo['sgrna_group_reference_type'], biogridAnn['official_symbol'], biogridAnn['systematic_name'], biogridAnn['aliases'], biogridAnn['definition'], biogridAnn['organism_id'], biogridAnn['organism_common_name'], biogridAnn['organism_official_name'], biogridAnn['organism_abbreviation'], biogridAnn['organism_strain']]
+				
+				if biogridAnn['official_symbol'] != "-" :
+					groupName = biogridAnn['official_symbol']
+				
+				row = [groupInfo['sgrna_group_id'], groupInfo['sgrna_group_reference'], groupInfo['sgrna_group_reference_type'], groupName, biogridAnn['official_symbol'], biogridAnn['systematic_name'], biogridAnn['aliases'], biogridAnn['definition'], biogridAnn['organism_id'], biogridAnn['organism_common_name'], biogridAnn['organism_official_name'], biogridAnn['organism_abbreviation'], biogridAnn['organism_strain']]
 			else :
-				row = [groupInfo['sgrna_group_id'], groupInfo['sgrna_group_reference'], groupInfo['sgrna_group_reference_type'], "-", "-", "-", "-", "0", "-", "-", "-", "-"]
+				row = [groupInfo['sgrna_group_id'], groupInfo['sgrna_group_reference'], groupInfo['sgrna_group_reference_type'], groupName, "-", "-", "-", "-", "0", "-", "-", "-", "-"]
 			
 			# Perform any remaining calculations on results
 			for conditionRef, conditionScores in conditions.items( ) :
 				# 1 is Log2FoldChange
 				if str(view['view_value_id']) == "1" :
 					collapsedValue = self.calculateMean( conditionScores )
+					
+					# Find the Max and Min for the entire view
+					if collapsedValue < self.min :
+						self.min = collapsedValue
+					elif collapsedValue > self.max :
+						self.max = collapsedValue
+						
 					conditionSet[conditionRef] = collapsedValue
 			
 			# Insert condition values in the correct ordering
@@ -165,6 +182,7 @@ class MatrixView( ) :
 		tableFields.append( "sgrna_group_id BIGINT(10) NOT NULL AUTO_INCREMENT" )
 		tableFields.append( "sgrna_group_reference VARCHAR(255) NOT NULL" )
 		tableFields.append( "sgrna_group_reference_type VARCHAR(255) NOT NULL" )
+		tableFields.append( "group_name VARCHAR(255) NOT NULL" )
 		tableFields.append( "official_symbol VARCHAR(255) NOT NULL" )
 		tableFields.append( "systematic_name VARCHAR(255) NOT NULL" )
 		tableFields.append( "aliases LONGTEXT NOT NULL" )
@@ -196,6 +214,7 @@ class MatrixView( ) :
 		tableIndexes = []
 		tableIndexes.append( "ADD KEY (sgrna_group_reference)" )
 		tableIndexes.append( "ADD KEY (sgrna_group_reference_type)" )
+		tableIndexes.append( "ADD KEY (group_name)" )
 		tableIndexes.append( "ADD KEY (official_symbol)" )
 		tableIndexes.append( "ADD KEY (systematic_name)" )
 		tableIndexes.append( "ADD KEY (organism_id)" )

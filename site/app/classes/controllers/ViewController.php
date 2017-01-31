@@ -194,24 +194,34 @@ class ViewController extends lib\Controller {
 		$viewHandler = new models\ViewHandler( );
 		$view = $viewHandler->fetchView( $_GET['viewID'] );	
 		
-		// Add some Change Password Specific JS
 		$addonJS = $this->footerParams->get( 'ADDON_JS' );
-		$addonJS[] = "jquery.dataTables.js";
-		$addonJS[] = "dataTables.bootstrap.js";
 		$addonJS[] = "alertify.min.js";
-		$addonJS[] = "orca-dataTableBlock.js";
 		
-		if( $view->view_state == "building" ) {
-			$addonJS[] = "view/orca-view.js";
-		} else {
-			$addonJS[] = "view/orca-view-matrix.js";
-		}
-		
-		// Add some Change Password Specific CSS
 		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );
-		$addonCSS[] = "dataTables.bootstrap.css";
 		$addonCSS[] = "alertify.min.css";
 		$addonCSS[] = "alertify-bootstrap.min.css";
+		
+		
+		$rowCount = 0;
+		$viewTpl = "";
+		if( $view->view_state == "building" ) {
+			$addonJS[] = "view/orca-view.js";
+			$viewTpl = "ViewBuilding.tpl";
+		} else {
+			
+			// Add some matrix view Specific JS
+			$addonJS[] = "jquery.dataTables.js";
+			$addonJS[] = "dataTables.bootstrap.js";
+			$addonJS[] = "orca-dataTableBlock.js";
+			$addonJS[] = "view/orca-view-matrix.js";
+			
+			// Add some matrix view Specific CSS
+			$addonCSS[] = "dataTables.bootstrap.css";
+			
+			$matrixHandler = new models\MatrixViewHandler( $_GET['viewID'] );
+			$rowCount = $matrixHandler->fetchRowCount( );
+			$viewTpl = "ViewMatrix.tpl";
+		}
 		
 		$this->headerParams->set( 'ADDON_CSS', $addonCSS );
 		$this->footerParams->set( 'ADDON_JS', $addonJS );
@@ -219,6 +229,9 @@ class ViewController extends lib\Controller {
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
+			"TABLE_TITLE" => "Matrix Dataset",
+			"ROW_COUNT" => $rowCount,
+			"DATATABLE_CLASS" => "matrixTable",
 			"VIEW_ID" => $view->view_id,
 			"VIEW_CODE" => $view->view_code,
 			"VIEW_STATE" => $view->view_state
@@ -227,7 +240,7 @@ class ViewController extends lib\Controller {
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Files' />" );
 		$this->headerParams->set( "TITLE", "View Files | " . CONFIG['WEB']['WEB_NAME'] );
 		
-		$this->renderView( "view" . DS . "ViewMatrix.tpl", $params, false );
+		$this->renderView( "view" . DS . $viewTpl, $params, false );
 				
 	}
 
