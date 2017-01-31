@@ -264,15 +264,26 @@ class FileHandler {
 	 
 	public function buildBGList( $params, $separated = false ) {
 		
+		$isExp = true;
+		if( isset( $params['type'] ) && $params['type'] == "file" ) {
+			$isExp = false;
+		}
+		
 		$query = "SELECT file_id, file_name, experiment_id FROM " . DB_MAIN . ".files WHERE file_status='active' AND file_isbackground='1'";
 		
 		$idSet = array( );
-		if( isset( $params['expIDs'] )) {
-			$idSet = explode( "|", $params['expIDs'] );
+		if( isset( $params['ids'] )) {
+			$idSet = explode( "|", $params['ids'] );
 			if( sizeof( $idSet ) > 0 ) {
-				$options = $idSet;
-				$varSet = array_fill( 0, sizeof( $idSet ), "?" );
-				$query .= " AND experiment_id IN (" . implode( ",", $varSet ) . ")";
+				if( $isExp ) {
+					$options = $idSet;
+					$varSet = array_fill( 0, sizeof( $idSet ), "?" );
+					$query .= " AND experiment_id IN (" . implode( ",", $varSet ) . ")";
+				} else {
+					$options = $idSet;
+					$varSet = array_fill( 0, sizeof( $idSet ), "?" );
+					$query .= " AND file_id IN (" . implode( ",", $varSet ) . ")";
+				}
 			}
 		}
 		
@@ -314,8 +325,17 @@ class FileHandler {
 		foreach( $fileList as $fileID => $fileInfo ) {
 			$column = array( );
 			
+			$checkedBoxes = array( );
+			if( isset( $params['checkedBoxes'] )) {
+				$checkedBoxes = $params['checkedBoxes'];
+			}
+			
 			if( $fileInfo->file_state == "parsed" ) {
-				$column[] = "<input type='checkbox' class='orcaDataTableRowCheck' value='" . $fileID . "' />";
+				if( isset( $checkedBoxes[$fileID] ) && $checkedBoxes[$fileID] ) {
+					$column[] = "<input type='checkbox' class='orcaDataTableRowCheck' value='" . $fileID . "' checked />";
+				} else {
+					$column[] = "<input type='checkbox' class='orcaDataTableRowCheck' value='" . $fileID . "' />";
+				}
 			} else {
 				$column[] = "";
 			}
@@ -360,14 +380,34 @@ class FileHandler {
 	 
 	private function generateBGSelect( $bgList, $expID, $selectClass = "", $skipAll = false, $forToolbar = false ) {
 		$selectOptions = array( );
-		if( !$skipAll ) {
-			$selectOptions['ALL'] = "ALL Backgrounds";
-		}
 		
 		if( isset( $bgList[$expID] )) {
+			
+			$allList = array( );
+			$nameTest = array( );
 			foreach( $bgList[$expID] as $bgInfo ) {
-				$selectOptions[$bgInfo->file_id] = $bgInfo->file_name;
+				
+				$addOption = true;
+				if( $forToolbar ) {
+					if( isset( $nameTest[$bgInfo->file_name] ) ) {
+						$addOption = false;
+					} else {
+						$nameTest[$bgInfo->file_name] = "";
+					}
+				}
+				
+				if( $addOption ) {
+					$selectOptions[$bgInfo->file_id] = array( "SELECTED" => "", "NAME" => $bgInfo->file_name );
+				}
+				$allList[] = $bgInfo->file_id;
 			}
+			
+			if( !$skipAll && sizeof( $bgList[$expID] ) > 1 ) {
+				$selectOptions[implode( "|", $allList )] = array( "SELECTED" => "selected", "NAME" => "ALL Backgrounds" );;
+			}
+			
+		} else {
+			$selectOptions["0"] = array( "SELECTED" => "", "NAME" => "No Backgrounds" );
 		}
 		
 		$view = "blocks" . DS . "ORCASelect.tpl";
@@ -396,6 +436,11 @@ class FileHandler {
 			$includeBG = true;
 		}
 		
+		$isExp = true;
+		if( isset( $params['type'] ) && $params['type'] == "file" ) {
+			$isExp = false;
+		}
+		
 		$query = "SELECT ";
 		if( $countOnly ) {
 			$query .= " count(*) as rowCount";
@@ -416,12 +461,18 @@ class FileHandler {
 			$query .= " AND file_isbackground='0'";
 		}
 		
-		if( isset( $params['expIDs'] )) {
-			$idSet = explode( "|", $params['expIDs'] );
+		if( isset( $params['ids'] )) {
+			$idSet = explode( "|", $params['ids'] );
 			if( sizeof( $idSet ) > 0 ) {
-				$options = $idSet;
-				$varSet = array_fill( 0, sizeof( $idSet ), "?" );
-				$query .= " AND f.experiment_id IN (" . implode( ",", $varSet ) . ")";
+				if( $isExp ) {
+					$options = $idSet;
+					$varSet = array_fill( 0, sizeof( $idSet ), "?" );
+					$query .= " AND f.experiment_id IN (" . implode( ",", $varSet ) . ")";
+				} else {
+					$options = $idSet;
+					$varSet = array_fill( 0, sizeof( $idSet ), "?" );
+					$query .= " AND f.file_id IN (" . implode( ",", $varSet ) . ")";
+				}
 			}
 		}
 		
@@ -499,7 +550,7 @@ class FileHandler {
 	 * Get a count of all files available
 	 */
 	 
-	public function fetchFileCount( $expIDs, $includeBG = false ) {
+	public function fetchFileCount( $ids, $includeBG = false, $isExp = true ) {
 		
 		$query = "SELECT COUNT(*) as fileCount FROM " . DB_MAIN . ".files WHERE file_status='active'";
 
@@ -508,11 +559,17 @@ class FileHandler {
 		}
 		
 		$options = array( );
-		if( sizeof( $expIDs ) > 0 ) {
-			$options = $expIDs;
-			$varSet = array_fill( 0, sizeof( $options ), "?" );
-			$query .= " AND experiment_id IN (" . implode( ",", $varSet ) . ")";
-		}
+		if( sizeof( $ids ) > 0 ) {
+			if( $isExp ) {
+				$options = $ids;
+				$varSet = array_fill( 0, sizeof( $options ), "?" );
+				$query .= " AND experiment_id IN (" . implode( ",", $varSet ) . ")";
+			} else {
+				$options = $ids;
+				$varSet = array_fill( 0, sizeof( $options ), "?" );
+				$query .= " AND file_id IN (" . implode( ",", $varSet ) . ")";
+			}
+		} 
 		
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( $options );

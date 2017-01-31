@@ -10,6 +10,7 @@
 {% if SHOW_FILES %}
 	{% include 'blocks/ORCADataTableBlock.tpl' %}
 
-	<input type='hidden' id='expIDs' value='{{ EXP_IDS }}' />
+	<input type='hidden' id='ids' value='{{ IDS }}' />
 	<input type='hidden' id='includeBG' value='{{ INCLUDE_BG }}' />
+	<input type='hidden' id='type' value='{{ TYPE }}' />
 {% endif %}

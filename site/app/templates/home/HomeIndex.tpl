@@ -4,7 +4,7 @@
 		<div class='pull-right col-lg-3 col-md-4 col-sm-5 col-xs-6'>
 			<form class="form-search" role="form" method="GET" action="{{ WEB_URL }}/Dataset/">
 				<div class='input-group marginBotSm marginTopSm'>
-					<input type="text" name='datasetID' id='datasetID' maxlength='8' class="form-control" placeholder="Enter Dataset ID" value="" autofocus>
+					<input type="text" name='datasetID' id='datasetID' maxlength='8' class="form-control" placeholder="Search Experiments" value="" autofocus>
 					<span class='input-group-btn'>
 						<button class='btn btn-success' type='submit'>Search</button>
 					</span>
@@ -53,53 +53,43 @@
 				</span>
 				<span class="text">Settings</span>
 			</a>
-			<a href="#" class="shortcut-link">
-				<span class="shortcut-icon">
-					<i class="fa fa-history"></i>
-					<span class="shortcut-alert">
-						9
-					</span>
-				</span>
-				<span class="text">Quality Control</span>
-			</a>
 		</div>
 	</div>
-	<div class='container-fluid {{ SHOW_WARNING }}'>
-		<div class='alert alert-danger marginTopSm marginBotNone text-center'>
-			<strong><i class="fa fa-exclamation-circle fa-lg"></i> Warning! Danger!{{ ALERT_MESSAGE }}</strong>
-		</div>
-	</div>
+
 </div>
 
 <div>
 	<div class='container-fluid'>
-		<h4 class='marginBotSm'><span class='groupName'>{{ GROUP_NAME }}</span> - Dataset Queues</h4>
-		<div class='col-lg-3 col-md-3 col-sm-6'>
+		<div class='col-lg-6 col-md-6 col-sm-6'>
 			<div class='high-queue-panel'>
-				<i class="fa fa-arrow-circle-o-up fa-3x pull-right"></i>
-				<h3><strong>2,000</strong></h3>
-				<h5>High Priority Publications<h5>
+				<i class="fa fa-flask fa-3x pull-right"></i>
+				<h3><strong>145</strong></h3>
+				<h5>Uploaded Experiments<h5>
+				<hr />
+				<div style='margin-top: 10px;'>
+					<h4>Recently Added Experiments</h4>
+					<ul style='margin-top: 5px; font-size: 18px;'>
+						<li>HI.3215 - High Dose [19 Raw Data Files] <i class='fa fa-search-plus' style='color: #655643'></i></li>
+						<li>HI.3215 - Low Dose [21 Raw Data Files] <i class='fa fa-search-plus' style='color: #655643'></i></li>
+						<li>HI.2145 - High Dose [15 Raw Data Files] <i class='fa fa-search-plus' style='color: #655643'></i></li>
+					</ul>
+				</div>
 			</div>
 		</div>
-		<div class='col-lg-3 col-md-3 col-sm-6'>
+		<div class='col-lg-6 col-md-6 col-sm-6'>
 			<div class='standard-queue-panel'>
-				<i class="fa fa-star fa-3x pull-right"></i>
-				<h3><strong>2,000</strong></h3>
-				<h5>Standard Publications<h5>
-			</div>
-		</div>
-		<div class='col-lg-3 col-md-3 col-sm-6'>
-			<div class='error-queue-panel'>
-				<i class="fa fa-exclamation-triangle fa-3x pull-right"></i>
-				<h3><strong>2,000</strong></h3>
-				<h5>Erroneous Publications<h5>
-			</div>
-		</div>
-		<div class='col-lg-3 col-md-3 col-sm-6'>
-			<div class='recent-queue-panel'>
-				<i class="fa fa-globe fa-3x pull-right"></i>
-				<h3><strong>2,000</strong></h3>
-				<h5>Recent Publications<h5>
+				<i class="fa fa-bar-chart fa-3x pull-right"></i>
+				<h3><strong>137</strong></h3>
+				<h5>Custom Views<h5>
+				<hr />
+				<div style='margin-top: 10px;'>
+					<h4>Recently Completed Custom Views</h4>
+					<ul style='margin-top: 5px; font-size: 18px;'>
+						<li>HI.3215 - High Dose / ALL FILES <span class='text-success'><strong>[Matrix]</strong></span> <span class='text-info'><strong>[0day-reads background]</strong></span></li>
+						<li>HI.3215 - High Dose / ALL FILES <span class='text-danger'><strong>[HeatMap]</strong></span> <span class='text-info'><strong>[7dox8 background]</strong></span></li>
+						<li>HI.3215 - Low Dose / 8 Files <span class='text-danger'><strong>[HeatMap]</strong></span> <span class='text-info'><strong>[0day-reads background]</strong></span></li>
+					</ul>
+				</div>
 			</div>
 		</div>
 	</div>

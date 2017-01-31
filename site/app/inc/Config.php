@@ -64,6 +64,7 @@ define( 'DB_USER', CONFIG['DATABASE']['DB_USER'] );
 define( 'DB_PASS', CONFIG['DATABASE']['DB_PASS'] );
 define( 'DB_MAIN', CONFIG['DATABASE']['DB_ORCA'] );
 define( 'DB_QUICK', CONFIG['DATABASE']['DB_QUICK'] );
+define( 'DB_VIEWS', CONFIG['DATABASE']['DB_ORCA_VIEWS'] );
 
 /**
  * PATHS

@@ -32,11 +32,75 @@ class ViewController extends lib\Controller {
 	 
 	public function Index( ) {
 		
-		if( isset( $_GET['viewID'] )) {
-			echo "VIEWING!";
+		lib\Session::canAccess( lib\Session::getPermission( 'VIEW VIEWS' ));
+		
+		if( isset( $_GET['viewID'] ) && is_numeric( $_GET['viewID'] )) {
+			$viewHandler = new models\ViewHandler( );
+			$view = $viewHandler->fetchView( $_GET['viewID'] );
+			
+			if( $view ) {
+				// View Type 1 is a Matrix View
+				if( $view->view_type_id == "1" ) {
+					$this->Matrix( );
+				}
+			} else {
+				// Can't find the view specified by this ID
+				lib\Session::sendPageNotFound( );
+			}
+			
 		} else {
-			lib\Session::sendPageNotFound( );
+			$this->Listing( );
 		}
+		
+	}
+	
+	/**
+	 * Listing
+	 * Generate a listing of views that are available for browsing
+	 */
+	 
+	public function Listing( ) {
+		
+		lib\Session::canAccess( lib\Session::getPermission( 'VIEW VIEWS' ));
+		
+		$addonJS = $this->footerParams->get( 'ADDON_JS' );
+		$addonJS[] = "jquery.qtip.min.js";
+		$addonJS[] = "jquery.dataTables.js";
+		$addonJS[] = "dataTables.bootstrap.js";
+		$addonJS[] = "alertify.min.js";
+		$addonJS[] = "orca-dataTableBlock.js";
+		$addonJS[] = "view/orca-view-listing.js";
+		
+		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );
+		$addonCSS[] = "jquery.qtip.min.css";
+		$addonCSS[] = "dataTables.bootstrap.css";
+		$addonCSS[] = "alertify.min.css";
+		$addonCSS[] = "alertify-bootstrap.min.css";
+		
+		$this->headerParams->set( 'ADDON_CSS', $addonCSS );
+		$this->footerParams->set( 'ADDON_JS', $addonJS );
+		
+		$canCreateView = lib\Session::validateCredentials( lib\Session::getPermission( 'CREATE VIEWS' ));
+		
+		$expHandler = new models\ViewHandler( );
+		$expCount = $expHandler->fetchViewCount( );
+		$buttons = $expHandler->fetchViewToolbar( );
+				
+		$params = array(
+			"WEB_URL" => WEB_URL,
+			"IMG_URL" => IMG_URL,
+			"TABLE_TITLE" => "Custom Views",
+			"ROW_COUNT" => $expCount,
+			"WEB_NAME_ABBR" => CONFIG['WEB']['WEB_NAME_ABBR'],
+			"VIEW_CREATE_VALID" => $canCreateView,
+			"SHOW_TOOLBAR" => true,
+			"BUTTONS" => $buttons
+		);
+		
+		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/View' />" );
+		$this->headerParams->set( "TITLE", "View Listing | " . CONFIG['WEB']['WEB_NAME'] );
+		
+		$this->renderView( "view" . DS . "ViewListing.tpl", $params, false );
 		
 	}
 	
@@ -48,7 +112,7 @@ class ViewController extends lib\Controller {
 	 
 	public function Create( ) {
 		
-		lib\Session::canAccess( lib\Session::getPermission( 'CREATE VIEW' ));
+		lib\Session::canAccess( lib\Session::getPermission( 'CREATE VIEWS' ));
 		
 		// If we're not passed an ID, show 404
 		if( !isset( $_GET['expIDs'] )) {
@@ -90,7 +154,6 @@ class ViewController extends lib\Controller {
 		$viewTypes = $viewHandler->fetchViewTypes( );
 		$viewValues = $viewHandler->fetchViewValues( );
 		
-		
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
@@ -101,6 +164,7 @@ class ViewController extends lib\Controller {
 			"SHOW_FILES" => $showFiles,
 			"VIEW_TYPES" => $viewTypes,
 			"VIEW_VALUES" => $viewValues,
+			"EXP_IDS" => implode( "|", $expIDs ),
 			"BUTTONS" => $buttons
 		);
 		
@@ -120,49 +184,63 @@ class ViewController extends lib\Controller {
 	
 	public function Matrix( ) {
 		
-		lib\Session::canAccess( lib\Session::getPermission( 'CREATE VIEW' ));
+		lib\Session::canAccess( lib\Session::getPermission( 'VIEW VIEWS' ));
 		
 		// If we're not passed a numeric values and a set of file ids, show 404
-		if( !isset( $_GET['fileIDs'] ) || !isset( $_GET['values'] ) || !is_numeric( $_GET['values'] )) {
+		if( !isset( $_GET['viewID'] ) || !is_numeric( $_GET['viewID'] )) {
 			lib\Session::sendPageNotFound( );
 		}
 		
-		// Add some Change Password Specific JS
-		$addonJS = $this->footerParams->get( 'ADDON_JS' );
-		$addonJS[] = "jquery.dataTables.js";
-		$addonJS[] = "dataTables.bootstrap.js";
-		$addonJS[] = "alertify.min.js";
-		$addonJS[] = "orca-dataTableBlock.js";
-		$addonJS[] = "view/orca-view-matrix.js";
+		$viewHandler = new models\ViewHandler( );
+		$view = $viewHandler->fetchView( $_GET['viewID'] );	
 		
-		// Add some Change Password Specific CSS
+		$addonJS = $this->footerParams->get( 'ADDON_JS' );
+		$addonJS[] = "alertify.min.js";
+		
 		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );
-		$addonCSS[] = "dataTables.bootstrap.css";
 		$addonCSS[] = "alertify.min.css";
 		$addonCSS[] = "alertify-bootstrap.min.css";
+		
+		
+		$rowCount = 0;
+		$viewTpl = "";
+		if( $view->view_state == "building" ) {
+			$addonJS[] = "view/orca-view.js";
+			$viewTpl = "ViewBuilding.tpl";
+		} else {
+			
+			// Add some matrix view Specific JS
+			$addonJS[] = "jquery.dataTables.js";
+			$addonJS[] = "dataTables.bootstrap.js";
+			$addonJS[] = "orca-dataTableBlock.js";
+			$addonJS[] = "view/orca-view-matrix.js";
+			
+			// Add some matrix view Specific CSS
+			$addonCSS[] = "dataTables.bootstrap.css";
+			
+			$matrixHandler = new models\MatrixViewHandler( $_GET['viewID'] );
+			$rowCount = $matrixHandler->fetchRowCount( );
+			$viewTpl = "ViewMatrix.tpl";
+		}
 		
 		$this->headerParams->set( 'ADDON_CSS', $addonCSS );
 		$this->footerParams->set( 'ADDON_JS', $addonJS );
 		
-		$fileIDs = explode( "|", $_GET['fileIDs'] );
-		$values = $_GET['values'];
-		
-		$viewHandler = new models\ViewHandler( );
-		$viewInfo = $viewHandler->addView( $fileIDs, "1", $values );
-				 
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
-			"VIEW_ID" => $viewInfo['ID'],
-			"VIEW_CODE" => $viewInfo['CODE'],
-			"PROGRESS_TITLE" => "Matrix View Generating...",
-			"PROGRESS_BODY" => "Your selected view is being generated. This process can sometimes take up to 5 minutes, based on complexity, so please be patient and <strong>do not leave this page</strong>. This progress indicator will be removed upon completed generation of the view."
+			"TABLE_TITLE" => "Matrix Dataset",
+			"ROW_COUNT" => $rowCount,
+			"DATATABLE_CLASS" => "matrixTable",
+			"VIEW_ID" => $view->view_id,
+			"VIEW_CODE" => $view->view_code,
+			"VIEW_STATE" => $view->view_state
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Files' />" );
 		$this->headerParams->set( "TITLE", "View Files | " . CONFIG['WEB']['WEB_NAME'] );
 		
-		$this->renderView( "view" . DS . "ViewMatrix.tpl", $params, false );
+		$this->renderView( "view" . DS . $viewTpl, $params, false );
 				
 	}
 

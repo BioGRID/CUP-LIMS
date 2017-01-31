@@ -135,8 +135,9 @@ class ExperimentController extends lib\Controller {
 			"ROW_COUNT" => $fileCount,
 			"WEB_NAME_ABBR" => CONFIG['WEB']['WEB_NAME_ABBR'],
 			"SHOW_TOOLBAR" => false,
-			"EXP_IDS" => $_GET['id'],
+			"IDS" => $_GET['id'],
 			"INCLUDE_BG" => "true",
+			"TYPE" => "exp",
 			"TABLE_TITLE" => "Raw File List",
 			"BUTTONS" => array( ),
 			"SHOW_FILES" => $showFiles

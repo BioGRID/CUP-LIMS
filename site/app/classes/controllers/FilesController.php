@@ -58,9 +58,15 @@ class FilesController extends lib\Controller {
 		$fileHandler = new models\FileHandler( );
 		$buttons = $fileHandler->fetchFileToolbar( );
 		
-		$expIDs = array( );
+		$ids = array( );
+		$isExp = true;
+		$type = "exp";
 		if( isset( $_GET['expIDs'] )) {
-			$expIDs = explode( "|", $_GET['expIDs'] );
+			$ids = explode( "|", $_GET['expIDs'] );
+		} else if( isset( $_GET['fileIDs'] )) {
+			$ids = explode( "|", $_GET['fileIDs'] );
+			$isExp = false;
+			$type = "file";
 		}
 		
 		$includeBG = false;
@@ -68,9 +74,12 @@ class FilesController extends lib\Controller {
 		if( isset( $_GET['includeBG'] ) && $_GET['includeBG'] == "true" ) {
 			$includeBG = true;
 			$incBGString = "true";
+		} else if( !isset( $_GET['includeBG'] ) && !$isExp ) {
+			$includeBG = true;
+			$incBGString = "true";
 		}
 		
-		$fileCount = $fileHandler->fetchFileCount( $expIDs, $includeBG );
+		$fileCount = $fileHandler->fetchFileCount( $ids, $includeBG, $isExp );
 				 
 		$params = array(
 			"WEB_URL" => WEB_URL,
@@ -78,9 +87,10 @@ class FilesController extends lib\Controller {
 			"TABLE_TITLE" => "Raw File List",
 			"ROW_COUNT" => $fileCount,
 			"WEB_NAME_ABBR" => CONFIG['WEB']['WEB_NAME_ABBR'],
-			"SHOW_TOOLBAR" => true,
-			"EXP_IDS" => implode( '|', $expIDs ),
+			"SHOW_TOOLBAR" => false,
+			"IDS" => implode( '|', $ids ),
 			"INCLUDE_BG" => $incBGString,
+			"TYPE" => $type,
 			"BUTTONS" => $buttons
 		);
 		

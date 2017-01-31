@@ -102,6 +102,46 @@ if( isset( $postData['tool'] ) ) {
 			echo json_encode( array( "draw" => $draw, "recordsTotal" => $postData['totalRecords'], "recordsFiltered" => $recordsFiltered, "data" => $fileRows ));
 			break;
 			
+		// Fetch the column header for the view listing
+		// Datatable with correct options
+		case 'viewHeader' :
+			$viewHandler = new models\ViewHandler( );
+			$viewHeader = $viewHandler->fetchViewColumnDefinitions( );
+			echo json_encode( $viewHeader );
+			break;
+		
+		// Fetch rows for the view listing
+		// tool for display in Datatables
+		case 'viewRows' :
+			$draw = $postData['draw'];
+			
+			$viewHandler = new models\ViewHandler( );
+			$viewRows = $viewHandler->buildViewRows( $postData );
+			$recordsFiltered = $viewHandler->getUnfilteredViewCount( $postData );
+			
+			echo json_encode( array( "draw" => $draw, "recordsTotal" => $postData['totalRecords'], "recordsFiltered" => $recordsFiltered, "data" => $viewRows ));
+			break;
+			
+		// Fetch the column header for the matrix view listing
+		// Datatable with correct options
+		case 'matrixViewHeader' :
+			$matrixHandler = new models\MatrixViewHandler( $postData['viewID'] );
+			$matrixHeader = $matrixHandler->fetchColumnDefinitions( $postData ); 
+			echo json_encode( $matrixHeader );
+			break;
+		
+		// Fetch rows for the matrix view listing
+		// tool for display in Datatables
+		case 'matrixViewRows' :
+			$draw = $postData['draw'];
+			
+			$matrixHandler = new models\MatrixViewHandler( $postData['viewID'] );
+			$matrixRows = $matrixHandler->buildRows( $postData );
+			$recordsFiltered = $matrixHandler->getUnfilteredCount( $postData );
+			
+			echo json_encode( array( "draw" => $draw, "recordsTotal" => $postData['totalRecords'], "recordsFiltered" => $recordsFiltered, "data" => $matrixRows ));
+			break;
+			
 	}
 }
 

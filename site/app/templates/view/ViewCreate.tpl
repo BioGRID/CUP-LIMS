@@ -47,4 +47,7 @@
 	<div id='messages' class='container-fluid marginTopSm'></div>
 </div>
 
+<input type='hidden' id='expIDs' value='{{ EXP_IDS }}' />
+<input type='hidden' id='includeBG' value='{{ INCLUDE_BG }}' />
+
 {% include 'blocks/ORCADataTableBlock.tpl' %}

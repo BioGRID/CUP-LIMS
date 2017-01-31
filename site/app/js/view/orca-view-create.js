@@ -42,10 +42,11 @@
 		
 		$(".datatableBlock").on( "change", ".orcaToolbarSelect", function( ) {
 			
-			var selectedVal = $(this).val( );
+			var selectedVal = $("option:selected", this).text( );
 			$(".orcaSelect").each( function( ) {
-				if( $(this).find( "option[value=" + selectedVal + "]" ).length > 0 ) {
-					$(this).val( selectedVal );
+				var matchingOption = $(this).find( 'option:contains(' + selectedVal + ')' );
+				if( matchingOption.length > 0 ) {
+					matchingOption.prop( "selected", "selected" );
 				}
 			});
 			

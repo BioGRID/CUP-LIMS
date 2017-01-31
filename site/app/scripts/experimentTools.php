@@ -18,8 +18,7 @@ if( isset( $postData['tool'] ) ) {
 	
 	switch( $postData['tool'] ) {
 		
-		// Fetch the column header for the Manage Users
-		// Datatable with correct options
+		// Disable an experiment in the database
 		case 'disableExperiment' :
 			
 			$results = array( );
