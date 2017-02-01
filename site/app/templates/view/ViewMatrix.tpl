@@ -10,3 +10,4 @@
 <input type='hidden' id='viewID' name='viewID' value='{{ VIEW_ID }}' />
 <input type='hidden' id='viewCode' name='viewCode' value='{{ VIEW_CODE }}' />
 <input type='hidden' id='viewState' name='viewState' value='{{ VIEW_STATE }}' />
+<input type='hidden' id='viewStyle' name='viewStyle' value='{{ VIEW_STYLE }}' />

@@ -1,4 +1,4 @@
-<div id='datatableBlock' class='datatableBlock greyBG marginTopSm paddingLg marginBotSm>
+<div id='datatableBlock' class='datatableBlock greyBG marginTopSm paddingLg marginBotSm'>
 	<div class='container-fluid'>
 		<div class='pull-right col-lg-3 col-md-4 col-sm-5 col-xs-6' style='padding-right: 0'>
 			<div class='input-group marginBotSm marginTopSm'>

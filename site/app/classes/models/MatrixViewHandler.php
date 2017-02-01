@@ -52,7 +52,7 @@ class MatrixViewHandler {
 		$columnCount = 1;
 		$columnNameCount = 0;
 		foreach( $conditionCols as $conditionID => $conditionDetails ) {
-			$columns[$columnCount] = array( "title" => $this->getExcelNameFromNumber( $columnNameCount ), "data" => $columnCount, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => $conditionID );
+			$columns[$columnCount] = array( "title" => "<a class='matrixHeaderPopup' data-fileid='" . $conditionDetails['FILE']['ID'] . "' data-file='" . $conditionDetails['FILE']['NAME'] . "' data-bgid='" . $conditionDetails['BG']['ID'] . "' data-bgfile='" . $conditionDetails['BG']['NAME'] . "'>" . $this->getExcelNameFromNumber( $columnNameCount ) . "</a>", "data" => $columnCount, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => $conditionID );
 			$columnCount++;
 			$columnNameCount++;
 		}
@@ -89,10 +89,10 @@ class MatrixViewHandler {
 			$column = array( );
 			
 			$style = 1;
-			if( isset( $params['style'] ) ) {
-				if( $params['style'] == 2 ) {
+			if( isset( $params['viewStyle'] ) ) {
+				if( $params['viewStyle'] == 2 ) {
 					$style = 2;
-				} else if( $params['style'] == 3 ) {
+				} else if( $params['viewStyle'] == 3 ) {
 					$style = 3;
 				}
 			} 
@@ -108,7 +108,11 @@ class MatrixViewHandler {
 				// $column[] = "<input type='checkbox' class='orcaDataTableRowCheck' value='" . $rowID . "' />";
 			// }
 			
-			$column[] = $rowInfo->group_name;
+			if( $rowInfo->sgrna_group_reference_type == "BIOGRID" ) {
+				$column[] = "<a class='annotationPopup' data-id='" . $rowInfo->sgrna_group_id . "' data-type='BIOGRID'>" . $rowInfo->group_name . "</a>";
+			} else {
+				$column[] = $rowInfo->group_name;
+			}
 
 			$columnSet = $this->fetchColumnDefinitions(  );
 			for( $i = 1; $i < sizeof( $columnSet ); $i++ ) {
@@ -249,30 +253,140 @@ class MatrixViewHandler {
 	}
 	
 	/**
+	 * Generate a select list of the available style options
+	 */
+	
+	private function generateStyleSelectForToolbar( $currentStyle, $selectClass = "", $selectLabel = "" ) {
+		$selectOptions = array( );
+		
+		$option = array( "SELECTED" => "", "NAME" => "Colors Only" );
+		if( $currentStyle == 1 ) {
+			$option["SELECTED"] = "selected";
+		}	
+		$selectOptions[1] = $option;
+		
+		$option = array( "SELECTED" => "", "NAME" => "Values Only" );
+		if( $currentStyle == 2 ) {
+			$option["SELECTED"] = "selected";
+		}
+		$selectOptions[2] = $option;
+		
+		$option = array( "SELECTED" => "", "NAME" => "Colors and Values" );
+		if( $currentStyle == 3 ) {
+			$option["SELECTED"] = "selected";
+		}
+		$selectOptions[3] = $option;
+		$view = "blocks" . DS . "ORCADataTableToolbarSelect.tpl";
+		
+		$select = $this->twig->render( $view, array(
+			"OPTIONS" => $selectOptions,
+			"SELECT_CLASS" => $selectClass,
+			"SELECT_LABEL" => $selectLabel
+		));
+		
+		return $select;
+		
+	}
+	
+	/**
 	 * Fetch a set of buttons for the view listing
 	 * table toolbar
 	 */
 	
-	public function fetchToolbar( ) {
+	public function fetchToolbar( $viewStyle ) {
 		
 		$buttons = array( );
 		
-		if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE VIEWS' )) ) {
-			$view = "blocks" . DS . "ORCADataTableToolbarDropdown.tpl";
-			$buttons[] = $this->twig->render( $view, array(
-				"BTN_CLASS" => "btn-danger",
-				"BTN_ICON" => "fa-cog",
-				"BTN_TEXT" => "Tools",
-				"LINKS" => array(
-					"viewDisableChecked" => array( "linkHREF" => "", "linkText" => "Disable Checked Views", "linkClass" => "viewDisableChecked" )
-				)
-			));
+		if( lib\Session::validateCredentials( lib\Session::getPermission( 'VIEW VIEWS' )) ) {
+			$styleSelect = $this->generateStyleSelectForToolbar( $viewStyle, "pull-right col-lg-2 col-md-3 col-sm-4 col-xs-6", "Style:" );
+			$buttons[] = $styleSelect;
 		}
+		
+		// if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE VIEWS' )) ) {
+			// $view = "blocks" . DS . "ORCADataTableToolbarDropdown.tpl";
+			// $buttons[] = $this->twig->render( $view, array(
+				// "BTN_CLASS" => "btn-danger",
+				// "BTN_ICON" => "fa-cog",
+				// "BTN_TEXT" => "Tools",
+				// "LINKS" => array(
+					// "viewDisableChecked" => array( "linkHREF" => "", "linkText" => "Disable Checked Views", "linkClass" => "viewDisableChecked" )
+				// )
+			// ));
+		// }
 		
 		return implode( "", $buttons );
 		
 	}
 	
+	/**
+	 * Fetch formatted group annotation to be displayed in a popup tooltip
+	 */
+	 
+	public function fetchFormattedGroupAnnotation( $groupID ) {
+		
+		$stmt = $this->db->prepare( "SELECT sgrna_group_reference, official_symbol, systematic_name, aliases, definition, organism_official_name FROM " . DB_VIEWS . ".view_" . $this->view->view_code . " WHERE sgrna_group_id=? LIMIT 1" );
+		
+		$stmt->execute( array( $groupID ) );
+		
+		// If it exists, return an error
+		if( $stmt->rowCount( ) > 0 ) {
+			$row = $stmt->fetch( PDO::FETCH_OBJ );
+			
+			$annotationParams = array( );
+			if( $row->official_symbol != "-" ) {
+				$annotationParams["Official Symbol"] = $row->official_symbol;
+			}
+			
+			if( $row->systematic_name != "-" ) {
+				$annotationParams["Systematic Name"] = $row->systematic_name;
+			}
+			
+			if( $row->aliases != "-" ) {
+				$aliases = explode( "|", $row->aliases );
+				$annotationParams["Aliases"] = implode( ", ", $aliases );
+			}
+			
+			if( $row->definition != "-" ) {
+				$annotationParams["Definition"] = $row->definition;
+			}
+			
+			if( $row->organism_official_name != "-" ) {
+				$annotationParams["Organism"] = $row->organism_official_name;
+			}
+			
+			$links = array( );
+			$links["biogrid"] = models\LinkoutGenerator::getLinkout( "biogrid", $row->sgrna_group_reference );
+			
+			$annotation = $this->twig->render( "view" . DS . "ViewGroupAnnotation.tpl", array(
+				"ANNOTATION" => $annotationParams,
+				"LINKS" => $links
+			));
+			
+			return $annotation;
+		}
+		
+		return false;
+		
+	}
+	
+	/**
+	 * Fetch a formatted list of files and background with links
+	 * to view them on the separate file page
+	 */
+	 
+	function fetchFormattedHeaderAnnotation( $fileID, $fileName, $bgID, $bgName ) {
+			
+		$files = array( );
+		$files[$fileID] = array( "URL" => WEB_URL . "/Files/View?id=" . $fileID, "NAME" => $fileName, "LABEL" => "Primary File" );
+		$files[$bgID] = array( "URL" => WEB_URL . "/Files/View?id=" . $bgID, "NAME" => $bgName, "LABEL" => "Background File" );
+		
+		$annotation = $this->twig->render( "view" . DS . "ViewFileHeader.tpl", array(
+			"FILES" => $files
+		));
+		
+		return $annotation;
+		
+	}
 	
 }
 

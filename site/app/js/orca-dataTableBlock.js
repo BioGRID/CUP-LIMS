@@ -35,6 +35,8 @@
 			toolbar: base.$el.find( ".orcaDataTableToolbar" )
 		};
 		
+		base.$el.data( "orcaDataTableBlock", base );
+		
 		/** 
 		 * Setup basic structure and functionality of the 
 		 * ORCA DataTable Block
@@ -164,7 +166,7 @@
 		
 		base.filterGlobal = function( filterVal, isRegex, isSmartSearch ) {
 			base.components.table.DataTable( ).search( filterVal, isRegex, isSmartSearch, true ).draw( );
-		}
+		};
 		
 		/**
 		 * Set the check all button status to the values passed in
@@ -173,7 +175,11 @@
 		base.setCheckAllStatus = function( statusText, propVal ) {
 			base.components.table.find( ".orcaDataTableRowCheck" ).prop( "checked", propVal );
 			base.components.toolbar.find( ".orcaDataTableCheckAll" ).attr( "data-status", statusText );
-		}
+		};
+		
+		base.updateOption = function( optionName, optionValue ) {
+			base.options[optionName] = optionValue;
+		};
 		
 		base.init( );
 	

@@ -360,7 +360,7 @@ class FileHandler {
 			$column[] = $this->buildFilesTableOptions( $fileInfo );
 			
 			if( isset( $params['showBGSelect'] ) && $params['showBGSelect'] == "true" ) {
-				$column[] = $this->generateBGSelect( $bgList, $fileInfo->experiment_id, "", false, false );
+				$column[] = $this->generateBGSelect( $bgList, $fileInfo->experiment_id, "", "", false, false );
 			}
 			
 			if( $fileInfo->file_state != "parsed" ) {
@@ -378,7 +378,7 @@ class FileHandler {
 	 * Build a select list of backgrounds based on the passed in list
 	 */
 	 
-	private function generateBGSelect( $bgList, $expID, $selectClass = "", $skipAll = false, $forToolbar = false ) {
+	private function generateBGSelect( $bgList, $expID, $selectClass = "", $selectLabel = "", $skipAll = false, $forToolbar = false ) {
 		$selectOptions = array( );
 		
 		if( isset( $bgList[$expID] )) {
@@ -417,7 +417,8 @@ class FileHandler {
 		
 		$select = $this->twig->render( $view, array(
 			"OPTIONS" => $selectOptions,
-			"SELECT_CLASS" => $selectClass
+			"SELECT_CLASS" => $selectClass,
+			"SELECT_LABEL" => $selectLabel
 		));
 		
 		return $select;
@@ -607,7 +608,7 @@ class FileHandler {
 		$buttons = array( );
 		
 		$bgList = $this->buildBGList( array( "expIDs" => implode( "|", $expIDs )), false );
-		$selectList = $this->generateBGSelect( $bgList, 0, "pull-right col-lg-2 col-md-3 col-sm-4 col-xs-6", false, true );
+		$selectList = $this->generateBGSelect( $bgList, 0, "pull-right col-lg-2 col-md-3 col-sm-4 col-xs-6", "Background: ", false, true );
 		$buttons[] = $selectList;
 		
 		return implode( "", $buttons );
