@@ -201,8 +201,8 @@ class ViewController extends lib\Controller {
 		$addonCSS[] = "alertify.min.css";
 		$addonCSS[] = "alertify-bootstrap.min.css";
 		
-		
 		$rowCount = 0;
+		$toolbarButtons = array( );
 		$viewTpl = "";
 		if( $view->view_state == "building" ) {
 			$addonJS[] = "view/orca-view.js";
@@ -210,16 +210,25 @@ class ViewController extends lib\Controller {
 		} else {
 			
 			// Add some matrix view Specific JS
+			$addonJS[] = "jquery.qtip.min.js";
 			$addonJS[] = "jquery.dataTables.js";
 			$addonJS[] = "dataTables.bootstrap.js";
 			$addonJS[] = "orca-dataTableBlock.js";
 			$addonJS[] = "view/orca-view-matrix.js";
 			
 			// Add some matrix view Specific CSS
+			$addonCSS[] = "jquery.qtip.min.css";
 			$addonCSS[] = "dataTables.bootstrap.css";
+			
+			// Get style if it's passed to us as a parameter
+			$viewStyle = 1;
+			if( isset( $_GET['style'] ) && ($_GET['style'] == 2 || $_GET['style'] == 3)) {
+				$viewStyle = $_GET['style'];
+			}
 			
 			$matrixHandler = new models\MatrixViewHandler( $_GET['viewID'] );
 			$rowCount = $matrixHandler->fetchRowCount( );
+			$toolbarButtons = $matrixHandler->fetchToolbar( $viewStyle );
 			$viewTpl = "ViewMatrix.tpl";
 		}
 		
@@ -232,9 +241,13 @@ class ViewController extends lib\Controller {
 			"TABLE_TITLE" => "Matrix Dataset",
 			"ROW_COUNT" => $rowCount,
 			"DATATABLE_CLASS" => "matrixTable",
+			"SHOW_TOOLBAR" => true,
+			"HIDE_CHECK_ALL" => true,
+			"BUTTONS" => $toolbarButtons,
 			"VIEW_ID" => $view->view_id,
 			"VIEW_CODE" => $view->view_code,
-			"VIEW_STATE" => $view->view_state
+			"VIEW_STATE" => $view->view_state,
+			"VIEW_STYLE" => $viewStyle
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Files' />" );

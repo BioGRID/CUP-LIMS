@@ -64,6 +64,32 @@ if( isset( $postData['tool'] ) ) {
 				
 			echo json_encode( $results );
 			break;
+		
+		// Fetch formatted annotation to display in a popup
+		// for a given view group
+		case 'fetchMatrixGroupAnnotation' :
+		
+			$results = array( "DATA" => "" );
+			if( isset( $postData['viewID'] ) && isset( $postData['id'] )) {
+				$matrixHandler = new models\MatrixViewHandler( $postData['viewID'] );
+				$results["DATA"] = $matrixHandler->fetchFormattedGroupAnnotation( $postData['id'] );
+			}
+			
+			echo json_encode( $results );
+			break;
+			
+		// Fetch formatted annotation to display in a popup
+		// for a given view group
+		case 'fetchMatrixHeaderPopup' :
+		
+			$results = array( "DATA" => "" );
+			if( isset( $postData['viewID'] ) && isset( $postData['fileID'] ) && isset( $postData['fileName'] ) && isset( $postData['bgID'] ) && isset( $postData['bgName'] )) {
+				$matrixHandler = new models\MatrixViewHandler( $postData['viewID'] );
+				$results["DATA"] = $matrixHandler->fetchFormattedHeaderAnnotation( $postData['fileID'], $postData['fileName'], $postData['bgID'], $postData['bgName'] );
+			}
+			
+			echo json_encode( $results );
+			break;
 			
 	}
 }
