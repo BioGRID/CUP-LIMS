@@ -193,6 +193,7 @@ class ViewController extends lib\Controller {
 		
 		$viewHandler = new models\ViewHandler( );
 		$view = $viewHandler->fetchView( $_GET['viewID'] );	
+		$viewHandler->updateLastViewed( $_GET['viewID'] );
 		
 		$addonJS = $this->footerParams->get( 'ADDON_JS' );
 		$addonJS[] = "alertify.min.js";
@@ -202,11 +203,18 @@ class ViewController extends lib\Controller {
 		$addonCSS[] = "alertify-bootstrap.min.css";
 		
 		$rowCount = 0;
-		$toolbarButtons = array( );
 		$viewTpl = "";
+		$params = array( );
 		if( $view->view_state == "building" ) {
 			$addonJS[] = "view/orca-view.js";
 			$viewTpl = "ViewBuilding.tpl";
+			
+			$params = array( 
+				"VIEW_ID" => $view->view_id,
+				"VIEW_CODE" => $view->view_code,
+				"VIEW_STATE" => $view->view_state,
+			);
+			
 		} else {
 			
 			// Add some matrix view Specific JS
@@ -229,26 +237,38 @@ class ViewController extends lib\Controller {
 			$matrixHandler = new models\MatrixViewHandler( $_GET['viewID'] );
 			$rowCount = $matrixHandler->fetchRowCount( );
 			$toolbarButtons = $matrixHandler->fetchToolbar( $viewStyle );
+			$colLegend = $matrixHandler->fetchColumnLegend( );
 			$viewTpl = "ViewMatrix.tpl";
+			
+			$user = new lib\User( );
+			$userInfo = $user->fetchUserDetails( $view->user_id );
+			
+			$params = array(
+				"WEB_URL" => WEB_URL,
+				"IMG_URL" => IMG_URL,
+				"TABLE_TITLE" => "Matrix Dataset",
+				"ROW_COUNT" => $rowCount,
+				"DATATABLE_CLASS" => "matrixTable",
+				"SHOW_TOOLBAR" => true,
+				"HIDE_CHECK_ALL" => true,
+				"COL_LEGEND" => $colLegend,
+				"BUTTONS" => $toolbarButtons,
+				"VIEW_NAME" => $view->view_title,
+				"VIEW_DESC" => $view->view_desc,
+				"VIEW_TYPE" => $viewHandler->fetchViewTypeName( $view->view_type_id ),
+				"VIEW_VALUE" => $viewHandler->fetchViewValueName( $view->view_value_id ),
+				"USER_NAME" => $userInfo['NAME'],
+				"VIEW_ADDEDDATE" => $view->view_addeddate,
+				"VIEW_ID" => $view->view_id,
+				"VIEW_CODE" => $view->view_code,
+				"VIEW_STATE" => $view->view_state,
+				"VIEW_STYLE" => $viewStyle
+			);
+			
 		}
 		
 		$this->headerParams->set( 'ADDON_CSS', $addonCSS );
 		$this->footerParams->set( 'ADDON_JS', $addonJS );
-		
-		$params = array(
-			"WEB_URL" => WEB_URL,
-			"IMG_URL" => IMG_URL,
-			"TABLE_TITLE" => "Matrix Dataset",
-			"ROW_COUNT" => $rowCount,
-			"DATATABLE_CLASS" => "matrixTable",
-			"SHOW_TOOLBAR" => true,
-			"HIDE_CHECK_ALL" => true,
-			"BUTTONS" => $toolbarButtons,
-			"VIEW_ID" => $view->view_id,
-			"VIEW_CODE" => $view->view_code,
-			"VIEW_STATE" => $view->view_state,
-			"VIEW_STYLE" => $viewStyle
-		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Files' />" );
 		$this->headerParams->set( "TITLE", "View Files | " . CONFIG['WEB']['WEB_NAME'] );

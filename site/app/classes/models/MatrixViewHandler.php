@@ -30,6 +30,9 @@ class MatrixViewHandler {
 		$this->min = 0;
 		$this->max = 0;
 		
+		$this->colLegend = array( );
+		$this->colDefinitions = $this->fetchColumnDefinitions( );
+		
 	}
 	
 	/**
@@ -44,15 +47,25 @@ class MatrixViewHandler {
 		$conditionCols = $conditionCols['FILES'];
 		ksort( $conditionCols, SORT_NATURAL );
 		
-		
-	 
 		$columns = array( );
 		$columns[0] = array( "title" => "Name", "data" => 0, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'group_name' );
 		
 		$columnCount = 1;
 		$columnNameCount = 0;
+		$createLegend = false;
+		
+		if( empty( $this->colLegend )) {
+			$createLegend = true;
+		}
+		
 		foreach( $conditionCols as $conditionID => $conditionDetails ) {
-			$columns[$columnCount] = array( "title" => "<a class='matrixHeaderPopup' data-fileid='" . $conditionDetails['FILE']['ID'] . "' data-file='" . $conditionDetails['FILE']['NAME'] . "' data-bgid='" . $conditionDetails['BG']['ID'] . "' data-bgfile='" . $conditionDetails['BG']['NAME'] . "'>" . $this->getExcelNameFromNumber( $columnNameCount ) . "</a>", "data" => $columnCount, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => $conditionID );
+			$excelName = $this->getExcelNameFromNumber( $columnNameCount );
+			$columns[$columnCount] = array( "title" => "<a class='matrixHeaderPopup' data-fileid='" . $conditionDetails['FILE']['ID'] . "' data-file='" . $conditionDetails['FILE']['NAME'] . "' data-bgid='" . $conditionDetails['BG']['ID'] . "' data-bgfile='" . $conditionDetails['BG']['NAME'] . "'>" . $excelName . "</a>", "data" => $columnCount, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => $conditionID );
+			
+			if( $createLegend ) {
+				$this->colLegend[] = array( "EXCEL_NAME" => $excelName, "FILE" => $conditionDetails['FILE']['NAME'], "FILE_ID" => $conditionDetails['FILE']['ID'], "BG_FILE" => $conditionDetails['BG']['NAME'], "BG_ID" => $conditionDetails['BG']['ID'] );
+			}
+			
 			$columnCount++;
 			$columnNameCount++;
 		}
@@ -114,7 +127,7 @@ class MatrixViewHandler {
 				$column[] = $rowInfo->group_name;
 			}
 
-			$columnSet = $this->fetchColumnDefinitions(  );
+			$columnSet = $this->colDefinitions;
 			for( $i = 1; $i < sizeof( $columnSet ); $i++ ) {
 				$colName = $columnSet[$i]["dbCol"];
 				if( $style == 2 ) {
@@ -122,7 +135,7 @@ class MatrixViewHandler {
 				} else if( $style == 3 ) {
 					$column[] = "<div style='background-color: " . $this->convertValueToRGB( $rowInfo->$colName ) . "; color: #FFF; width: 100%; height: 100%;'>" . round( $rowInfo->$colName, 5 ) . "</div>";
 				} else {
-					$column[] = "<div style='background-color: " . $this->convertValueToRGB( $rowInfo->$colName ) . "; width: 100%; height: 100%;'></div>";
+					$column[] = "<div class='colorOnlyPopup' data-value='" . round( $rowInfo->$colName, 5 ) . "' style='background-color: " . $this->convertValueToRGB( $rowInfo->$colName ) . "; width: 100%; height: 100%;'></div>";
 				}
 			}
 			
@@ -186,7 +199,7 @@ class MatrixViewHandler {
 	 
 	public function buildCustomizedRowList( $params ) {
 		
-		$columnSet = $this->fetchColumnDefinitions(  );
+		$columnSet = $this->colDefinitions;
 		
 		$rows = array( );
 		
@@ -316,6 +329,14 @@ class MatrixViewHandler {
 		
 		return implode( "", $buttons );
 		
+	}
+	
+	/**
+	 * Get Column Legend
+	 */
+	 
+	public function fetchColumnLegend( ) {
+		return $this->colLegend;
 	}
 	
 	/**

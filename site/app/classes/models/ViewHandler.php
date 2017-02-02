@@ -85,6 +85,25 @@ class ViewHandler {
 		return $viewTypes;
 	}
 	
+	
+	/** 
+	 * Fetch a view type name when given a view type ID
+	 */
+	 
+	public function fetchViewTypeName( $viewTypeID ) {
+		
+		$stmt = $this->db->prepare( "SELECT view_type_name FROM " . DB_MAIN . ".view_types WHERE view_type_id=? LIMIT 1" );
+		$stmt->execute( array( $viewTypeID ));
+		
+		if( $stmt->rowCount( ) > 0 ) {
+			$row = $stmt->fetch( PDO::FETCH_OBJ );
+			return $row->view_type_name;
+		}
+		
+		return false;
+		
+	}
+	 
 	/**
 	 * Fetch list of View Values
 	 */
@@ -99,6 +118,24 @@ class ViewHandler {
 		}
 		
 		return $viewValues;
+	}
+	
+	/** 
+	 * Fetch a view value name when given a view value ID
+	 */
+	 
+	public function fetchViewValueName( $viewValueID ) {
+		
+		$stmt = $this->db->prepare( "SELECT view_value_name FROM " . DB_MAIN . ".view_values WHERE view_value_id=? LIMIT 1" );
+		$stmt->execute( array( $viewValueID ));
+		
+		if( $stmt->rowCount( ) > 0 ) {
+			$row = $stmt->fetch( PDO::FETCH_OBJ );
+			return $row->view_value_name;
+		}
+		
+		return false;
+		
 	}
 	
 	/**

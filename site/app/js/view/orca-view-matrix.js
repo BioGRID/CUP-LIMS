@@ -29,13 +29,27 @@
 				initializeStyleSelect( datatable );
 				initializeGroupClickPopups( );
 				initializeFileHeaderMouseoverPopups( );
-				// initializeDisableCheckedExperimentsButton( datatable );
+				initializeViewFilesLink( );
+				initializeColorOnlyPopup( );
 			}
 		});
 		
-		
-		
 	});
+	
+	/**
+	 * Setup the view files link
+	 */
+	 
+	function initializeViewFilesLink( ) {
+		$(".showFileLegend").on( "click", function( ) {
+			$("#fileList").toggle( );
+			if( $("#fileList").is( ":visible" ) ){
+				$(".showFileLegend").html( "Hide Files <i class='fa fa-angle-double-up'></i>" );
+			} else {
+				$(".showFileLegend").html( "View Files <i class='fa fa-angle-double-down'></i>" );
+			}
+		});
+	}
 	
 	/**
 	 * Setup the functionality for changing the layout style
@@ -53,6 +67,44 @@
 			
 		});
 	}
+	
+	/**
+	 * Initialize Popups for color boxes when only color is showing
+	 */
+	 
+	 function initializeColorOnlyPopup( ) {
+		 
+		$(".datatableBlock").on( 'mouseover', '.colorOnlyPopup', function( event ) {
+	 
+			var annPopup = $(this).qtip({
+				overwrite: false,
+				content: {
+					text: $(this).data( "value" )
+				},
+				style: {
+					classes: 'qtip-bootstrap',
+					width: '100px'
+				},
+				position: {
+					my: 'bottom center',
+					at: 'top center',
+					viewport: $("#datatableBlock" )
+				},
+				show: {
+					event: event.type,
+					ready: true,
+					solo: false
+				},
+				hide: {
+					delay: 2000,
+					fixed: true,
+					event: 'mouseleave'
+				}
+			}, event);
+			
+		});
+		
+	 }
 	
 	/**
 	 * Initialize Popups for when a person clicks on a group name
