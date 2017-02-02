@@ -423,6 +423,41 @@ class ViewHandler {
 		
 	}
 	
+	/**
+	 * Fetch a formatted summary showing raw reads data
+	 * stored for one specific file and group id
+	 */
+	 
+	public function fetchRawReadsSummaryByGroupID( $fileID, $fileName, $groupID, $groupName ) {
+		
+		$stmt = $this->db->prepare( "SELECT sgrna_id FROM " . DB_MAIN . ".sgRNA_group_mappings WHERE sgrna_group_id=? AND sgrna_group_mapping_status='active'" );
+		$stmt->execute( array( $groupID ) );
+		
+		$sgrnaIDs = array( );
+		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
+			$sgrnaIDs[] = $row->sgrna_id;
+		}
+		
+		$querySet = array_fill( 0, sizeof( $sgrnaIDs ), "?" );
+		$stmt = $this->db->prepare( "SELECT s.sgrna_sequence, r.raw_read_count FROM " . DB_MAIN . ".raw_reads r LEFT JOIN " . DB_MAIN . ".sgRNAs s ON (r.sgrna_id=s.sgrna_id) WHERE r.sgrna_id IN (" . implode( ",", $querySet ) . ") AND file_id=?" );
+		$sgrnaIDs[] = $fileID;
+		$stmt->execute( $sgrnaIDs );
+		
+		$rawReads = array( );
+		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
+			$rawReads[$row->sgrna_sequence] = $row->raw_read_count;
+		}
+	
+		$rawReadsTable = $this->twig->render( "view" . DS . "ViewRawReadsTable.tpl", array(
+			"FILE_NAME" => $fileName,
+			"GROUP_NAME" => $groupName,
+			"RAW_READS" => $rawReads
+		));
+		
+		return $rawReadsTable;
+		
+		
+	}
 	
 }
 

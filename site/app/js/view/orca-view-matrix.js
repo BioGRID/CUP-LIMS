@@ -31,10 +31,59 @@
 				initializeFileHeaderMouseoverPopups( );
 				initializeViewFilesLink( );
 				initializeColorOnlyPopup( );
+				initializeRawReadsPopup( );
 			}
 		});
 		
 	});
+	
+	/**
+	 * Setup a popup showing the raw read scores for a given field in the matrix
+	 */
+	 
+	function initializeRawReadsPopup( ) {
+		
+		$(".datatableBlock").on( 'click', '.rawDetailsPopup', function( event ) {
+			
+			// Setup a Progress Box Showing a Default Loading Script
+			var progressBox = alertify.alert( ).setting({
+				'message': "Loading Raw Reads... <i class='fa fa-lg fa-spin fa-spinner'></i>",
+				'closable' : true,
+				'basic' : true,
+				'padding' : false,
+				'movable' : false,
+				'overflow' : true
+			}).show( );
+			
+			var submitSet = { };
+			submitSet['tool'] = "fetchMatrixRawReads";
+			submitSet['fileID'] = $(this).data( "fileid" );
+			submitSet['fileName'] = $(this).data( "filename" );
+			submitSet['groupID'] = $(this).data( "groupid" );
+			submitSet['groupName'] = $(this).data( "groupname" );
+			submitSet['viewID'] = $("#viewID").val( );
+				
+			// Convert to JSON
+			submitSet = JSON.stringify( submitSet );
+				
+			$.ajax({
+				url: baseURL + 'scripts/viewTools.php',
+				type: 'POST',
+				data: { 'expData': submitSet }, 
+				dataType: 'json'
+			}).done( function( results ) {
+				
+				// Only show the data if they didn't close
+				// the progress box in the meantime
+				if( progressBox.isOpen( ) ) {
+					progressBox.setContent( results['DATA'] );
+				}
+				
+			});
+			
+		});
+		
+	}
 	
 	/**
 	 * Setup the view files link

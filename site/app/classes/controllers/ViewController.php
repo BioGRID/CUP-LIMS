@@ -221,12 +221,15 @@ class ViewController extends lib\Controller {
 			$addonJS[] = "jquery.qtip.min.js";
 			$addonJS[] = "jquery.dataTables.js";
 			$addonJS[] = "dataTables.bootstrap.js";
+			$addonJS[] = "alertify.min.js";
 			$addonJS[] = "orca-dataTableBlock.js";
 			$addonJS[] = "view/orca-view-matrix.js";
 			
 			// Add some matrix view Specific CSS
 			$addonCSS[] = "jquery.qtip.min.css";
 			$addonCSS[] = "dataTables.bootstrap.css";
+			$addonCSS[] = "alertify.min.css";
+			$addonCSS[] = "alertify-bootstrap.min.css";
 			
 			// Get style if it's passed to us as a parameter
 			$viewStyle = 1;

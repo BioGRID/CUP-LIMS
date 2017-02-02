@@ -60,7 +60,7 @@ class MatrixViewHandler {
 		
 		foreach( $conditionCols as $conditionID => $conditionDetails ) {
 			$excelName = $this->getExcelNameFromNumber( $columnNameCount );
-			$columns[$columnCount] = array( "title" => "<a class='matrixHeaderPopup' data-fileid='" . $conditionDetails['FILE']['ID'] . "' data-file='" . $conditionDetails['FILE']['NAME'] . "' data-bgid='" . $conditionDetails['BG']['ID'] . "' data-bgfile='" . $conditionDetails['BG']['NAME'] . "'>" . $excelName . "</a>", "data" => $columnCount, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => $conditionID );
+			$columns[$columnCount] = array( "title" => "<a class='matrixHeaderPopup' data-fileid='" . $conditionDetails['FILE']['ID'] . "' data-file='" . $conditionDetails['FILE']['NAME'] . "' data-bgid='" . $conditionDetails['BG']['ID'] . "' data-bgfile='" . $conditionDetails['BG']['NAME'] . "'>" . $excelName . "</a>", "data" => $columnCount, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => $conditionID, "fileID" => $conditionDetails['FILE']['ID'], "fileName" => $conditionDetails['FILE']['NAME'] );
 			
 			if( $createLegend ) {
 				$this->colLegend[] = array( "EXCEL_NAME" => $excelName, "FILE" => $conditionDetails['FILE']['NAME'], "FILE_ID" => $conditionDetails['FILE']['ID'], "BG_FILE" => $conditionDetails['BG']['NAME'], "BG_ID" => $conditionDetails['BG']['ID'] );
@@ -130,12 +130,14 @@ class MatrixViewHandler {
 			$columnSet = $this->colDefinitions;
 			for( $i = 1; $i < sizeof( $columnSet ); $i++ ) {
 				$colName = $columnSet[$i]["dbCol"];
+				$colFileID = $columnSet[$i]['fileID'];
+				$colFileName = $columnSet[$i]['fileName'];
 				if( $style == 2 ) {
-					$column[] = round( $rowInfo->$colName, 5 );
+					$column[] = "<div class='rawDetailsPopup' data-fileid='" . $colFileID . "' data-filename='" . $colFileName . "' data-groupname='" . $rowInfo->group_name . "' data-groupid='" . $rowInfo->sgrna_group_id . "' style='width: 100%; height: 100%;'>" . round( $rowInfo->$colName, 5 ) . "</div>";
 				} else if( $style == 3 ) {
-					$column[] = "<div style='background-color: " . $this->convertValueToRGB( $rowInfo->$colName ) . "; color: #FFF; width: 100%; height: 100%;'>" . round( $rowInfo->$colName, 5 ) . "</div>";
+					$column[] = "<div class='rawDetailsPopup' data-fileid='" . $colFileID . "' data-filename='" . $colFileName . "' data-groupname='" . $rowInfo->group_name . "' data-groupid='" . $rowInfo->sgrna_group_id . "' style='background-color: " . $this->convertValueToRGB( $rowInfo->$colName ) . "; color: #FFF; width: 100%; height: 100%;'>" . round( $rowInfo->$colName, 5 ) . "</div>";
 				} else {
-					$column[] = "<div class='colorOnlyPopup' data-value='" . round( $rowInfo->$colName, 5 ) . "' style='background-color: " . $this->convertValueToRGB( $rowInfo->$colName ) . "; width: 100%; height: 100%;'></div>";
+					$column[] = "<div class='rawDetailsPopup colorOnlyPopup' data-fileid='" . $colFileID . "' data-filename='" . $colFileName . "' data-groupname='" . $rowInfo->group_name . "' data-groupid='" . $rowInfo->sgrna_group_id . "' data-value='" . round( $rowInfo->$colName, 5 ) . "' style='background-color: " . $this->convertValueToRGB( $rowInfo->$colName ) . "; width: 100%; height: 100%;'></div>";
 				}
 			}
 			

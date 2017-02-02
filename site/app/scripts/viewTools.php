@@ -91,6 +91,17 @@ if( isset( $postData['tool'] ) ) {
 			echo json_encode( $results );
 			break;
 			
+		// Fetch formatted Raw Read information to display in the matrix view
+		case 'fetchMatrixRawReads' :
+			$results = array( "DATA" => "" );
+			if( isset( $postData['fileID'] ) && isset( $postData['groupID'] ) && isset( $postData['fileName'] ) && isset( $postData['groupName'] )) {
+				$viewHandler = new models\ViewHandler( );
+				$results["DATA"] = $viewHandler->fetchRawReadsSummaryByGroupID( $postData['fileID'], $postData['fileName'], $postData['groupID'], $postData['groupName'] );
+			}
+			
+			echo json_encode( $results );
+			break;
+			
 	}
 }
 
