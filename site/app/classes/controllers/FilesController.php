@@ -100,6 +100,56 @@ class FilesController extends lib\Controller {
 		$this->renderView( "files" . DS . "FilesIndex.tpl", $params, false );
 				
 	}
+	
+	/**
+	 * View
+	 * Main view for viewing an individual file. Presents a table file data 
+	 * and presents options for downloading that data.
+	 */
+	
+	public function View( ) {
+		
+		lib\Session::canAccess( lib\Session::getPermission( 'VIEW FILES' ));
+		
+		// If we're not passed an ID, show 404
+		if( !isset( $_GET['id'] ) || !is_numeric( $_GET['id'] )) {
+			lib\Session::sendPageNotFound( );
+		}
+		
+		$fileHandler = new models\FileHandler( );
+		$fileInfo = $fileHandler->fetchFile( $_GET['id'] );
+		
+		// If we got an id but it's invalid
+		// show 404 error
+		if( !$fileInfo ) {
+			lib\Session::sendPageNotFound( );
+		}
+		
+		$user = new lib\User( );
+		$userInfo = $user->fetchUserDetails( $fileInfo->user_id );
+				 
+		$params = array(
+			"WEB_URL" => WEB_URL,
+			"IMG_URL" => IMG_URL,
+			"FILE_NAME" => $fileInfo->file_name,
+			"FILE_ADDEDDATE" => $fileInfo->file_addeddate,
+			"FILE_STATE" => $fileInfo->file_state,
+			"FILE_READTOTAL" => $fileInfo->file_readtotal,
+			"USER_NAME" => $userInfo['NAME'],
+			"FILE_SIZE" => $fileHandler->formatFileSize( $fileInfo->file_size ),
+			"EXPERIMENT_ID" => $fileInfo->experiment_id,
+			"EXPERIMENT_NAME" => $fileInfo->experiment_name,
+			"UPLOAD_PROCESSED_URL" => UPLOAD_PROCESSED_URL,
+			"EXPERIMENT_CODE" => $fileInfo->experiment_code,
+			"TABLE_TITLE" => "Raw Data"
+		);
+		
+		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Files' />" );
+		$this->headerParams->set( "TITLE", "View File | " . CONFIG['WEB']['WEB_NAME'] );
+		
+		$this->renderView( "files" . DS . "FilesView.tpl", $params, false );
+				
+	}
 
 }
 
