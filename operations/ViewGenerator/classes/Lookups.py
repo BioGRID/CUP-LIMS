@@ -52,7 +52,11 @@ class Lookups( ) :
 		self.cursor.execute( "SELECT sgrna_id, sgrna_group_id FROM " + Config.DB_MAIN + ".sgRNA_group_mappings WHERE sgrna_group_mapping_status='active'" )
 		
 		for row in self.cursor.fetchall( ) :
-			mapping[str(row['sgrna_id'])] = str(row['sgrna_group_id'])
+		
+			if str(row['sgrna_id']) not in mapping :
+				mapping[str(row['sgrna_id'])] = []
+		
+			mapping[str(row['sgrna_id'])].append( str(row['sgrna_group_id']) )
 			
 		return mapping
 		
