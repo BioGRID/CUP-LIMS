@@ -68,7 +68,7 @@ class ViewController extends lib\Controller {
 		$addonJS[] = "jquery.dataTables.js";
 		$addonJS[] = "dataTables.bootstrap.js";
 		$addonJS[] = "alertify.min.js";
-		$addonJS[] = "orca-dataTableBlock.js";
+		$addonJS[] = "blocks/orca-dataTableBlock.js";
 		$addonJS[] = "view/orca-view-listing.js";
 		
 		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );
@@ -129,7 +129,7 @@ class ViewController extends lib\Controller {
 		$addonJS[] = "jquery.dataTables.js";
 		$addonJS[] = "dataTables.bootstrap.js";
 		$addonJS[] = "alertify.min.js";
-		$addonJS[] = "orca-dataTableBlock.js";
+		$addonJS[] = "blocks/orca-dataTableBlock.js";
 		$addonJS[] = "view/orca-view-create.js";
 		
 		// Add some Manager Permissions Specific CSS
@@ -194,6 +194,7 @@ class ViewController extends lib\Controller {
 		$viewHandler = new models\ViewHandler( );
 		$view = $viewHandler->fetchView( $_GET['viewID'] );	
 		$viewHandler->updateLastViewed( $_GET['viewID'] );
+		$viewIcon = $viewHandler->fetchViewTypeIcon( $view->view_type_id );
 		
 		$addonJS = $this->footerParams->get( 'ADDON_JS' );
 		$addonJS[] = "alertify.min.js";
@@ -222,7 +223,7 @@ class ViewController extends lib\Controller {
 			$addonJS[] = "jquery.dataTables.js";
 			$addonJS[] = "dataTables.bootstrap.js";
 			$addonJS[] = "alertify.min.js";
-			$addonJS[] = "orca-dataTableBlock.js";
+			$addonJS[] = "blocks/orca-dataTableBlock.js";
 			$addonJS[] = "view/orca-view-matrix.js";
 			
 			// Add some matrix view Specific CSS
@@ -265,7 +266,8 @@ class ViewController extends lib\Controller {
 				"VIEW_ID" => $view->view_id,
 				"VIEW_CODE" => $view->view_code,
 				"VIEW_STATE" => $view->view_state,
-				"VIEW_STYLE" => $viewStyle
+				"VIEW_STYLE" => $viewStyle,
+				"VIEW_ICON" => $viewIcon
 			);
 			
 		}

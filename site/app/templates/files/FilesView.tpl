@@ -25,3 +25,5 @@
 </div>
 
 {% include 'blocks/ORCADataTableBlock.tpl' %}
+
+<input type='hidden' id='fileID' value='{{ FILE_ID }}' />

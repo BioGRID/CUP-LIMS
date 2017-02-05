@@ -142,6 +142,26 @@ if( isset( $postData['tool'] ) ) {
 			echo json_encode( array( "draw" => $draw, "recordsTotal" => $postData['totalRecords'], "recordsFiltered" => $recordsFiltered, "data" => $matrixRows ));
 			break;
 			
+		// Fetch the column header for the raw reads
+		// Datatable with correct options
+		case 'rawReadsHeader' :
+			$rawReadsHandler = new models\RawReadsHandler( );
+			$rawHeader = $rawReadsHandler->fetchColumnDefinitions( );
+			echo json_encode( $rawHeader );
+			break;
+		
+		// Fetch rows for the raw reads
+		// tool for display in Datatables
+		case 'rawReadsRows' :
+			$draw = $postData['draw'];
+			
+			$rawReadsHandler = new models\RawReadsHandler( );
+			$rawRows = $rawReadsHandler->buildRows( $postData );
+			$recordsFiltered = $rawReadsHandler->getUnfilteredRowCount( $postData );
+			
+			echo json_encode( array( "draw" => $draw, "recordsTotal" => $postData['totalRecords'], "recordsFiltered" => $recordsFiltered, "data" => $rawRows ));
+			break;
+			
 	}
 }
 

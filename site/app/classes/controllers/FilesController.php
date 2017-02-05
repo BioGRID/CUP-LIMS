@@ -22,8 +22,7 @@ class FilesController extends lib\Controller {
 		$addonJS[] = "jquery.dataTables.js";
 		$addonJS[] = "dataTables.bootstrap.js";
 		$addonJS[] = "alertify.min.js";
-		$addonJS[] = "orca-dataTableBlock.js";
-		$addonJS[] = "orca-files.js";
+		$addonJS[] = "blocks/orca-dataTableBlock.js";
 		
 		$addonCSS = array( );
 		$addonCSS[] = "jquery.qtip.min.css";
@@ -54,6 +53,11 @@ class FilesController extends lib\Controller {
 	public function Listing( ) {
 		
 		lib\Session::canAccess( lib\Session::getPermission( 'VIEW FILES' ));
+		
+		$addonJS = $this->footerParams->get( 'ADDON_JS' );
+		$addonJS[] = "files/orca-files.js";
+		
+		$this->footerParams->set( 'ADDON_JS', $addonJS );
 		
 		$fileHandler = new models\FileHandler( );
 		$buttons = $fileHandler->fetchFileToolbar( );
@@ -111,6 +115,11 @@ class FilesController extends lib\Controller {
 		
 		lib\Session::canAccess( lib\Session::getPermission( 'VIEW FILES' ));
 		
+		$addonJS = $this->footerParams->get( 'ADDON_JS' );
+		$addonJS[] = "files/orca-rawreads.js";
+		
+		$this->footerParams->set( 'ADDON_JS', $addonJS );
+		
 		// If we're not passed an ID, show 404
 		if( !isset( $_GET['id'] ) || !is_numeric( $_GET['id'] )) {
 			lib\Session::sendPageNotFound( );
@@ -127,10 +136,15 @@ class FilesController extends lib\Controller {
 		
 		$user = new lib\User( );
 		$userInfo = $user->fetchUserDetails( $fileInfo->user_id );
+		
+		// Fetch Raw Reads Info for Table
+		$rawReadHandler = new models\RawReadsHandler( );
+		$rawCount = $rawReadHandler->fetchRowCount( $_GET['id'] );
 				 
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
+			"FILE_ID" => $fileInfo->file_id,
 			"FILE_NAME" => $fileInfo->file_name,
 			"FILE_ADDEDDATE" => $fileInfo->file_addeddate,
 			"FILE_STATE" => $fileInfo->file_state,
@@ -141,7 +155,8 @@ class FilesController extends lib\Controller {
 			"EXPERIMENT_NAME" => $fileInfo->experiment_name,
 			"UPLOAD_PROCESSED_URL" => UPLOAD_PROCESSED_URL,
 			"EXPERIMENT_CODE" => $fileInfo->experiment_code,
-			"TABLE_TITLE" => "Raw Data"
+			"TABLE_TITLE" => "Raw Data",
+			"ROW_COUNT" => $rawCount
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Files' />" );

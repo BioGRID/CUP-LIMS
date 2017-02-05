@@ -2,7 +2,10 @@
 
 <footer id="footer" class="hidden-print secondaryContent container-fluid">
 	<section class="container-fluid footerText">
-		Copyright &copy; {{YEAR}}, <a href='{{COPYRIGHT_URL}}' target='_BLANK' title='{{COPYRIGHT_OWNER}}'>{{COPYRIGHT_OWNER}}</a>, All Rights Reserved.
+		<div class='pull-right'>
+			A <a href='https://thebiogrid.org' title='The BioGRID'>BioGRID</a> Project
+		</div>
+		Copyright &copy; {{YEAR}}, <a href='{{COPYRIGHT_URL}}' target='_BLANK' title='{{COPYRIGHT_OWNER}}'>{{COPYRIGHT_OWNER}}</a>, All Rights Reserved. 
 	</section>
 </footer>
 
