@@ -17,7 +17,7 @@ class FileProgressController extends lib\Controller {
 		parent::__construct( $twig );
 		
 		$addonJS = array( );
-		$addonJS[] = "orca-fileprogress.js";
+		$addonJS[] = "fileProgress/orca-fileprogress.js";
 		
 		$addonCSS = array( );
 		

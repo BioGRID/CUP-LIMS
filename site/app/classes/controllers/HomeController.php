@@ -9,8 +9,11 @@ namespace ORCA\app\classes\controllers;
  */
  
 use ORCA\app\lib;
+use ORCA\app\classes\models;
 
 class HomeController extends lib\Controller {
+	
+	private $RECENT_TO_SHOW = 5;
 	
 	public function __construct( $twig ) {
 		parent::__construct( $twig );
@@ -37,6 +40,44 @@ class HomeController extends lib\Controller {
 		 
 		lib\Session::canAccess( lib\Session::getPermission( 'VIEW DASHBOARD' ));
 		
+		// Figure out what valid admin tools this person has access to...
+		$adminTools = array( );
+		if( lib\Session::validateCredentials( lib\Session::getPermission( 'VIEW ADMIN TOOLS' )) ) {
+			if( lib\Session::validateCredentials( lib\Session::getPermission( 'CHANGE PASSWORD ALL' )) ) {
+				$adminTools["Change User Passwords (including your own)"] = WEB_URL . "/Admin/ChangePassword";
+			} 
+			
+			if( lib\Session::validateCredentials( lib\Session::getPermission( 'CHANGE PASSWORD' )) ) {
+				$adminTools["Change Your Password"] = WEB_URL . "/Admin/ChangePassword";
+			}
+			
+			if( lib\Session::validateCredentials( lib\Session::getPermission( 'ADD USER' )) ) {
+				$adminTools["Add a New User"] = WEB_URL . "/Admin/AddUser";
+			}
+			
+			if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE USERS' )) ) {
+				$adminTools["Manage Existing User Permissions"] = WEB_URL . "/Admin/ManageUsers";
+			}
+			
+			if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE USERS' )) ) {
+				$adminTools["Manage Existing User Permissions"] = WEB_URL . "/Admin/ManageUsers";
+			}
+			
+			if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE PERMISSIONS' )) ) {
+				$adminTools["Manage Site Permissions"] = WEB_URL . "/Admin/ManagePermissions";
+			}
+		}
+		
+		// Grab Experiment Info
+		$expHandler = new models\ExperimentHandler( );
+		$myExps = $expHandler->fetchExperimentList( $_SESSION[SESSION_NAME]['ID'], $this->RECENT_TO_SHOW );
+		$allExps = $expHandler->fetchExperimentList( "", $this->RECENT_TO_SHOW );
+		
+		// Grab View Info
+		$viewHandler = new models\ViewHandler( );
+		$myViews = $viewHandler->fetchViewList( $_SESSION[SESSION_NAME]['ID'], $this->RECENT_TO_SHOW );
+		$allViews = $viewHandler->fetchViewList( "", $this->RECENT_TO_SHOW );
+		
 		$params = array( 
 			"WEB_NAME" => CONFIG['WEB']['WEB_NAME'],
 			"WEB_NAME_ABBR" => CONFIG['WEB']['WEB_NAME_ABBR'],
@@ -45,7 +86,12 @@ class HomeController extends lib\Controller {
 			"VERSION" => CONFIG['WEB']['VERSION'],
 			"FIRSTNAME" => $_SESSION[SESSION_NAME]['FIRSTNAME'],
 			"LASTNAME" => $_SESSION[SESSION_NAME]['LASTNAME'],
-			"IMG_URL" => IMG_URL
+			"IMG_URL" => IMG_URL,
+			"ADMIN_TOOLS" => $adminTools,
+			"MY_EXPS" => $myExps,
+			"ALL_EXPS" => $allExps,
+			"MY_VIEWS" => $myViews,
+			"ALL_VIEWS" => $allViews
 		);
 		
 		$this->renderView( "home" . DS . "HomeIndex.tpl", $params, false );

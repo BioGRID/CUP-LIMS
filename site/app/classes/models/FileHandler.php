@@ -92,6 +92,28 @@ class FileHandler {
 	}
 	
 	/** 
+	 * Fetch a file from the database pertaining to a specific
+	 * file ID
+	 */
+	 
+	public function fetchFile( $fileID ) {
+		
+		$query = "SELECT f.file_id, f.file_name, f.file_size, f.file_state, f.file_state_msg, f.user_id, f.file_addeddate, f.file_readtotal, exp.experiment_id, exp.experiment_name, experiment_code FROM " . DB_MAIN . ".files f LEFT JOIN " . DB_MAIN . ".experiments exp ON (f.experiment_id=exp.experiment_id) WHERE file_id=?";
+
+		$stmt = $this->db->prepare( $query );
+		$stmt->execute( array( $fileID ) );
+		
+		// If it exists, return an error
+		if( $stmt->rowCount( ) > 0 ) {
+			$row = $stmt->fetch( PDO::FETCH_OBJ );
+			return $row;
+		}
+		
+		return false;
+	
+	}
+	
+	/** 
 	 * Fetch a set of files from the database pertaining to a specific
 	 * experiment ID and a status
 	 */
@@ -117,7 +139,7 @@ class FileHandler {
 	 * that's easier to present
 	 */
 	 
-	private function formatFileSize( $bytes ) {
+	public function formatFileSize( $bytes ) {
 		
         if( $bytes >= 1073741824 ) {
             $bytes = number_format( $bytes / 1073741824, 2 ) . ' GB';

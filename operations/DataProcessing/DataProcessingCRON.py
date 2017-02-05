@@ -13,7 +13,7 @@ import argparse
 import atexit, os, time
 import math
 
-from classes import Lookups, ParserHandler, TwoColumnParser, GeneSummaryHandler
+from classes import Lookups, ParserHandler, TwoColumnParser
 
 # Setup a PID file to prevent this CRON job from
 # executing multiple times if currently in progress
@@ -52,13 +52,6 @@ with Database.db as cursor :
 	
 		# Get sgRNA Hash
 		sgRNAs = lookups.buildSGRNAHash( )
-		
-		# Gene Summaries Handler
-		geneSummaryHandler = GeneSummaryHandler.GeneSummaryHandler( Database.db )
-		
-		# Background Data 
-		backgroundData = { }
-		backgroundTotals = { }
 			
 		prevExpID = "0"
 		for row in cursor.fetchall( ) :
@@ -90,15 +83,6 @@ with Database.db as cursor :
 					reads, readTotal, errors = twoColParser.parse( )
 					
 					parserHandler.setFileReadTotal( row['file_id'], readTotal )
-					
-			if row['file_isbackground'] == 1 :
-				# Load Background Data
-				backgroundData[str(row['file_id'])] = reads
-				backgroundTotals[str(row['file_id'])] = readTotal
-			else :
-				# File data in reads
-				# step through backgrounds, perform calculations
-				geneSummaryHandler.buildGeneSummary( row['file_id'], reads, readTotal, backgroundData, backgroundTotals )
 			
 			if len(errors) > 0 :
 				parserHandler.setFileState( row['file_id'], "error", errors )

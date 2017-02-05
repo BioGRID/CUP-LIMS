@@ -255,7 +255,7 @@ class ViewHandler {
 			
 			$column[] = "<a href='" . WEB_URL . "/View?viewID=" . $viewInfo->view_id . "' title='" . $viewInfo->view_title . "'>" . $viewInfo->view_title . "</a>";
 			$column[] = $viewInfo->view_desc;
-			$column[] = $viewInfo->view_type_name;
+			$column[] = $viewInfo->view_type_name . " <i class='fa fa-lg primaryIcon " . $this->fetchViewTypeIcon( $viewInfo->view_type_id ) . "'></i>";
 			$column[] = $viewInfo->view_value_name;
 			$column[] = $viewInfo->view_addeddate;
 			
@@ -272,11 +272,7 @@ class ViewHandler {
 			$fileList = array_unique( $fileList );
 			$column[] = "[<a href='" . WEB_URL . "/Files?fileIDs=" . implode( "|", $fileList ) . "' title='View " . sizeof( $fileList ) . " Files'>View " . sizeof( $fileList ) . " Files</a>]";
 			
-			if( $viewInfo->view_state == "complete" ) {
-				$column[] = "<strong><span class='text-success'>" . $viewInfo->view_state . " <i class='fa fa-check'></i></span></strong>";
-			} else {
-				$column[] = "<strong><span class='text-danger'>" . $viewInfo->view_state . " <i class='fa fa-spin fa-spinner'></i></a></span></strong>";
-			} 
+			$column[] = $this->generateViewState( $viewInfo );
 			
 			$column[] = $viewInfo->user_name;
 			$rows[] = $column;
@@ -284,6 +280,19 @@ class ViewHandler {
 		
 		return $rows;
 		
+	}
+	
+	/**
+	 * Convert the view state into a more graphical representation
+	 */
+	 
+	public function generateViewState( $viewInfo ) {
+		
+		if( $viewInfo->view_state == "complete" ) {
+			return "<strong><span class='text-success'>" . $viewInfo->view_state . " <i class='fa fa-check'></i></span></strong>";
+		}
+		
+		return "<strong><span class='text-danger'>" . $viewInfo->view_state . " <i class='fa fa-spin fa-spinner'></i></a></span></strong>"; 
 	}
 	
 	/**
@@ -423,6 +432,97 @@ class ViewHandler {
 		
 	}
 	
+	/**
+	 * Fetch a formatted summary showing raw reads data
+	 * stored for one specific file and group id
+	 */
+	 
+	public function fetchRawReadsSummaryByGroupID( $fileID, $fileName, $groupID, $groupName ) {
+		
+		$stmt = $this->db->prepare( "SELECT sgrna_id FROM " . DB_MAIN . ".sgRNA_group_mappings WHERE sgrna_group_id=? AND sgrna_group_mapping_status='active'" );
+		$stmt->execute( array( $groupID ) );
+		
+		$sgrnaIDs = array( );
+		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
+			$sgrnaIDs[] = $row->sgrna_id;
+		}
+		
+		$querySet = array_fill( 0, sizeof( $sgrnaIDs ), "?" );
+		$stmt = $this->db->prepare( "SELECT s.sgrna_sequence, r.raw_read_count FROM " . DB_MAIN . ".raw_reads r LEFT JOIN " . DB_MAIN . ".sgRNAs s ON (r.sgrna_id=s.sgrna_id) WHERE r.sgrna_id IN (" . implode( ",", $querySet ) . ") AND file_id=?" );
+		$sgrnaIDs[] = $fileID;
+		$stmt->execute( $sgrnaIDs );
+		
+		$rawReads = array( );
+		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
+			$rawReads[$row->sgrna_sequence] = $row->raw_read_count;
+		}
+	
+		$rawReadsTable = $this->twig->render( "view" . DS . "ViewRawReadsTable.tpl", array(
+			"FILE_NAME" => $fileName,
+			"GROUP_NAME" => $groupName,
+			"RAW_READS" => $rawReads
+		));
+		
+		return $rawReadsTable;
+		
+		
+	}
+	
+	/** 
+	 * Fetch a recent list of views limited by ID if not empty
+	 */
+	 
+	public function fetchViewList( $userID = "", $limit = 5 ) {
+		
+		$viewValues = $this->fetchViewValues( );
+
+		$options = array( );
+		$query = "SELECT v.view_id, v.view_title, v.view_type_id, DATE_FORMAT( v.view_addeddate, '%Y-%m-%d'  ) as addedDate, v.view_state, v.view_value_id, u.user_name FROM " . DB_MAIN . ".views v LEFT JOIN " . DB_MAIN . ".users u ON (v.user_id=u.user_id)";
+		if( $userID != "" ) {
+			$options[] = $userID;
+			$query .= " WHERE v.user_id=?";
+		}
+		$query .= " ORDER BY v.view_addeddate DESC LIMIT " . $limit;
+		
+		$stmt = $this->db->prepare( $query );
+		$stmt->execute( $options );
+		
+		$views = array( );
+		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
+			
+			$viewTypeIcon = $this->fetchViewTypeIcon( $row->view_type_id );
+			
+			$views[$row->view_id] = array( 
+				"ID" => $row->view_id,
+				"TITLE" => $row->view_title,
+				"ADDED_DATE" => $row->addedDate,
+				"TYPE_ICON" => $viewTypeIcon,
+				"STATE" => $this->generateViewState( $row ),
+				"VALUE" => $viewValues[$row->view_value_id],
+				"USER_NAME" => $row->user_name
+			);
+		}
+		
+		return $views;
+		
+	}
+	
+	/**
+	 * Convert a view type id into an icon representation
+	 */
+	 
+	public function fetchViewTypeIcon( $viewTypeID ) {
+		
+		switch( $viewTypeID ) {
+			
+			case "1" :
+				return "fa-table";
+			
+		}
+		
+		return "fa-binoculars";
+		
+	}
 	
 }
 

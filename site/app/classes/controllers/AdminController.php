@@ -104,7 +104,7 @@ class AdminController extends lib\Controller {
 		$addonJS[] = "jquery.dataTables.js";
 		$addonJS[] = "dataTables.bootstrap.js";
 		$addonJS[] = "alertify.min.js";
-		$addonJS[] = "orca-dataTableBlock.js";
+		$addonJS[] = "blocks/orca-dataTableBlock.js";
 		$addonJS[] = "admin/orca-admin-manageUsers.js";
 
 		// Add some Manage Users Specific CSS
@@ -190,7 +190,7 @@ class AdminController extends lib\Controller {
 		$addonJS[] = "jquery.dataTables.js";
 		$addonJS[] = "dataTables.bootstrap.js";
 		$addonJS[] = "alertify.min.js";
-		$addonJS[] = "orca-dataTableBlock.js";
+		$addonJS[] = "blocks/orca-dataTableBlock.js";
 		$addonJS[] = "admin/orca-admin-managePermissions.js";
 		
 		// Add some Manager Permissions Specific CSS

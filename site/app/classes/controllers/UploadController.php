@@ -21,7 +21,7 @@ class UploadController extends lib\Controller {
 		$addonJS[] = "bootstrap-datepicker.min.js";
 		$addonJS[] = "formValidation/formValidation.min.js";
 		$addonJS[] = "formValidation/bootstrap.min.js";
-		$addonJS[] = "orca-upload.js";
+		$addonJS[] = "upload/orca-upload.js";
 		
 		$addonCSS = array( );
 		$addonCSS[] = "dropzone.min.css";

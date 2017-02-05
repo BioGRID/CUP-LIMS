@@ -162,11 +162,7 @@ class ExperimentHandler {
 			$column[] = $expInfo->experiment_rundate;
 			$column[] = $expInfo->experiment_filecount;
 			
-			if( $expInfo->experiment_filestate == "loaded" ) {
-				$column[] = "<strong><span class='text-success'>" . $expInfo->experiment_filestate . " <i class='fa fa-check'></i></span> [<a href='" . WEB_URL . "/FileProgress?expID=" . $expID . "' title='" . $expInfo->experiment_name . " File State'>view</a>]</strong>";
-			} else {
-				$column[] = "<strong><span class='text-danger'><a href='" . WEB_URL . "/FileProgress?expID=" . $expID . "' title='" . $expInfo->experiment_name . " File State'>" . $expInfo->experiment_filestate . " <i class='fa fa-spin fa-spinner'></i></a></span></strong>";
-			} 
+			$column[] = $this->generateFormattedFileState( $expInfo );
 			
 			$column[] = $expInfo->user_name;
 			$rows[] = $column;
@@ -174,6 +170,19 @@ class ExperimentHandler {
 		
 		return $rows;
 		
+	}
+	
+	/**
+	 * Generate formatted experiment file_state
+	 */
+	 
+	public function generateFormattedFileState( $expInfo ) {
+	
+		if( $expInfo->experiment_filestate == "loaded" ) {
+			return "<strong><span class='text-success'>" . $expInfo->experiment_filestate . " <i class='fa fa-check'></i></span> [<a href='" . WEB_URL . "/FileProgress?expID=" . $expInfo->experiment_id . "' title='" . $expInfo->experiment_name . " File State'>view</a>]</strong>";
+		} 
+	
+		return "<strong><span class='text-danger'><a href='" . WEB_URL . "/FileProgress?expID=" . $expInfo->experiment_id . "' title='" . $expInfo->experiment_name . " File State'>" . $expInfo->experiment_filestate . " <i class='fa fa-spin fa-spinner'></i></a></span></strong>";
 	}
 	
 	/**
@@ -370,6 +379,40 @@ class ExperimentHandler {
 		$expDetails[] = array( "HEADER" => "Uploading User", "BODY" => $user, "ID" => "user_id", "SIZE" => "third" );
 		
 		return $expDetails;
+		
+	}
+	
+	/** 
+	 * Fetch a recent list of experiments limited by ID if not empty
+	 */
+	 
+	public function fetchExperimentList( $userID = "", $limit = 5 ) {
+
+		$options = array( );
+		$query = "SELECT e.experiment_id, e.experiment_name, DATE_FORMAT( e.experiment_addeddate, '%Y-%m-%d'  ) as addedDate, e.experiment_rundate, e.experiment_filecount, e.experiment_filestate, u.user_name FROM " . DB_MAIN . ".experiments e LEFT JOIN " . DB_MAIN . ".users u ON (e.user_id=u.user_id)";
+		if( $userID != "" ) {
+			$options[] = $userID;
+			$query .= " WHERE e.user_id=?";
+		}
+		$query .= " ORDER BY e.experiment_addeddate DESC LIMIT " . $limit;
+		
+		$stmt = $this->db->prepare( $query );
+		$stmt->execute( $options );
+		
+		$experiments = array( );
+		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
+			$experiments[$row->experiment_id] = array( 
+				"ID" => $row->experiment_id,
+				"NAME" => $row->experiment_name,
+				"ADDED_DATE" => $row->addedDate,
+				"RUN_DATE" => $row->experiment_rundate,
+				"FILE_COUNT" => $row->experiment_filecount,
+				"FILE_STATE" => $this->generateFormattedFileState( $row ),
+				"USER_NAME" => $row->user_name
+			);
+		}
+		
+		return $experiments;
 		
 	}
 }

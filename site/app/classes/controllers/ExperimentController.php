@@ -22,7 +22,7 @@ class ExperimentController extends lib\Controller {
 		$addonJS[] = "jquery.dataTables.js";
 		$addonJS[] = "dataTables.bootstrap.js";
 		$addonJS[] = "alertify.min.js";
-		$addonJS[] = "orca-dataTableBlock.js";
+		$addonJS[] = "blocks/orca-dataTableBlock.js";
 		
 		$addonCSS = array( );
 		$addonCSS[] = "jquery.qtip.min.css";
@@ -55,7 +55,7 @@ class ExperimentController extends lib\Controller {
 		lib\Session::canAccess( lib\Session::getPermission( 'VIEW EXPERIMENTS' ));
 		
 		$addonJS = $this->footerParams->get( 'ADDON_JS' );
-		$addonJS[] = "orca-experiment.js";
+		$addonJS[] = "experiment/orca-experiment.js";
 		
 		$this->footerParams->set( 'ADDON_JS', $addonJS );
 		
@@ -119,7 +119,7 @@ class ExperimentController extends lib\Controller {
 			
 			// Add the files JS so we can display the files table
 			$addonJS = $this->footerParams->get( 'ADDON_JS' );
-			$addonJS[] = "orca-files.js";
+			$addonJS[] = "files/orca-files.js";
 			
 			$this->footerParams->set( 'ADDON_JS', $addonJS );
 		}

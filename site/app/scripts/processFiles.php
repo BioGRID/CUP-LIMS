@@ -9,7 +9,6 @@ session_start( );
 
 require_once __DIR__ . '/../../app/lib/Bootstrap.php';
 
-use ORCA\app\classes\models\RawDataHandler;
 use ORCA\app\classes\models\FileHandler;
 
 if( isset( $_POST['script'] ) ) {
@@ -25,13 +24,7 @@ if( isset( $_POST['script'] ) ) {
 			$fileHandler = new FileHandler( );
 			$files = $fileHandler->fetchFiles( $_POST['expID'], $full );
 			echo json_encode( $files );
-			break;
-			
-		case 'parseFile' :
-			$rawData = new RawDataHandler( );
-			echo json_encode( array( "STATUS" => "ERROR", "MESSAGE" => "PROBLEM!!!" ));
-			break;
-			
+			break;	
 	}
 }
 

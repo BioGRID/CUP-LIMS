@@ -22,8 +22,7 @@ class FilesController extends lib\Controller {
 		$addonJS[] = "jquery.dataTables.js";
 		$addonJS[] = "dataTables.bootstrap.js";
 		$addonJS[] = "alertify.min.js";
-		$addonJS[] = "orca-dataTableBlock.js";
-		$addonJS[] = "orca-files.js";
+		$addonJS[] = "blocks/orca-dataTableBlock.js";
 		
 		$addonCSS = array( );
 		$addonCSS[] = "jquery.qtip.min.css";
@@ -54,6 +53,11 @@ class FilesController extends lib\Controller {
 	public function Listing( ) {
 		
 		lib\Session::canAccess( lib\Session::getPermission( 'VIEW FILES' ));
+		
+		$addonJS = $this->footerParams->get( 'ADDON_JS' );
+		$addonJS[] = "files/orca-files.js";
+		
+		$this->footerParams->set( 'ADDON_JS', $addonJS );
 		
 		$fileHandler = new models\FileHandler( );
 		$buttons = $fileHandler->fetchFileToolbar( );
@@ -98,6 +102,75 @@ class FilesController extends lib\Controller {
 		$this->headerParams->set( "TITLE", "View Files | " . CONFIG['WEB']['WEB_NAME'] );
 		
 		$this->renderView( "files" . DS . "FilesIndex.tpl", $params, false );
+				
+	}
+	
+	/**
+	 * View
+	 * Main view for viewing an individual file. Presents a table file data 
+	 * and presents options for downloading that data.
+	 */
+	
+	public function View( ) {
+		
+		lib\Session::canAccess( lib\Session::getPermission( 'VIEW FILES' ));
+		
+		$addonJS = $this->footerParams->get( 'ADDON_JS' );
+		$addonJS[] = "files/orca-rawreads.js";
+		
+		$this->footerParams->set( 'ADDON_JS', $addonJS );
+		
+		// If we're not passed an ID, show 404
+		if( !isset( $_GET['id'] ) || !is_numeric( $_GET['id'] )) {
+			lib\Session::sendPageNotFound( );
+		}
+		
+		$fileHandler = new models\FileHandler( );
+		$fileInfo = $fileHandler->fetchFile( $_GET['id'] );
+		
+		// If we got an id but it's invalid
+		// show 404 error
+		if( !$fileInfo ) {
+			lib\Session::sendPageNotFound( );
+		}
+		
+		$user = new lib\User( );
+		$userInfo = $user->fetchUserDetails( $fileInfo->user_id );
+		
+		// See if a view already exists for this file
+		$viewHandler = new models\ViewHandler( );
+		$fileSet = array( );
+		$fileSet[] = array( "fileID" => $fileInfo->file_id, "backgroundID" => "0" );
+		$viewDetails = $viewHandler->addView( "File #" . $fileInfo->file_id . " Annoted Raw Data", "Raw Data Annotated with Group Info", 2, 2, $fileSet );
+		$view = $viewHandler->fetchView( $viewDetails['ID'] );
+		
+		// Fetch Raw Reads Info for Table
+		// $rawReadHandler = new models\RawReadsHandler( );
+		// $rawCount = $rawReadHandler->fetchRowCount( $_GET['id'] );
+				 
+		$params = array(
+			"WEB_URL" => WEB_URL,
+			"IMG_URL" => IMG_URL,
+			"FILE_ID" => $fileInfo->file_id,
+			"FILE_NAME" => $fileInfo->file_name,
+			"FILE_ADDEDDATE" => $fileInfo->file_addeddate,
+			"FILE_STATE" => $fileInfo->file_state,
+			"FILE_READTOTAL" => $fileInfo->file_readtotal,
+			"USER_NAME" => $userInfo['NAME'],
+			"FILE_SIZE" => $fileHandler->formatFileSize( $fileInfo->file_size ),
+			"EXPERIMENT_ID" => $fileInfo->experiment_id,
+			"EXPERIMENT_NAME" => $fileInfo->experiment_name,
+			"UPLOAD_PROCESSED_URL" => UPLOAD_PROCESSED_URL,
+			"EXPERIMENT_CODE" => $fileInfo->experiment_code,
+			"TABLE_TITLE" => "Raw Data",
+			"VIEW_STATE" => $view->view_state,
+			"ROW_COUNT" => $rawCount
+		);
+		
+		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Files' />" );
+		$this->headerParams->set( "TITLE", "View File | " . CONFIG['WEB']['WEB_NAME'] );
+		
+		$this->renderView( "files" . DS . "FilesView.tpl", $params, false );
 				
 	}
 

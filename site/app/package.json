@@ -28,7 +28,7 @@
     "datatables.net": "~1.10.11",
     "datatables.net-bs": "~1.10.11",
     "dropzone": "^4.3.0",
-    "font-awesome": "~4.5.0",
+    "font-awesome": "^4.5.0",
     "formvalidation": "^0.6.2-dev",
     "jquery": "~2.2.0",
     "qtip2": "~3.0.3"

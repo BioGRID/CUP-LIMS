@@ -22,7 +22,7 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 { margin-top: 0px; margin-b
 .paddingTopXs { padding-top: @line-height-computed / 3; }
 .paddingBotXs { padding-bottom: @line-height-computed / 3; }
 .paddingTopNone { padding-top: 0px !important; }
-.paddingBotNone { padding-top: 0px !important; }
+.paddingBotNone { padding-bottom: 0px !important; }
 .paddingLeftNone { padding-left: 0px !important; }
 .paddingRightNone { padding-right: 0px !important; }
 .hidden { display: none; }
@@ -46,6 +46,34 @@ i {
 .btn-orca3 { .button-variant( #FFF; #2E2F4F; #2E2F4F); }
 .btn-orca4 { .button-variant( #FFF; #4E6B66; #4E6B66); }
 
+.btn-warning { color: @gray-dark !important; }
+
+.panel {
+	margin-bottom: 10px !important;
+}
+
+.panel-info, .panel-danger { 
+	.panel-heading {
+		color: #FFF !important;
+	}
+}
+
+.panel-warning, .panel-primary, .panel-success { 
+	.panel-heading {
+		color: @gray-dark !important;
+	}
+}
+
+a { 
+	cursor: pointer;
+	color: #6ca4f7;
+	font-weight: bold;
+	&:hover {
+		text-decoration: none;
+		color: darken( #6ca4f7, 30% );
+	}
+}
+
 /* SITE COMPONENTS */
 
 .orcaNav { background-color: @brand-info; }
@@ -62,6 +90,9 @@ i {
 		font-weight: bold; 
 		color: @gray-lighter; 
 	}
+	
+	a { color: @brand-primary; }
+	a:hover { color: lighten( @brand-primary, 25% ); }
 }
 
 .subhead { 
@@ -75,6 +106,12 @@ i {
 .subheadLarge {
 	.subhead;
 	font-size: 18px;
+}
+
+/* DASHBOARD */
+.gettingStartedBox {
+	padding-bottom: 0px !important;
+	h3 { margin-top: 15px; }
 }
 
 /* UPLOAD */
@@ -204,8 +241,7 @@ i {
 table.matrixTable {
 
 	td { 
-		width: 1px; 
-		height: 1px; 
+ 
 		padding: 0px !important; 
 	}
 	
@@ -229,7 +265,15 @@ table.matrixTable {
 	a:hover { color: #0a53c0 !important; }
 }
 
+.orcaRawReadsTableWrap {
+	padding: 5px;
+	.orcaRawReadsTable {
+		width: 100%;
+	}
+}
+
 .colorOnlyPopup { cursor: pointer; }
+.rawDetailsPopup { cursor: pointer; }
 .optionIcon { cursor: pointer; }
 
 .shortcut-link {
@@ -291,8 +335,8 @@ table.matrixTable {
 	i { color: darken(@bgColor, 20%); }
 }
 
-.high-queue-panel { .color-panel( #BFCFF7, #000 ); }
-.standard-queue-panel { .color-panel( #DDD9AB, #000 ); }
+.high-queue-panel { .color-panel( @brand-warning, @gray-dark ); }
+.standard-queue-panel { .color-panel( @brand-primary, @gray-dark ); }
 .error-queue-panel { .color-panel( #F7AF63, #000 ); }
 .recent-queue-panel { .color-panel( #9CDDC8, #000 ); }
 
