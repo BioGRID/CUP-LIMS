@@ -33,15 +33,3 @@ class Lookups( ) :
 			mapping[str(row['sgrna_sequence'])] = str(row['sgrna_id'])
 			
 		return mapping
-		
-	def buildSGRNAToGeneHash( self ) :
-	
-		"""Build a set of sgRNAs mapped to gene IDs"""
-		
-		mapping = { }
-		self.cursor.execute( "SELECT sgrna_id, sgrna_identifier_value FROM " + Config.DB_MAIN + ".sgRNA_identifiers WHERE sgrna_identifier_type='BioGRID Gene ID'" )
-		
-		for row in self.cursor.fetchall( ) :
-			mapping[str(row['sgrna_id'])] = str(row['sgrna_identifier_value'])
-			
-		return mapping

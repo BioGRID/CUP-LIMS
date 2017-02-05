@@ -89,4 +89,9 @@ class TwoColumnParser( ) :
 			sgRNAID = self.cursor.lastrowid
 			self.sgRNAs[sgRNA] = str(sgRNAID)
 			
+			self.cursor.execute( "INSERT INTO " + Config.DB_MAIN + ".sgRNA_groups VALUES( '0', "-", "-", "-", "-", NOW( ), 'active' )" )
+			sgRNAGroupID = self.cursor.lastrowid
+			
+			self.cursor.execute( "INSERT INTO " + Config.DB_MAIN + ".sgRNA_group_mappings VALUES( '0', %s, %s, NOW( ), 'active' )", [sgRNAGroupID, sgRNAID] )
+			
 		return sgRNAID
