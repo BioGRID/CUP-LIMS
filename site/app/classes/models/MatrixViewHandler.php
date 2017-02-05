@@ -133,11 +133,12 @@ class MatrixViewHandler {
 				$colFileID = $columnSet[$i]['fileID'];
 				$colFileName = $columnSet[$i]['fileName'];
 				if( $style == 2 ) {
-					$column[] = "<div class='rawDetailsPopup' data-fileid='" . $colFileID . "' data-filename='" . $colFileName . "' data-groupname='" . $rowInfo->group_name . "' data-groupid='" . $rowInfo->sgrna_group_id . "' style='width: 100%; height: 100%;'>" . round( $rowInfo->$colName, 5 ) . "</div>";
+					$column[] = "<div class='rawDetailsPopup' data-fileid='" . $colFileID . "' data-filename='" . $colFileName . "' data-groupname='" . $rowInfo->group_name . "' data-groupid='" . $rowInfo->sgrna_group_id . "' style='width: 100%; height: 100%; padding: 5px;'>" . round( $rowInfo->$colName, 5 ) . "</div>";
 				} else if( $style == 3 ) {
-					$column[] = "<div class='rawDetailsPopup' data-fileid='" . $colFileID . "' data-filename='" . $colFileName . "' data-groupname='" . $rowInfo->group_name . "' data-groupid='" . $rowInfo->sgrna_group_id . "' style='background-color: " . $this->convertValueToRGB( $rowInfo->$colName ) . "; color: #FFF; width: 100%; height: 100%;'>" . round( $rowInfo->$colName, 5 ) . "</div>";
+					$column[] = "<div class='rawDetailsPopup' data-fileid='" . $colFileID . "' data-filename='" . $colFileName . "' data-groupname='" . $rowInfo->group_name . "' data-groupid='" . $rowInfo->sgrna_group_id . "' style='background-color: " . $this->convertValueToRGB( $rowInfo->$colName ) . "; color: #FFF; width: 100%; height: 100%; padding: 5px;'>" . round( $rowInfo->$colName, 5 ) . "</div>";
 				} else {
-					$column[] = "<div class='rawDetailsPopup colorOnlyPopup' data-fileid='" . $colFileID . "' data-filename='" . $colFileName . "' data-groupname='" . $rowInfo->group_name . "' data-groupid='" . $rowInfo->sgrna_group_id . "' data-value='" . round( $rowInfo->$colName, 5 ) . "' style='background-color: " . $this->convertValueToRGB( $rowInfo->$colName ) . "; width: 100%; height: 100%;'></div>";
+					$colorVal = $this->convertValueToRGB( $rowInfo->$colName );
+					$column[] = "<div class='rawDetailsPopup colorOnlyPopup' data-fileid='" . $colFileID . "' data-filename='" . $colFileName . "' data-groupname='" . $rowInfo->group_name . "' data-groupid='" . $rowInfo->sgrna_group_id . "' data-value='" . round( $rowInfo->$colName, 5 ) . "' style='background-color: " . $colorVal . "; width: 100%; height: 100%; color: " . $colorVal . ";'>" . round( $rowInfo->$colName, 5 ) . "</div>";
 				}
 			}
 			

@@ -168,7 +168,7 @@
 						{% endif %}
 						
 						<div class='text-center'>
-							<a href='{{ WEB_URL }}/Views' title='View all Customized Views' class='btn btn-primary btn-sm'>Browse All Views</a>
+							<a href='{{ WEB_URL }}/View' title='View all Customized Views' class='btn btn-primary btn-sm'>Browse All Views</a>
 						</div>
 						
 					</div>
