@@ -23,7 +23,9 @@
 					<label for='viewType' class='control-label'>View Type</label>
 					<select class='form-control' id='viewType' name='viewType'>
 						{% for OPT_ID,OPT_VALUE in VIEW_TYPES %}
-							<option value='{{OPT_ID}}'>{{OPT_VALUE}}</option>
+							{% if OPT_ID != "2" %}
+								<option value='{{OPT_ID}}'>{{OPT_VALUE}}</option>
+							{% endif %}
 						{% endfor %}
 					</select>
 				</div>
@@ -31,7 +33,9 @@
 					<label for='viewValue' class='control-label'>View Value</label>
 					<select class='form-control' id='viewValue' name='viewValue'>
 						{% for OPT_ID,OPT_VALUE in VIEW_VALUES %}
-							<option value='{{OPT_ID}}'>{{OPT_VALUE}}</option>
+							{% if OPT_ID != "2" %}
+								<option value='{{OPT_ID}}'>{{OPT_VALUE}}</option>
+							{% endif %}
 						{% endfor %}
 					</select>
 				</div>

@@ -7,7 +7,7 @@ import math
 import json
 import atexit, os, time
 
-from classes import Lookups, MatrixView, RawDataHandler
+from classes import Lookups, MatrixView, RawDataHandler, RawAnnotatedView
 
 class ViewGenerator( ) :
 
@@ -20,6 +20,7 @@ class ViewGenerator( ) :
 		self.sgRNAGroups = self.lookups.buildSGRNAGroupHash( )
 		self.sgRNAGroupToBioGRID = self.lookups.buildGroupIDToBioGRIDAnnotation( )
 		self.matrixView = None
+		self.rawAnnotatedView = None
 		self.rawData = RawDataHandler.RawDataHandler( self.db )
 	
 	def run( self ) :
@@ -52,11 +53,14 @@ class ViewGenerator( ) :
 				viewDetails = { }
 				if str(view['view_type_id']) == "1" :
 					self.buildMatrixView( view, fileMap, allFiles )
+				# View Type 2 is a Annoted Raw Data File
+				elif str(view['view_type_id']) == "2" :
+					self.buildRawAnnotatedView( view, fileMap, allFiles )
 				else :
 					# Unknown View Type, Do Nothing, Leave it Queued
 					continue
 					
-			self.updateViewState( view['view_id'], 'complete' )
+			# self.updateViewState( view['view_id'], 'complete' )
 			
 	def buildMatrixView( self, view, fileMap, allFiles ) :
 	
@@ -66,6 +70,15 @@ class ViewGenerator( ) :
 		
 		fileHash = self.lookups.buildFileHash( allFiles )
 		viewDetails = self.matrixView.build( view, fileMap, self.rawData, fileHash )
+		self.updateViewDetails( view['view_id'], viewDetails )
+		
+	def buildRawAnnotatedView( self, view, fileMap, allFiles ) :
+	
+		"""Create a matrix view using the appropriate classes"""
+		if self.rawAnnotatedView == None :
+			self.rawAnnotatedView = RawAnnotatedView.RawAnnotatedView( self.db, self.sgRNAToGroup, self.sgRNAGroups, self.sgRNAGroupToBioGRID )
+		
+		viewDetails = self.rawAnnotatedView.build( view, fileMap )
 		self.updateViewDetails( view['view_id'], viewDetails )
 			
 	def viewExists( self, viewCode ) :

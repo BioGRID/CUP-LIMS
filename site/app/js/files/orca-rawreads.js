@@ -14,22 +14,33 @@
 
 	$(function( ) {
 		
-		var IDs = $("#fileID").val( );
+		var viewState = $("#viewState").val( );
+		if( viewState == "building" ) {
+			
+			setInterval( function( ) {
+				window.location.reload( );
+			}, 15000 );
+			
+		} else {
 		
-		$(".datatableBlock").orcaDataTableBlock({ 
-			sortCol: 1, 
-			sortDir: "desc", 
-			pageLength: 1000,
-			colTool: "rawReadsHeader", 
-			rowTool: "rawReadsRows", 
-			hasToolbar: false,
-			addonParams: { "fileID" : IDs },
-			optionsCallback: function( datatable ) {
-				// initializeViewFilesButton( );
-				// initializeCreateViewButton( );
-				// initializeDisableCheckedExperimentsButton( datatable );
-			}
-		});
+			var IDs = $("#fileID").val( );
+			
+			$(".datatableBlock").orcaDataTableBlock({ 
+				sortCol: 1, 
+				sortDir: "desc", 
+				pageLength: 1000,
+				colTool: "rawReadsHeader", 
+				rowTool: "rawReadsRows", 
+				hasToolbar: false,
+				addonParams: { "fileID" : IDs },
+				optionsCallback: function( datatable ) {
+					// initializeViewFilesButton( );
+					// initializeCreateViewButton( );
+					// initializeDisableCheckedExperimentsButton( datatable );
+				}
+			});
+			
+		}
 	});
 	
 }));

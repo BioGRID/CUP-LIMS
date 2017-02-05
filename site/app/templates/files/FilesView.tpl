@@ -19,11 +19,18 @@
 		<div class='subheadLarge'>Use the correct button below to download this file in various supported formats.</div>
 		<div class='marginTopSm'>
 			<a href='{{ UPLOAD_PROCESSED_URL }}/{{ EXPERIMENT_CODE }}/{{ FILE_NAME }}' title='Download {{ FILE_NAME }}'><button class='btn btn-info btn-lg'><i class="text-primary fa fa-cloud-download fa-lg"></i> Download Original Raw File</button></a>
-			<button class='btn btn-orca2 btn-lg'><i class="fa fa-cloud-download fa-lg" style='color: #efbc2b'></i> Download Raw File with Annotation</button>
+			{% if VIEW_STATE != "building" %}
+				<button class='btn btn-orca2 btn-lg'><i class="fa fa-cloud-download fa-lg" style='color: #efbc2b'></i> Download Raw File with Annotation</button>
+			{% endif %}
 		</div>
 	</div>
 </div>
 
-{% include 'blocks/ORCADataTableBlock.tpl' %}
+{% if VIEW_STATE != "building" %}
+	{% include 'blocks/ORCADataTableBlock.tpl' %}
+{% else %}
+	{% include 'files/FilesViewLoading.tpl' %}
+{% endif %}
 
 <input type='hidden' id='fileID' value='{{ FILE_ID }}' />
+<input type='hidden' id='viewState' value='{{ VIEW_STATE }}' />
