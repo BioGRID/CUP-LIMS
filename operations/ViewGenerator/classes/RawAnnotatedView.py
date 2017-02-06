@@ -1,9 +1,8 @@
 import sys, string
 import Config
 import datetime
-import copy
-import json
-import math
+
+from classes import Lookups
 
 class RawAnnotatedView( ) :
 
@@ -16,7 +15,10 @@ class RawAnnotatedView( ) :
 		self.sgRNAGroups = sgRNAGroups
 		self.sgRNAGroupToBioGRID = sgRNAGroupToBioGRID
 		
-	def build( self, view, fileMap ) :
+		self.lookups = Lookups.Lookups( self.db )
+		self.sgRNAHash = self.lookups.buildSGRNAIDHash( )
+		
+	def build( self, view, fileMap, rawData ) :
 		"""Create a raw annotated view table based on the view information passed in"""
 		
 		# Get a list of files
@@ -26,18 +28,41 @@ class RawAnnotatedView( ) :
 		self.createView( view )
 		
 		# Process each file one by one
-		self.generateRawAnnotatedView( view, fileList )
+		self.generateRawAnnotatedView( view, fileList, rawData )
 			
 		return { }
 	
-	def generateRawAnnotatedView( self, view, fileList ) :
+	def generateRawAnnotatedView( self, view, fileList, rawData ) :
 	
-		# Insert formatted data to database
-		formatCols = ','.join( ['%s'] * len(fileList) )
-		query = "INSERT INTO " + Config.DB_VIEWS + ".view_" + view['view_code'] + " ( SELECT r.raw_read_id, r.sgrna_id, s.sgrna_sequence, '-', '-', r.raw_read_count FROM " + Config.DB_MAIN + ".raw_reads r LEFT JOIN " + Config.DB_MAIN + ".sgRNAs s ON (r.sgrna_id=s.sgrna_id) WHERE r.file_id IN ( %s ) )"
-		query = query % formatCols
-		self.cursor.execute( query, tuple(fileList) )
-		
+		readCount = 0
+		for fileID in fileList :
+			reads = rawData.fetchReads( fileID )
+			
+			for sgRNAID, readScore in reads.items( ) :
+				sgRNASeq = self.sgRNAHash[sgRNAID]
+				groupIDs = self.sgRNAToGroup[sgRNAID]
+				
+				groupNames = []
+				for groupID in groupIDs :
+					groupInfo = self.sgRNAGroups[groupID]
+					groupName = groupInfo['sgrna_group_reference']
+					
+					# Initialize with basic annotation data
+					if groupID in self.sgRNAGroupToBioGRID :
+						biogridAnn = self.sgRNAGroupToBioGRID[groupID]
+						
+						if biogridAnn['official_symbol'] != "-" :
+							groupName = biogridAnn['official_symbol']
+							
+					groupNames.append( groupName )
+					
+				self.cursor.execute( "INSERT INTO " + Config.DB_VIEWS + ".view_" + view['view_code'] + " VALUES( '0', %s, %s, %s, %s, %s )", [sgRNAID, sgRNASeq, "|".join(groupIDs), "|".join(groupNames), readScore] )
+				
+				readCount = readCount + 1
+				if (readCount % 20000) == 0 :
+					self.db.commit( )
+					
+			self.db.commit( )
 		self.db.commit( )
 	
 	def createView( self, view ) :

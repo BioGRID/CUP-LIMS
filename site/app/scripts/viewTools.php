@@ -67,12 +67,12 @@ if( isset( $postData['tool'] ) ) {
 		
 		// Fetch formatted annotation to display in a popup
 		// for a given view group
-		case 'fetchMatrixGroupAnnotation' :
+		case 'fetchGroupAnnotation' :
 		
 			$results = array( "DATA" => "" );
 			if( isset( $postData['viewID'] ) && isset( $postData['id'] )) {
-				$matrixHandler = new models\MatrixViewHandler( $postData['viewID'] );
-				$results["DATA"] = $matrixHandler->fetchFormattedGroupAnnotation( $postData['id'] );
+				$viewHandler = new models\ViewHandler( );
+				$results["DATA"] = $viewHandler->fetchFormattedGroupAnnotation( $postData['viewID'], $postData['id'] );
 			}
 			
 			echo json_encode( $results );

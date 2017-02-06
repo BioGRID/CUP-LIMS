@@ -52,7 +52,8 @@
 				'basic' : true,
 				'padding' : false,
 				'movable' : false,
-				'overflow' : true
+				'overflow' : false,
+				'transition' : 'fade'
 			}).show( );
 			
 			var submitSet = { };
@@ -170,7 +171,7 @@
 					text: function( event, api ) {
 						
 						var submitSet = { };
-						submitSet['tool'] = "fetchMatrixGroupAnnotation";
+						submitSet['tool'] = "fetchGroupAnnotation";
 						submitSet['id'] = $(this).data( "id" );
 						submitSet['viewID'] = $("#viewID").val( );
 						

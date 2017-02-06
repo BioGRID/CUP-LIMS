@@ -34,6 +34,18 @@ class Lookups( ) :
 			
 		return mapping
 		
+	def buildSGRNAIDHash( self ) :
+		
+		"""Build a set of sgRNA IDs mapped to sgRNA Sequences"""
+		
+		mapping = { }
+		self.cursor.execute( "SELECT sgrna_id, sgrna_sequence FROM " + Config.DB_MAIN + ".sgRNAs" )
+		
+		for row in self.cursor.fetchall( ) :
+			mapping[str(row['sgrna_id'])] = str(row['sgrna_sequence'])
+			
+		return mapping
+		
 	def buildSGRNAGroupHash( self ) :
 	
 		mapping = { }
