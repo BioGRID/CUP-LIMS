@@ -3,21 +3,25 @@
 namespace ORCA\app\classes\models;
 
 /**
- * Raw Reads Handler
+ * Raw Annotated View Handler
  * This class is for handling processing of raw data
- * from the raw_reads table
+ * from a raw annoted view table
  */
 
 use \PDO;
+use ORCA\app\classes\models;
  
-class RawReadsHandler {
+class RawAnnotatedViewHandler {
 
 	private $db;
 	private $sgHASH;
 
-	public function __construct( ) {
+	public function __construct( $viewID ) {
 		$this->db = new PDO( DB_CONNECT, DB_USER, DB_PASS );
 		$this->db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+		
+		$this->viewHandler = new models\ViewHandler( );
+		$this->view = $this->viewHandler->fetchView( $viewID );
 	}
 	
 	/**
@@ -28,8 +32,8 @@ class RawReadsHandler {
 	 
 		$columns = array( );
 		$columns[0] = array( "title" => "sgRNA", "data" => 0, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'sgrna_sequence' );
-		$columns[1] = array( "title" => "Raw Reads", "data" => 1, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'raw_read_count' );
-		$columns[2] = array( "title" => "Options", "data" => 2, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
+		$columns[1] = array( "title" => "Names", "data" => 1, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => "group_names" );
+		$columns[2] = array( "title" => "Raw Reads", "data" => 2, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'raw_read_count' );
 		
 		return $columns;
 		
@@ -47,8 +51,17 @@ class RawReadsHandler {
 			$column = array( );
 			
 			$column[] = $rawInfo->sgrna_sequence;
+			
+			// $groupIDs = explode( "|", $rawInfo->sgrna_group_ids );
+			// $groupNames = explode( "|", $rawInfo->group_names );
+			
+			// $groupLinks = array( );
+			// for( $i = 0; $i < sizeof( $groupIDs ); $i++ ) {
+				// $groupLinks[] = "<a class='annotationPopup' data-id='" . $groupIDs[$i] . "' data-type='BIOGRID'>" . $groupNames[$i] . "</a>";
+			// }
+			
+			$column[] = implode( ", ", explode( "|", $rawInfo->group_names ));
 			$column[] = $rawInfo->raw_read_count;
-			$column[] = "-";
 		
 			$rows[] = $column;
 		}
@@ -68,16 +81,14 @@ class RawReadsHandler {
 		if( $countOnly ) {
 			$query .= " count(*) as rowCount";
 		} else {
-			$query .= " rr.raw_read_id, rr.sgrna_id, rr.raw_read_count, sg.sgrna_sequence";
+			$query .= " raw_read_id, sgrna_id, sgrna_sequence, sgrna_group_ids, group_names, raw_read_count";
 		}
 		
-		$query .= " FROM " . DB_MAIN . ".raw_reads rr LEFT JOIN sgRNAs sg ON (rr.sgrna_id = sg.sgrna_id)";
-		
-		$options = array( $params['fileID'] );
-		$query .= " WHERE sgrna_status='active' AND file_id=?";
+		$query .= " FROM " . DB_VIEWS . ".view_" . $this->view->view_code;
+		$options = array( );
 		if( isset( $params['search'] ) && strlen($params['search']['value']) > 0 ) {
-			$query .= " AND (sgrna_sequence LIKE ? OR raw_read_count=?)";
-			array_push( $options, $params['search']['value'] . '%', $params['search']['value'] );
+			$query .= " WHERE (sgrna_sequence LIKE ? OR raw_read_count=? OR group_names LIKE ?)";
+			array_push( $options, $params['search']['value'] . '%', $params['search']['value'], '%' . $params['search']['value'] . '%' );
 		}
 		
 		return array( "QUERY" => $query, "OPTIONS" => $options );
@@ -148,7 +159,7 @@ class RawReadsHandler {
 	 
 	public function fetchRowCount( $fileID ) {
 		
-		$stmt = $this->db->prepare( "SELECT COUNT(*) as rowCount FROM " . DB_MAIN . ".raw_reads WHERE file_id=?" );
+		$stmt = $this->db->prepare( "SELECT COUNT(*) as rowCount FROM " . DB_VIEWS . ".view_" . $this->view->view_code );
 		$stmt->execute( array( $fileID ) );
 		
 		$row = $stmt->fetch( PDO::FETCH_OBJ );

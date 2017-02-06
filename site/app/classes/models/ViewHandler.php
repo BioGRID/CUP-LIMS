@@ -10,6 +10,7 @@ namespace ORCA\app\classes\models;
 
 use \PDO;
 use ORCA\app\lib;
+use ORCA\app\classes\models;
  
 class ViewHandler {
 
@@ -265,7 +266,9 @@ class ViewHandler {
 				$backgroundSplit = explode( "|", $backgroundID );
 				$fileList[] = $fileID;
 				foreach( $backgroundSplit as $bgID ) {
-					$fileList[] = $bgID;
+					if( $bgID != "0" ) {
+						$fileList[] = $bgID;
+					}
 				}
 			}
 			
@@ -312,7 +315,7 @@ class ViewHandler {
 		$query .= " FROM " . DB_MAIN . ".views view LEFT JOIN view_types vt ON (view.view_type_id = vt.view_type_id) LEFT JOIN view_values vv ON (view.view_value_id = vv.view_value_id) LEFT JOIN users u ON (view.user_id = u.user_id)";
 		
 		$options = array( );
-		$query .= " WHERE view_status='active'";
+		$query .= " WHERE view_status='active' AND view.view_type_id != '2'";
 		if( isset( $params['search'] ) && strlen($params['search']['value']) > 0 ) {
 			$query .= " AND (view_title LIKE ? OR view_desc LIKE ? OR view_type_name LIKE ? OR view_value_name LIKE ? OR view_state=? OR view_addeddate=? OR user_name LIKE ?)";
 			array_push( $options, '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', $params['search']['value'], $params['search']['value'], '%' . $params['search']['value'] . '%' );
@@ -477,10 +480,10 @@ class ViewHandler {
 		$viewValues = $this->fetchViewValues( );
 
 		$options = array( );
-		$query = "SELECT v.view_id, v.view_title, v.view_type_id, DATE_FORMAT( v.view_addeddate, '%Y-%m-%d'  ) as addedDate, v.view_state, v.view_value_id, u.user_name FROM " . DB_MAIN . ".views v LEFT JOIN " . DB_MAIN . ".users u ON (v.user_id=u.user_id)";
+		$query = "SELECT v.view_id, v.view_title, v.view_type_id, DATE_FORMAT( v.view_addeddate, '%Y-%m-%d'  ) as addedDate, v.view_state, v.view_value_id, u.user_name FROM " . DB_MAIN . ".views v LEFT JOIN " . DB_MAIN . ".users u ON (v.user_id=u.user_id) WHERE v.view_type_id != '2'";
 		if( $userID != "" ) {
 			$options[] = $userID;
-			$query .= " WHERE v.user_id=?";
+			$query .= " AND v.user_id=?";
 		}
 		$query .= " ORDER BY v.view_addeddate DESC LIMIT " . $limit;
 		
@@ -515,12 +518,69 @@ class ViewHandler {
 		
 		switch( $viewTypeID ) {
 			
+			# Matrix
 			case "1" :
 				return "fa-table";
 			
+			# Annotated Raw Data
+			case "2" :
+				return "fa-language";
 		}
 		
 		return "fa-binoculars";
+		
+	}
+	
+	/**
+	 * Fetch formatted group annotation to be displayed in a popup tooltip
+	 */
+	 
+	public function fetchFormattedGroupAnnotation( $viewID, $groupID ) {
+		
+		$viewInfo = $this->fetchView( $viewID );
+		
+		$stmt = $this->db->prepare( "SELECT sgrna_group_reference, official_symbol, systematic_name, aliases, definition, organism_official_name FROM " . DB_VIEWS . ".view_" . $viewInfo->view_code . " WHERE sgrna_group_id=? LIMIT 1" );
+		
+		$stmt->execute( array( $groupID ) );
+		
+		// If it exists, return an error
+		if( $stmt->rowCount( ) > 0 ) {
+			$row = $stmt->fetch( PDO::FETCH_OBJ );
+			
+			$annotationParams = array( );
+			if( $row->official_symbol != "-" ) {
+				$annotationParams["Official Symbol"] = $row->official_symbol;
+			}
+			
+			if( $row->systematic_name != "-" ) {
+				$annotationParams["Systematic Name"] = $row->systematic_name;
+			}
+			
+			if( $row->aliases != "-" ) {
+				$aliases = explode( "|", $row->aliases );
+				$annotationParams["Aliases"] = implode( ", ", $aliases );
+			}
+			
+			if( $row->definition != "-" ) {
+				$annotationParams["Definition"] = $row->definition;
+			}
+			
+			if( $row->organism_official_name != "-" ) {
+				$annotationParams["Organism"] = $row->organism_official_name;
+			}
+			
+			$links = array( );
+			$links["biogrid"] = models\LinkoutGenerator::getLinkout( "biogrid", $row->sgrna_group_reference );
+			
+			$annotation = $this->twig->render( "view" . DS . "ViewGroupAnnotation.tpl", array(
+				"ANNOTATION" => $annotationParams,
+				"LINKS" => $links
+			));
+			
+			return $annotation;
+		}
+		
+		return false;
 		
 	}
 	
