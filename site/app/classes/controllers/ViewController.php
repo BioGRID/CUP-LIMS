@@ -233,7 +233,7 @@ class ViewController extends lib\Controller {
 			$addonCSS[] = "alertify-bootstrap.min.css";
 			
 			// Get style if it's passed to us as a parameter
-			$viewStyle = 1;
+			$viewStyle = 3;
 			if( isset( $_GET['style'] ) && ($_GET['style'] == 2 || $_GET['style'] == 3)) {
 				$viewStyle = $_GET['style'];
 			}

@@ -440,7 +440,7 @@ class ViewHandler {
 	 * stored for one specific file and group id
 	 */
 	 
-	public function fetchRawReadsSummaryByGroupID( $fileID, $fileName, $groupID, $groupName ) {
+	public function fetchRawReadsSummaryByGroupID( $fileID, $fileName, $groupID, $groupName, $scoreVal ) {
 		
 		$stmt = $this->db->prepare( "SELECT sgrna_id FROM " . DB_MAIN . ".sgRNA_group_mappings WHERE sgrna_group_id=? AND sgrna_group_mapping_status='active'" );
 		$stmt->execute( array( $groupID ) );
@@ -463,7 +463,8 @@ class ViewHandler {
 		$rawReadsTable = $this->twig->render( "view" . DS . "ViewRawReadsTable.tpl", array(
 			"FILE_NAME" => $fileName,
 			"GROUP_NAME" => $groupName,
-			"RAW_READS" => $rawReads
+			"RAW_READS" => $rawReads,
+			"SCORE_VAL" => $scoreVal
 		));
 		
 		return $rawReadsTable;

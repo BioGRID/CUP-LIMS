@@ -11,6 +11,7 @@
 } (function( $, window, document ) {
 	
 	var baseURL = $("head base").attr( "href" );
+	alertify.defaults.maintainFocus = false;
 
 	$(function( ) {
 		
@@ -63,6 +64,7 @@
 			submitSet['groupID'] = $(this).data( "groupid" );
 			submitSet['groupName'] = $(this).data( "groupname" );
 			submitSet['viewID'] = $("#viewID").val( );
+			submitSet['scoreVal'] = $(this).text( );
 				
 			// Convert to JSON
 			submitSet = JSON.stringify( submitSet );

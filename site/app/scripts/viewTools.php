@@ -96,7 +96,7 @@ if( isset( $postData['tool'] ) ) {
 			$results = array( "DATA" => "" );
 			if( isset( $postData['fileID'] ) && isset( $postData['groupID'] ) && isset( $postData['fileName'] ) && isset( $postData['groupName'] )) {
 				$viewHandler = new models\ViewHandler( );
-				$results["DATA"] = $viewHandler->fetchRawReadsSummaryByGroupID( $postData['fileID'], $postData['fileName'], $postData['groupID'], $postData['groupName'] );
+				$results["DATA"] = $viewHandler->fetchRawReadsSummaryByGroupID( $postData['fileID'], $postData['fileName'], $postData['groupID'], $postData['groupName'], $postData['scoreVal'] );
 			}
 			
 			echo json_encode( $results );
