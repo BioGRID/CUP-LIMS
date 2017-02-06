@@ -46,6 +46,9 @@
 		
 		$(".datatableBlock").on( 'click', '.rawDetailsPopup', function( event ) {
 			
+			var currentCell = $(this);
+			currentCell.addClass( "highlightCell" );
+			
 			// Setup a Progress Box Showing a Default Loading Script
 			var progressBox = alertify.alert( ).setting({
 				'message': "Loading Raw Reads... <i class='fa fa-lg fa-spin fa-spinner'></i>",
@@ -54,7 +57,10 @@
 				'padding' : false,
 				'movable' : false,
 				'overflow' : false,
-				'transition' : 'fade'
+				'transition' : 'fade',
+				'onclose' : function( ) {
+					currentCell.removeClass( "highlightCell" );
+				}
 			}).show( );
 			
 			var submitSet = { };
@@ -145,10 +151,10 @@
 				show: {
 					event: event.type,
 					ready: true,
-					solo: false
+					solo: true
 				},
 				hide: {
-					delay: 2000,
+					delay: 1000,
 					fixed: true,
 					event: 'mouseleave'
 				}
