@@ -88,23 +88,27 @@ class MatrixView( ) :
 				
 				# Only use it if we can find a mapping to a group
 				if str(sgRNAID) in self.sgRNAToGroup :
-					groupID = self.sgRNAToGroup[str(sgRNAID)]
+					groupIDs = self.sgRNAToGroup[str(sgRNAID)]
 					
-					readScore = 0
-					if str(sgRNAID) in reads :
-						readScore = float(reads[str(sgRNAID)])
-						
-					backgroundScore = 0
-					if str(sgRNAID) in backgroundReads :
-						backgroundScore = float(backgroundReads[str(sgRNAID)])
+					# Could be multiple groups this sgRNA is a 
+					# member of
+					for groupID in groupIDs :
+					
+						readScore = 0
+						if str(sgRNAID) in reads :
+							readScore = float(reads[str(sgRNAID)])
+							
+						backgroundScore = 0
+						if str(sgRNAID) in backgroundReads :
+							backgroundScore = float(backgroundReads[str(sgRNAID)])
 
-					if groupID not in self.matrix :
-						self.matrix[groupID] = self.initializeConditionSet( )
-					
-					# 1 is Log2FoldChange
-					if str(view['view_value_id']) == "1" :
-						logChange = self.calculateLog2FoldChange( readScore, backgroundScore, readFile['file_readtotal'], backgroundFile['file_readtotal'] )
-						self.matrix[groupID][self.conditionReference[fileRef]].append(logChange)
+						if groupID not in self.matrix :
+							self.matrix[groupID] = self.initializeConditionSet( )
+						
+						# 1 is Log2FoldChange
+						if str(view['view_value_id']) == "1" :
+							logChange = self.calculateLog2FoldChange( readScore, backgroundScore, readFile['file_readtotal'], backgroundFile['file_readtotal'] )
+							self.matrix[groupID][self.conditionReference[fileRef]].append(logChange)
 						
 	def initializeConditionSet( self ) :
 		"""Initialize a new group with a dict containing all possible conditions"""
@@ -116,6 +120,8 @@ class MatrixView( ) :
 							
 	def calculateLog2FoldChange( self, readCount, bgReadCount, readTotal, bgReadTotal ) :
 		"""Generate a log2foldchange value"""
+		
+		# Pad numbers to prevent division by zero
 		readScore = (float(readCount) + self.logPad) / (float(bgReadCount) + self.logPad)
 		totalScore = (float(readTotal) + self.logPad) / (float(bgReadTotal) + self.logPad)
 		return math.log(readScore, 2) - math.log(totalScore, 2)

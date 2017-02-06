@@ -32,5 +32,5 @@
 	{% include 'files/FilesViewLoading.tpl' %}
 {% endif %}
 
-<input type='hidden' id='fileID' value='{{ FILE_ID }}' />
+<input type='hidden' id='viewID' value='{{ VIEW_ID }}' />
 <input type='hidden' id='viewState' value='{{ VIEW_STATE }}' />

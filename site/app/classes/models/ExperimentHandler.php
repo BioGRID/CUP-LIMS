@@ -150,10 +150,15 @@ class ExperimentHandler {
 				$checkedBoxes = $params['checkedBoxes'];
 			}
 			
+			$disabledCheck = "";
+			if( $expInfo->experiment_filestate == "inprogress" ) {
+				$disabledCheck = "disabled='disabled'";
+			}
+			
 			if( isset( $checkedBoxes[$expID] ) && $checkedBoxes[$expID] ) {
-				$column[] = "<input type='checkbox' class='orcaDataTableRowCheck' value='" . $expID . "' checked />";
+				$column[] = "<input type='checkbox' class='orcaDataTableRowCheck' value='" . $expID . "' checked " . $disabledCheck . " />";
 			} else {
-				$column[] = "<input type='checkbox' class='orcaDataTableRowCheck' value='" . $expID . "' />";
+				$column[] = "<input type='checkbox' class='orcaDataTableRowCheck' value='" . $expID . "'" . $disabledCheck . " />";
 			}
 			
 			$column[] = $expInfo->experiment_name;

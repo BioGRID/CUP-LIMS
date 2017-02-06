@@ -343,57 +343,6 @@ class MatrixViewHandler {
 	}
 	
 	/**
-	 * Fetch formatted group annotation to be displayed in a popup tooltip
-	 */
-	 
-	public function fetchFormattedGroupAnnotation( $groupID ) {
-		
-		$stmt = $this->db->prepare( "SELECT sgrna_group_reference, official_symbol, systematic_name, aliases, definition, organism_official_name FROM " . DB_VIEWS . ".view_" . $this->view->view_code . " WHERE sgrna_group_id=? LIMIT 1" );
-		
-		$stmt->execute( array( $groupID ) );
-		
-		// If it exists, return an error
-		if( $stmt->rowCount( ) > 0 ) {
-			$row = $stmt->fetch( PDO::FETCH_OBJ );
-			
-			$annotationParams = array( );
-			if( $row->official_symbol != "-" ) {
-				$annotationParams["Official Symbol"] = $row->official_symbol;
-			}
-			
-			if( $row->systematic_name != "-" ) {
-				$annotationParams["Systematic Name"] = $row->systematic_name;
-			}
-			
-			if( $row->aliases != "-" ) {
-				$aliases = explode( "|", $row->aliases );
-				$annotationParams["Aliases"] = implode( ", ", $aliases );
-			}
-			
-			if( $row->definition != "-" ) {
-				$annotationParams["Definition"] = $row->definition;
-			}
-			
-			if( $row->organism_official_name != "-" ) {
-				$annotationParams["Organism"] = $row->organism_official_name;
-			}
-			
-			$links = array( );
-			$links["biogrid"] = models\LinkoutGenerator::getLinkout( "biogrid", $row->sgrna_group_reference );
-			
-			$annotation = $this->twig->render( "view" . DS . "ViewGroupAnnotation.tpl", array(
-				"ANNOTATION" => $annotationParams,
-				"LINKS" => $links
-			));
-			
-			return $annotation;
-		}
-		
-		return false;
-		
-	}
-	
-	/**
 	 * Fetch a formatted list of files and background with links
 	 * to view them on the separate file page
 	 */

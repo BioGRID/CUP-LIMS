@@ -145,7 +145,7 @@ if( isset( $postData['tool'] ) ) {
 		// Fetch the column header for the raw reads
 		// Datatable with correct options
 		case 'rawReadsHeader' :
-			$rawReadsHandler = new models\RawReadsHandler( );
+			$rawReadsHandler = new models\RawAnnotatedViewHandler( $postData['viewID'] );
 			$rawHeader = $rawReadsHandler->fetchColumnDefinitions( );
 			echo json_encode( $rawHeader );
 			break;
@@ -155,7 +155,7 @@ if( isset( $postData['tool'] ) ) {
 		case 'rawReadsRows' :
 			$draw = $postData['draw'];
 			
-			$rawReadsHandler = new models\RawReadsHandler( );
+			$rawReadsHandler = new models\RawAnnotatedViewHandler( $postData['viewID'] );
 			$rawRows = $rawReadsHandler->buildRows( $postData );
 			$recordsFiltered = $rawReadsHandler->getUnfilteredRowCount( $postData );
 			

@@ -141,12 +141,12 @@ class FilesController extends lib\Controller {
 		$viewHandler = new models\ViewHandler( );
 		$fileSet = array( );
 		$fileSet[] = array( "fileID" => $fileInfo->file_id, "backgroundID" => "0" );
-		$viewDetails = $viewHandler->addView( "File #" . $fileInfo->file_id . " Annoted Raw Data", "Raw Data Annotated with Group Info", 2, 2, $fileSet );
+		$viewDetails = $viewHandler->addView( "File #" . $fileInfo->file_id . " Annotated Raw Data", "Raw Data Annotated with Group Info", 2, 2, $fileSet );
 		$view = $viewHandler->fetchView( $viewDetails['ID'] );
 		
 		// Fetch Raw Reads Info for Table
-		// $rawReadHandler = new models\RawReadsHandler( );
-		// $rawCount = $rawReadHandler->fetchRowCount( $_GET['id'] );
+		$rawViewHandler = new models\RawAnnotatedViewHandler( $view->view_id );
+		$rawCount = $rawViewHandler->fetchRowCount( $_GET['id'] );
 				 
 		$params = array(
 			"WEB_URL" => WEB_URL,
@@ -163,6 +163,7 @@ class FilesController extends lib\Controller {
 			"UPLOAD_PROCESSED_URL" => UPLOAD_PROCESSED_URL,
 			"EXPERIMENT_CODE" => $fileInfo->experiment_code,
 			"TABLE_TITLE" => "Raw Data",
+			"VIEW_ID" => $view->view_id,
 			"VIEW_STATE" => $view->view_state,
 			"ROW_COUNT" => $rawCount
 		);

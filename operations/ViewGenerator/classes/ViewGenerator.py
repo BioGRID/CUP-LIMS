@@ -60,7 +60,7 @@ class ViewGenerator( ) :
 					# Unknown View Type, Do Nothing, Leave it Queued
 					continue
 					
-			# self.updateViewState( view['view_id'], 'complete' )
+			self.updateViewState( view['view_id'], 'complete' )
 			
 	def buildMatrixView( self, view, fileMap, allFiles ) :
 	
@@ -78,7 +78,7 @@ class ViewGenerator( ) :
 		if self.rawAnnotatedView == None :
 			self.rawAnnotatedView = RawAnnotatedView.RawAnnotatedView( self.db, self.sgRNAToGroup, self.sgRNAGroups, self.sgRNAGroupToBioGRID )
 		
-		viewDetails = self.rawAnnotatedView.build( view, fileMap )
+		viewDetails = self.rawAnnotatedView.build( view, fileMap, self.rawData )
 		self.updateViewDetails( view['view_id'], viewDetails )
 			
 	def viewExists( self, viewCode ) :

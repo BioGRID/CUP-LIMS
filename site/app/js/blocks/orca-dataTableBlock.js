@@ -106,10 +106,8 @@
 			// Setup storage of checked boxes
 			base.components.table.on( "change", ".orcaDataTableRowCheck", function( ) {
 				if( $(this).prop( "checked" ) ) {
-					console.log( "TRUE" );
 					base.data.checkedBoxes[$(this).val( )] = true;
 				} else {
-					console.log( "FALSE" );
 					base.data.checkedBoxes[$(this).val( )] = false;
 				}
 			});
@@ -173,7 +171,7 @@
 		 */
 		 
 		base.setCheckAllStatus = function( statusText, propVal ) {
-			base.components.table.find( ".orcaDataTableRowCheck" ).prop( "checked", propVal );
+			base.components.table.find( ".orcaDataTableRowCheck:enabled" ).prop( "checked", propVal );
 			base.components.toolbar.find( ".orcaDataTableCheckAll" ).attr( "data-status", statusText );
 		};
 		

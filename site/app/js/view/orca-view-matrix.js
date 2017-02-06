@@ -11,6 +11,7 @@
 } (function( $, window, document ) {
 	
 	var baseURL = $("head base").attr( "href" );
+	alertify.defaults.maintainFocus = false;
 
 	$(function( ) {
 		
@@ -45,6 +46,9 @@
 		
 		$(".datatableBlock").on( 'click', '.rawDetailsPopup', function( event ) {
 			
+			var currentCell = $(this);
+			currentCell.addClass( "highlightCell" );
+			
 			// Setup a Progress Box Showing a Default Loading Script
 			var progressBox = alertify.alert( ).setting({
 				'message': "Loading Raw Reads... <i class='fa fa-lg fa-spin fa-spinner'></i>",
@@ -52,7 +56,11 @@
 				'basic' : true,
 				'padding' : false,
 				'movable' : false,
-				'overflow' : true
+				'overflow' : false,
+				'transition' : 'fade',
+				'onclose' : function( ) {
+					currentCell.removeClass( "highlightCell" );
+				}
 			}).show( );
 			
 			var submitSet = { };
@@ -62,6 +70,7 @@
 			submitSet['groupID'] = $(this).data( "groupid" );
 			submitSet['groupName'] = $(this).data( "groupname" );
 			submitSet['viewID'] = $("#viewID").val( );
+			submitSet['scoreVal'] = $(this).text( );
 				
 			// Convert to JSON
 			submitSet = JSON.stringify( submitSet );
@@ -142,10 +151,10 @@
 				show: {
 					event: event.type,
 					ready: true,
-					solo: false
+					solo: true
 				},
 				hide: {
-					delay: 2000,
+					delay: 1000,
 					fixed: true,
 					event: 'mouseleave'
 				}
@@ -170,7 +179,7 @@
 					text: function( event, api ) {
 						
 						var submitSet = { };
-						submitSet['tool'] = "fetchMatrixGroupAnnotation";
+						submitSet['tool'] = "fetchGroupAnnotation";
 						submitSet['id'] = $(this).data( "id" );
 						submitSet['viewID'] = $("#viewID").val( );
 						

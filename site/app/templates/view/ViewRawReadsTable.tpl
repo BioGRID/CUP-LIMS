@@ -1,5 +1,5 @@
 <div class='orcaRawReadsTableWrap'>
-	<h3>{{ GROUP_NAME }}</h3>
+	<h3>{{ GROUP_NAME }} (Score: {{ SCORE_VAL }})</h3>
 	<h5 class='marginBotSm'>{{ FILE_NAME }}</h5>
 	<hr />
 	{% if RAW_READS %}

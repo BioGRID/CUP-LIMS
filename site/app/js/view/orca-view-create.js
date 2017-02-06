@@ -25,7 +25,7 @@
 			colTool: "filesHeader", 
 			rowTool: "filesRows", 
 			hasToolbar: true,
-			addonParams: { "expIDs" : expIDs, "showBGSelect" : "true" },
+			addonParams: { "ids" : expIDs, "showBGSelect" : "true" },
 			optionsCallback: function( datatable ) {
 				initializeOptionPopups( );
 				initializeGlobalBGSelect( );
