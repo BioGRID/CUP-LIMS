@@ -3,7 +3,7 @@ This resource contains the complete BioGRID Open Resource for CRISPR Analysis (O
 
 ## Development Status
 + **Unstable** - In Development
-+ Current Version: **0.0.0.1 ALPHA**
++ Current Version: **0.0.1 ALPHA**
 
 ## System Requirements
 To use all of the tools contained within, you require at least the following:
