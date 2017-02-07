@@ -143,10 +143,14 @@ class FilesController extends lib\Controller {
 		$fileSet[] = array( "fileID" => $fileInfo->file_id, "backgroundID" => "0" );
 		$viewDetails = $viewHandler->addView( "File #" . $fileInfo->file_id . " Annotated Raw Data", "Raw Data Annotated with Group Info", 2, 2, $fileSet );
 		$view = $viewHandler->fetchView( $viewDetails['ID'] );
+		$viewHandler->updateLastViewed( $view->view_id );
 		
-		// Fetch Raw Reads Info for Table
-		$rawViewHandler = new models\RawAnnotatedViewHandler( $view->view_id );
-		$rawCount = $rawViewHandler->fetchRowCount( $_GET['id'] );
+		$rawCount = 0;
+		if( $view->view_state != 'building' ) {
+			// Fetch Raw Reads Info for Table
+			$rawViewHandler = new models\RawAnnotatedViewHandler( $view->view_id );
+			$rawCount = $rawViewHandler->fetchRowCount( $_GET['id'] );
+		}
 				 
 		$params = array(
 			"WEB_URL" => WEB_URL,

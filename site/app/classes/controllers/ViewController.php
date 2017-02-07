@@ -281,6 +281,45 @@ class ViewController extends lib\Controller {
 		$this->renderView( "view" . DS . $viewTpl, $params, false );
 				
 	}
+	
+	/**
+	 * Download
+	 * This view generates a file that presents the data stored in a spcific view
+	 */
+	
+	public function Download( ) {
+		
+		lib\Session::canAccess( lib\Session::getPermission( 'DOWNLOAD VIEWS' ));
+		
+		// If we're not passed a numeric values and a set of file ids, show 404
+		if( !isset( $_GET['viewID'] ) || !is_numeric( $_GET['viewID'] )) {
+			lib\Session::sendPageNotFound( );
+		}
+		
+		$viewHandler = new models\ViewHandler( );
+		$view = $viewHandler->fetchView( $_GET['viewID'] );	
+		
+		if( $view ) {
+			if( $view->view_status == 'active' && $view->view_state == 'complete' ) {
+				// Build Download
+				$viewHandler->updateLastViewed( $_GET['viewID'] );
+				
+				header( "Content-type: plain/text" );
+				header( "Content-disposition: inline; filename=" . $view->view_title . ".txt" );
+				
+				$downloadsHandler = new models\ViewDownloadsHandler( $view->view_id );
+				$downloadsHandler->outputRows( );
+				
+			} else {
+				lib\Session::sendPageNotFound( );
+			}
+		} else {
+			echo "HERE";
+			lib\Session::sendPageNotFound( );
+		}
+
+				
+	}
 
 }
 
