@@ -20,7 +20,7 @@
 		<div class='marginTopSm'>
 			<a href='{{ UPLOAD_PROCESSED_URL }}/{{ EXPERIMENT_CODE }}/{{ FILE_NAME }}' title='Download {{ FILE_NAME }}'><button class='btn btn-info btn-lg'><i class="text-primary fa fa-cloud-download fa-lg"></i> Download Original Raw File</button></a>
 			{% if VIEW_STATE != "building" %}
-				<button class='btn btn-orca2 btn-lg'><i class="fa fa-cloud-download fa-lg" style='color: #efbc2b'></i> Download Raw File with Annotation</button>
+				<a href='{{ WEB_URL }}/View/Download?viewID={{ VIEW_ID }}' title='View Download'><button class='btn btn-orca2 btn-lg'><i class="fa fa-cloud-download fa-lg" style='color: #efbc2b'></i> Download Raw File with Annotation</button></a>
 			{% endif %}
 		</div>
 	</div>

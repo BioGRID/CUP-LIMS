@@ -314,7 +314,7 @@ class MatrixViewHandler {
 		$buttons = array( );
 		
 		if( lib\Session::validateCredentials( lib\Session::getPermission( 'VIEW VIEWS' )) ) {
-			$styleSelect = $this->generateStyleSelectForToolbar( $viewStyle, "pull-right col-lg-2 col-md-3 col-sm-4 col-xs-6", "Style:" );
+			$styleSelect = $this->generateStyleSelectForToolbar( $viewStyle, "pull-right col-lg-3 col-md-4 col-sm-5 col-xs-6", "Style:" );
 			$buttons[] = $styleSelect;
 		}
 		

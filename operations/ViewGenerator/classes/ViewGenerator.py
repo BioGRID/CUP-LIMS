@@ -105,7 +105,7 @@ class ViewGenerator( ) :
 	def fetchQueuedViews( self ) :
 		"""Fetch views from the database that are in need of being built"""
 		with self.db as cursor :
-			cursor.execute( "SELECT * FROM " + Config.DB_MAIN + ".views WHERE view_state='building' AND view_status='active' ORDER BY view_addeddate ASC LIMIT 1" )
+			cursor.execute( "SELECT * FROM " + Config.DB_MAIN + ".views WHERE view_state='building' AND view_status='active' ORDER BY view_addeddate ASC" )
 			
 			queuedViews = []
 			for row in cursor.fetchall( ) :
