@@ -21,7 +21,7 @@
 			<div class='viewDetailFiles'><a class='showFileLegend'>View Files <i class='fa fa-angle-double-down'></i></a></div>
 			<ul id='fileList' style='display: none;'>
 			{% for COLUMN in COL_LEGEND %}
-				<li><strong>{{ COLUMN.EXCEL_NAME }}: </strong> <a href='{{ WEB_URL }}/Files/View?id={{ COLUMN.FILE_ID }}' title='VIEW {{ COLUMN.FILE }}'>{{ COLUMN.FILE }}</a>,   <strong>Background: </strong> <a href='{{ WEB_URL }}/Files/View?id={{ COLUMN.BG_ID }}' title='VIEW {{ COLUMN.BG_FILE }}'>{{ COLUMN.BG_FILE }}</a></li>
+				<li><strong>{{ COLUMN.EXCEL_NAME }}: </strong> <a href='{{ WEB_URL }}/Files/View?id={{ COLUMN.FILE_ID }}' title='VIEW {{ COLUMN.FILE }}'>{{ COLUMN.FILE }}</a>,   <strong>Control: </strong> <a href='{{ WEB_URL }}/Files/View?id={{ COLUMN.BG_ID }}' title='VIEW {{ COLUMN.BG_FILE }}'>{{ COLUMN.BG_FILE }}</a></li>
 			{% endfor %}
 			</ul>
 		{% endif %}

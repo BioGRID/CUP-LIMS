@@ -273,7 +273,7 @@ class FileHandler {
 		$columns[7] = array( "title" => "Options", "data" => 7, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
 		
 		if( $showBGSelect ) {
-			$columns[8] = array( "title" => "Background", "data" => 8, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
+			$columns[8] = array( "title" => "Control", "data" => 8, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
 		}
 		
 		return $columns;
@@ -291,7 +291,7 @@ class FileHandler {
 			$isExp = false;
 		}
 		
-		$query = "SELECT file_id, file_name, experiment_id FROM " . DB_MAIN . ".files WHERE file_status='active' AND file_isbackground='1'";
+		$query = "SELECT file_id, file_name, experiment_id FROM " . DB_MAIN . ".files WHERE file_status='active' AND file_iscontrol='1'";
 		
 		$idSet = array( );
 		if( isset( $params['ids'] )) {
@@ -363,8 +363,8 @@ class FileHandler {
 			}
 			
 			$formattedName = "<a href='" . WEB_URL . "/Files/View?id=" . $fileInfo->file_id . "' title='" . $fileInfo->file_name . "'>" . $fileInfo->file_name . "</a>";
-			if( $fileInfo->file_isbackground == '1' ) {
-				$formattedName .= " [background]";
+			if( $fileInfo->file_iscontrol == '1' ) {
+				$formattedName .= " [control]";
 			}
 			$column[] = $formattedName;
 			
@@ -425,11 +425,11 @@ class FileHandler {
 			}
 			
 			if( !$skipAll && sizeof( $bgList[$expID] ) > 1 ) {
-				$selectOptions[implode( "|", $allList )] = array( "SELECTED" => "selected", "NAME" => "ALL Backgrounds" );;
+				$selectOptions[implode( "|", $allList )] = array( "SELECTED" => "selected", "NAME" => "All Control Files" );;
 			}
 			
 		} else {
-			$selectOptions["0"] = array( "SELECTED" => "", "NAME" => "No Backgrounds" );
+			$selectOptions["0"] = array( "SELECTED" => "", "NAME" => "No Control Files" );
 		}
 		
 		$view = "blocks" . DS . "ORCASelect.tpl";
@@ -481,7 +481,7 @@ class FileHandler {
 		$query .= " WHERE file_status='active'";
 		
 		if( !$includeBG ) {
-			$query .= " AND file_isbackground='0'";
+			$query .= " AND file_iscontrol='0'";
 		}
 		
 		if( isset( $params['ids'] )) {
@@ -578,7 +578,7 @@ class FileHandler {
 		$query = "SELECT COUNT(*) as fileCount FROM " . DB_MAIN . ".files WHERE file_status='active'";
 
 		if( !$includeBG ) {
-			$query .= " AND file_isbackground='0'";
+			$query .= " AND file_iscontrol='0'";
 		}
 		
 		$options = array( );
@@ -630,7 +630,7 @@ class FileHandler {
 		$buttons = array( );
 		
 		$bgList = $this->buildBGList( array( "expIDs" => implode( "|", $expIDs )), false );
-		$selectList = $this->generateBGSelect( $bgList, 0, "pull-right col-lg-2 col-md-3 col-sm-4 col-xs-6", "Background: ", false, true );
+		$selectList = $this->generateBGSelect( $bgList, 0, "pull-right col-lg-2 col-md-3 col-sm-4 col-xs-6", "Control: ", false, true );
 		$buttons[] = $selectList;
 		
 		return implode( "", $buttons );

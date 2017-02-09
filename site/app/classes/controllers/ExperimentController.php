@@ -77,7 +77,7 @@ class ExperimentController extends lib\Controller {
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Experiment' />" );
-		$this->headerParams->set( "TITLE", "Experiment Listing | " . CONFIG['WEB']['WEB_NAME'] );
+		$this->headerParams->set( "TITLE", "Experiment Listing" );
 		
 		$this->renderView( "experiment" . DS . "ExperimentListing.tpl", $params, false );
 				
@@ -144,7 +144,7 @@ class ExperimentController extends lib\Controller {
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Experiment' />" );
-		$this->headerParams->set( "TITLE", "Experiment: " . $expInfo->experiment_name . " | " . CONFIG['WEB']['WEB_NAME'] );
+		$this->headerParams->set( "TITLE", "Experiment: " . $expInfo->experiment_name );
 		
 		$this->renderView( "experiment" . DS . "ExperimentView.tpl", $params, false );
 				

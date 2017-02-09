@@ -33,7 +33,7 @@ class ErrorController extends lib\Controller {
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Error/' />" );
-		$this->headerParams->set( "TITLE", "ERROR 404 Page Not Found | " . CONFIG['WEB']['WEB_NAME'] );
+		$this->headerParams->set( "TITLE", "ERROR 404 Page Not Found" );
 		
 		$this->renderView( "error" . DS . "Error404.tpl", $params, false );
 		
@@ -55,7 +55,7 @@ class ErrorController extends lib\Controller {
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Error/' />" );
-		$this->headerParams->set( "TITLE", "ERROR 403 Forbidden | " . CONFIG['WEB']['WEB_NAME'] );
+		$this->headerParams->set( "TITLE", "ERROR 403 Forbidden" );
 		
 		$this->renderView( "error" . DS . "Error403.tpl", $params, false );
 		

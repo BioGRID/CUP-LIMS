@@ -77,7 +77,7 @@ class FileProgressController extends lib\Controller {
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/FileProcess' />" );
-		$this->headerParams->set( "TITLE", "File Process Experiment | " . CONFIG['WEB']['WEB_NAME'] );
+		$this->headerParams->set( "TITLE", "File Process Experiment" );
 		
 		$this->renderView( "fileProgress" . DS . "FileProgressIndex.tpl", $params, false );
 				

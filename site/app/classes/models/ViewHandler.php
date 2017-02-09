@@ -66,8 +66,31 @@ class ViewHandler {
 		
 		$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".views VALUES( '0', ?, ?, ?, ?, ?, ?, ?, '0000-00-00 00:00:00', NOW( ), 'building', 'active', ?, ?, ? )" );
 		$stmt->execute( array( $viewName, $viewDesc, $viewCode, $typeID, $valueID, $fileSet, "summary", $emptyArray, $emptyArray, $_SESSION[SESSION_NAME]['ID'] ));
+		
+		if( CONFIG['VIEWGENERATOR']['ACTIVE'] ) {
+			// Run Active View Generator Service
+			$this->callViewGeneratorService( );
+		}
+		
 		return array( "ID" => $this->db->lastInsertId( ), "CODE" => $viewCode );
 		
+	}
+	
+	/**
+	 * Call View Generator Service to tell it to start a view building
+	*/
+	
+	private function callViewGeneratorService( ) {
+	
+		$curl = curl_init( );
+		curl_setopt( $curl, CURLOPT_URL, CONFIG['VIEWGENERATOR']['HOST'] . ":" . CONFIG['VIEWGENERATOR']['PORT'] . "/View" );
+		curl_setopt( $curl, CURLOPT_RETURNTRANSFER, 1 );
+		
+		$result = curl_exec( $curl );
+		curl_close( $curl );
+		
+		return $result;
+	
 	}
 	
 	/**

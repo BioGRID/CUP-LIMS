@@ -35,18 +35,18 @@ class ViewGenerator( ) :
 			if not self.viewExists( view['view_code'] ) :
 			
 				# Build unique set of files we'll need for this view
-				# including backgrounds
+				# including controls
 				fileMap = json.loads( view['view_files'] )
 				files = fileMap.keys( )
-				backgrounds = set( )
-				for fileID,bgSet in fileMap.iteritems( ) :
-					bgSet = bgSet.split( "|" )
-					for bg in bgSet :
-						backgrounds.add( bg )
+				controls = set( )
+				for fileID,ctrlSet in fileMap.iteritems( ) :
+					ctrlSet = ctrlSet.split( "|" )
+					for ctrl in ctrlSet :
+						controls.add( ctrl )
 
 				# Fetch additional file annotation and load
 				# all of the raw data into a hash
-				allFiles = list(backgrounds) + files
+				allFiles = list(controls) + files
 				self.rawData.loadRawData( allFiles )
 		
 				# View Type 1 is a Matrix View
