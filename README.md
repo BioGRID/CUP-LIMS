@@ -1,5 +1,5 @@
-# BioGRID ORCA (Open Resource for CRISPR Analysis)
-This resource contains the complete BioGRID Open Resource for CRISPR Analysis (ORCA) platform and all related tools. It is specifically used in the management of CRISPR datasets for internal analysis and release via the BioGRID (https://thebiogrid.org). It contains command line tools, database components, and a web based front end interface.
+# BioGRID ORCA (Open Repository for CRISPR Analysis)
+This resource contains the complete BioGRID Open Repository for CRISPR Analysis (ORCA) platform and all related tools. It is specifically used in the management of CRISPR datasets for internal analysis and release via the BioGRID (https://thebiogrid.org). It contains command line tools, database components, and a web based front end interface.
 
 ## Development Status
 + **Unstable** - In Development
