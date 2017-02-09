@@ -31,13 +31,13 @@
 				</div>
 				<div id='dropzoneWrap' class=' form-group col-lg-12 col-md-12 marginTopXs'>
 					<div class='dropzone' id='dropzoneBox'>
-						<div class='dz-message'>Drag/Drop all experiment files here, including background files, or click this box to select each file individually from your file system. <strong>Must be tab-delimited text formatted files...</strong></div>
+						<div class='dz-message'>Drag/Drop all experiment files here, including control files, or click this box to select each file individually from your file system. <strong>Must be tab-delimited text formatted files...</strong></div>
 					</div>
 					<input type='hidden' id='experimentCode' name='experimentCode' value='{{DATASET_CODE}}' />
 					<input type='hidden' id='experimentHasFile' name='experimentHasFile' value='' />
 				</div>
 				<div class='form-group col-lg-8 col-md-8'>
-					<label for='experimentBG' class='control-label'>Experiment Background (add background files above to populate this list)</label>
+					<label for='experimentBG' class='control-label'>Experiment Control (add control files above to populate this list)</label>
 					<select class='form-control' id='experimentBG' name='experimentBG' disabled='true' multiple></select>
 				</div>
 				<div class='marginTopSm col-lg-12 col-md-12'>

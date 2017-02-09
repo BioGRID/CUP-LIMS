@@ -23,7 +23,7 @@
 					<div class="panel-heading"><strong>Experiments</strong></div>
 					<div class="pull-right"><i class="fa fa-4x fa-flask paddingLg primaryIcon"></i></div>
 					<div class="panel-body">
-						Experiments are groupings of raw data and background files combined to form a logical classification based on the date the experiment was run and common parameters shared amongst all raw data files included. If your account has the correct permissions, you can <strong><a href="{{ WEB_URL }}/Upload" title="Upload a new Experiment">upload a new experiment</a></strong> or you can simply <strong><a href="{{ WEB_URL }}/Experiment" title="View Experiments">view a listing</a></strong> of already uploaded experiments</a></strong>. Below is a listing of recently uploaded experiments:
+						Experiments are groupings of raw data and control files combined to form a logical classification based on the date the experiment was run and common parameters shared amongst all raw data files included. If your account has the correct permissions, you can <strong><a href="{{ WEB_URL }}/Upload" title="Upload a new Experiment">upload a new experiment</a></strong> or you can simply <strong><a href="{{ WEB_URL }}/Experiment" title="View Experiments">view a listing</a></strong> of already uploaded experiments</a></strong>. Below is a listing of recently uploaded experiments:
 						
 						<hr class='marginTopSm marginBotSm' />
 						
@@ -182,7 +182,7 @@
 					<div class="panel-heading"><strong>Upload New Datasets</strong></div>
 					<div class="pull-right"><i class="fa fa-4x fa-cloud-upload paddingLg primaryIcon"></i></div>
 					<div class="panel-body">
-						In order to add new experiments to the {{WEB_NAME_ABBR}} system, you first need to upload the files associated with it. This can be done easily with our <strong><a href="{{ WEB_URL }}/Upload" title="Upload a new Experiment">upload a new experiment</a></strong> tool. With this tool, you can create new experiments and upload both raw data files and background data files which are then submitted automatically to our processing queue for inclusion into the database. Once loaded, you can <strong><a href="{{ WEB_URL }}/Experiment" title="Create New views">create new views</a></strong> or simply look at the <strong><a href="{{ WEB_URL }}/Experiment" title="View Experiment">experimental data</a></strong>.
+						In order to add new experiments to the {{WEB_NAME_ABBR}} system, you first need to upload the files associated with it. This can be done easily with our <strong><a href="{{ WEB_URL }}/Upload" title="Upload a new Experiment">upload a new experiment</a></strong> tool. With this tool, you can create new experiments and upload both raw data files and control files which are then submitted automatically to our processing queue for inclusion into the database. Once loaded, you can <strong><a href="{{ WEB_URL }}/Experiment" title="Create New views">create new views</a></strong> or simply look at the <strong><a href="{{ WEB_URL }}/Experiment" title="View Experiment">experimental data</a></strong>.
 					</div>
 				</div>
 			</div>

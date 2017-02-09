@@ -99,7 +99,7 @@ class FilesController extends lib\Controller {
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Files' />" );
-		$this->headerParams->set( "TITLE", "View Files | " . CONFIG['WEB']['WEB_NAME'] );
+		$this->headerParams->set( "TITLE", "View Files" );
 		
 		$this->renderView( "files" . DS . "FilesIndex.tpl", $params, false );
 				
@@ -173,7 +173,7 @@ class FilesController extends lib\Controller {
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Files' />" );
-		$this->headerParams->set( "TITLE", "View File | " . CONFIG['WEB']['WEB_NAME'] );
+		$this->headerParams->set( "TITLE", "View File " . $fileInfo->file_name );
 		
 		$this->renderView( "files" . DS . "FilesView.tpl", $params, false );
 				

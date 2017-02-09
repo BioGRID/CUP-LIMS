@@ -54,7 +54,7 @@ class UploadController extends lib\Controller {
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Upload' />" );
-		$this->headerParams->set( "TITLE", "Upload Experiment | " . CONFIG['WEB']['WEB_NAME'] );
+		$this->headerParams->set( "TITLE", "Upload Experiment" );
 		
 		$this->renderView( "upload" . DS . "UploadIndex.tpl", $params, false );
 				

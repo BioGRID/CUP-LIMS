@@ -110,17 +110,6 @@ class MatrixViewHandler {
 				}
 			} 
 			
-			// $checkedBoxes = array( );
-			// if( isset( $params['checkedBoxes'] )) {
-				// $checkedBoxes = $params['checkedBoxes'];
-			// }
-			
-			// if( isset( $checkedBoxes[$rowID] ) && $checkedBoxes[$rowID] ) {
-				// $column[] = "<input type='checkbox' class='orcaDataTableRowCheck' value='" . $rowID . "' checked />";
-			// } else {
-				// $column[] = "<input type='checkbox' class='orcaDataTableRowCheck' value='" . $rowID . "' />";
-			// }
-			
 			if( $rowInfo->sgrna_group_reference_type == "BIOGRID" ) {
 				$column[] = "<a class='annotationPopup' data-id='" . $rowInfo->sgrna_group_id . "' data-type='BIOGRID'>" . $rowInfo->group_name . "</a>";
 			} else {
@@ -343,15 +332,15 @@ class MatrixViewHandler {
 	}
 	
 	/**
-	 * Fetch a formatted list of files and background with links
+	 * Fetch a formatted list of files and control with links
 	 * to view them on the separate file page
 	 */
 	 
 	function fetchFormattedHeaderAnnotation( $fileID, $fileName, $bgID, $bgName ) {
 			
 		$files = array( );
-		$files[$fileID] = array( "URL" => WEB_URL . "/Files/View?id=" . $fileID, "NAME" => $fileName, "LABEL" => "Primary File" );
-		$files[$bgID] = array( "URL" => WEB_URL . "/Files/View?id=" . $bgID, "NAME" => $bgName, "LABEL" => "Background File" );
+		$files[$fileID] = array( "URL" => WEB_URL . "/Files/View?id=" . $fileID, "NAME" => $fileName, "LABEL" => "Screen File" );
+		$files[$bgID] = array( "URL" => WEB_URL . "/Files/View?id=" . $bgID, "NAME" => $bgName, "LABEL" => "Control File" );
 		
 		$annotation = $this->twig->render( "view" . DS . "ViewFileHeader.tpl", array(
 			"FILES" => $files

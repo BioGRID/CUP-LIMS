@@ -175,7 +175,7 @@
 		fieldVals['experimentBG'] = {
 			validators: {
 				notEmpty: {
-					message: 'You must select at least one valid background file'
+					message: 'You must select at least one valid control file'
 				}
 			}
 		}

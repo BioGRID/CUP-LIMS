@@ -18,7 +18,7 @@ class HomeController extends lib\Controller {
 	public function __construct( $twig ) {
 		parent::__construct( $twig );
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "' />" );
-		$this->headerParams->set( "TITLE", CONFIG['WEB']['WEB_NAME'] . " | " . CONFIG['WEB']['WEB_DESC'] );
+		$this->headerParams->set( "TITLE", CONFIG['WEB']['WEB_NAME'] );
 	}
 	
 	/**

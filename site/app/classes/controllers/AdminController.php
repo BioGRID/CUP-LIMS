@@ -40,7 +40,7 @@ class AdminController extends lib\Controller {
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Admin' />" );
-		$this->headerParams->set( "TITLE", "Admin Tools | " . CONFIG['WEB']['WEB_NAME'] );
+		$this->headerParams->set( "TITLE", "Admin Tools" );
 		
 		$this->renderView( "admin" . DS . "AdminIndex.tpl", $params, false );
 				
@@ -82,7 +82,7 @@ class AdminController extends lib\Controller {
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Admin/ChangePassword' />" );
-		$this->headerParams->set( "TITLE", "Change Password | " . CONFIG['WEB']['WEB_NAME'] );
+		$this->headerParams->set( "TITLE", "Change Password" );
 		
 		$this->renderView( "admin" . DS . "AdminChangePassword.tpl", $params, false );
 				
@@ -128,7 +128,7 @@ class AdminController extends lib\Controller {
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Admin/ManagerUsers' />" );
-		$this->headerParams->set( "TITLE", "Manage Users | " . CONFIG['WEB']['WEB_NAME'] );
+		$this->headerParams->set( "TITLE", "Manage Users" );
 		
 		$this->renderView( "admin" . DS . "AdminManageUsers.tpl", $params, false );
 				
@@ -167,7 +167,7 @@ class AdminController extends lib\Controller {
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Admin/AddUser' />" );
-		$this->headerParams->set( "TITLE", "Add User | " . CONFIG['WEB']['WEB_NAME'] );
+		$this->headerParams->set( "TITLE", "Add User" );
 		
 		$this->renderView( "admin" . DS . "AdminAddUser.tpl", $params, false );
 				
@@ -216,7 +216,7 @@ class AdminController extends lib\Controller {
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Admin/ManagePermissions' />" );
-		$this->headerParams->set( "TITLE", "Manage Permissions | " . CONFIG['WEB']['WEB_NAME'] );
+		$this->headerParams->set( "TITLE", "Manage Permissions" );
 		
 		$this->renderView( "admin" . DS . "AdminManagePermissions.tpl", $params, false );
 				

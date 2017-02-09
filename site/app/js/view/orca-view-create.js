@@ -205,7 +205,7 @@
 		// Add type of tool
 		submitSet['tool'] = "addView";
 		
-		// Get checked files and background settings
+		// Get checked files and control settings
 		submitSet['viewFiles'] = [];
 		var table = $(".orcaDataTableTools" ).find( ".orcaDataTable" );
 		var files = [];

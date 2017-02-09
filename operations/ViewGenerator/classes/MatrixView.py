@@ -31,10 +31,10 @@ class MatrixView( ) :
 		
 		# Build a list of all conditions for the X axis
 		fileList = { }
-		for fileID, backgroundIDs in fileMap.iteritems( ) :
-			bgSet = backgroundIDs.split( "|" )
-			for bg in sorted(bgSet) :
-				fileList[str(fileID) + "|" + str(bg)] = 0
+		for fileID, ctrlIDs in fileMap.iteritems( ) :
+			ctrlSet = ctrlIDs.split( "|" )
+			for ctrl in sorted(ctrlSet) :
+				fileList[str(fileID) + "|" + str(ctrl)] = 0
 				
 		# Create the database table for storing the view 
 		self.createView( view, fileList )
@@ -43,8 +43,8 @@ class MatrixView( ) :
 		for fileInfo in fileList :
 			fileInfo = fileInfo.split( "|" )
 			fileID = fileInfo[0]
-			backgroundID = fileInfo[1]
-			self.generateGroupSummary( view, fileID, backgroundID, rawData, fileHash )
+			ctrlID = fileInfo[1]
+			self.generateGroupSummary( view, fileID, ctrlID, rawData, fileHash )
 			
 		# Collapse down conditions into mean values
 		self.processView( view )
@@ -62,25 +62,25 @@ class MatrixView( ) :
 		for fileRef, condName in self.conditionReference.items( ) :
 			fileInfo = fileRef.split( "|" )
 			file = fileHash[fileInfo[0]]
-			bgFile = fileHash[fileInfo[1]]
-			referenceHash[condName] = { "FILE" : { "ID" : file['file_id'], "NAME" : file['file_name'], "EXP_ID" : file['experiment_id'] }, "BG" : { "ID" : bgFile['file_id'], "NAME" : bgFile['file_name'], "EXP_ID" : bgFile['experiment_id'] } }
+			ctrlFile = fileHash[fileInfo[1]]
+			referenceHash[condName] = { "FILE" : { "ID" : file['file_id'], "NAME" : file['file_name'], "EXP_ID" : file['experiment_id'] }, "BG" : { "ID" : ctrlFile['file_id'], "NAME" : ctrlFile['file_name'], "EXP_ID" : ctrlFile['experiment_id'] } }
 		
 		return referenceHash
 	
-	def generateGroupSummary( self, view, fileID, backgroundID, rawData, fileHash ) :
+	def generateGroupSummary( self, view, fileID, ctrlID, rawData, fileHash ) :
 	
-			fileRef = fileID + "|" + backgroundID
+			fileRef = fileID + "|" + ctrlID
 			
 			reads = rawData.fetchReads( fileID )
 			readSGRNAIDs = reads.keys( )
 			readFile = fileHash[fileID]
 			
-			backgroundReads = rawData.fetchReads( backgroundID )
-			backgroundSGRNAIDs = backgroundReads.keys( )
-			backgroundFile = fileHash[backgroundID]
+			ctrlReads = rawData.fetchReads( ctrlID )
+			ctrlSGRNAIDs = ctrlReads.keys( )
+			ctrlFile = fileHash[ctrlID]
 			
 			# Get universal set of all unique sgRNA ids represented
-			allSGRNA = set(readSGRNAIDs + backgroundSGRNAIDs)
+			allSGRNA = set(readSGRNAIDs + ctrlSGRNAIDs)
 			
 			# Step through each one and perform required calculation
 			count = 0
@@ -98,16 +98,16 @@ class MatrixView( ) :
 						if str(sgRNAID) in reads :
 							readScore = float(reads[str(sgRNAID)])
 							
-						backgroundScore = 0
-						if str(sgRNAID) in backgroundReads :
-							backgroundScore = float(backgroundReads[str(sgRNAID)])
+						ctrlScore = 0
+						if str(sgRNAID) in ctrlReads :
+							ctrlScore = float(ctrlReads[str(sgRNAID)])
 
 						if groupID not in self.matrix :
 							self.matrix[groupID] = self.initializeConditionSet( )
 						
 						# 1 is Log2FoldChange
 						if str(view['view_value_id']) == "1" :
-							logChange = self.calculateLog2FoldChange( readScore, backgroundScore, readFile['file_readtotal'], backgroundFile['file_readtotal'] )
+							logChange = self.calculateLog2FoldChange( readScore, ctrlScore, readFile['file_readtotal'], ctrlFile['file_readtotal'] )
 							self.matrix[groupID][self.conditionReference[fileRef]].append(logChange)
 						
 	def initializeConditionSet( self ) :
@@ -118,12 +118,12 @@ class MatrixView( ) :
 			
 		return conditionSet
 							
-	def calculateLog2FoldChange( self, readCount, bgReadCount, readTotal, bgReadTotal ) :
+	def calculateLog2FoldChange( self, readCount, ctrlReadCount, readTotal, ctrlReadTotal ) :
 		"""Generate a log2foldchange value"""
 		
 		# Pad numbers to prevent division by zero
-		readScore = (float(readCount) + self.logPad) / (float(bgReadCount) + self.logPad)
-		totalScore = (float(readTotal) + self.logPad) / (float(bgReadTotal) + self.logPad)
+		readScore = (float(readCount) + self.logPad) / (float(ctrlReadCount) + self.logPad)
+		totalScore = (float(readTotal) + self.logPad) / (float(ctrlReadTotal) + self.logPad)
 		return math.log(readScore, 2) - math.log(totalScore, 2)
 		
 	def processView( self, view ) :

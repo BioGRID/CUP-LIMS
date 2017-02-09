@@ -98,7 +98,7 @@ class ViewController extends lib\Controller {
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/View' />" );
-		$this->headerParams->set( "TITLE", "View Listing | " . CONFIG['WEB']['WEB_NAME'] );
+		$this->headerParams->set( "TITLE", "View Listing" );
 		
 		$this->renderView( "view" . DS . "ViewListing.tpl", $params, false );
 		
@@ -157,7 +157,7 @@ class ViewController extends lib\Controller {
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
-			"TABLE_TITLE" => "Select Files and Backgrounds for View",
+			"TABLE_TITLE" => "Select Files and Controls for View",
 			"ROW_COUNT" => $fileCount,
 			"SHOW_TOOLBAR" => true,
 			"INCLUDE_BG" => "false",
@@ -169,7 +169,7 @@ class ViewController extends lib\Controller {
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/View/Create' />" );
-		$this->headerParams->set( "TITLE", "Create View | " . CONFIG['WEB']['WEB_NAME'] );
+		$this->headerParams->set( "TITLE", "Create View" );
 		
 		$this->renderView( "view" . DS . "ViewCreate.tpl", $params, false );
 		
@@ -276,7 +276,7 @@ class ViewController extends lib\Controller {
 		$this->footerParams->set( 'ADDON_JS', $addonJS );
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Files' />" );
-		$this->headerParams->set( "TITLE", "View Files | " . CONFIG['WEB']['WEB_NAME'] );
+		$this->headerParams->set( "TITLE", "View Files" );
 		
 		$this->renderView( "view" . DS . $viewTpl, $params, false );
 				
