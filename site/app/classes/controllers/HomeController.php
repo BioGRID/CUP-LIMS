@@ -47,7 +47,7 @@ class HomeController extends lib\Controller {
 				$adminTools["Change User Passwords (including your own)"] = WEB_URL . "/Admin/ChangePassword";
 			} 
 			
-			if( lib\Session::validateCredentials( lib\Session::getPermission( 'CHANGE PASSWORD' )) ) {
+			if( lib\Session::validateCredentials( lib\Session::getPermission( 'CHANGE PASSWORD' )) ) { 
 				$adminTools["Change Your Password"] = WEB_URL . "/Admin/ChangePassword";
 			}
 			
