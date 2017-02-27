@@ -197,6 +197,64 @@ class UserHandler {
 	}
 	
 	/**
+	 * Create a new permission group
+	 */
+	 
+	public function addGroup( $groupName, $groupMembers ) {
+		
+		$stmt = $this->db->prepare( "SELECT group_id FROM " . DB_MAIN . ".groups WHERE group_name=? AND group_status='active' LIMIT 1" );
+		$stmt->execute( array( $groupName ));
+		
+		if( $stmt->rowCount( ) > 0 ) {
+			return false;
+		}
+		
+		$row = $stmt->fetch( PDO::FETCH_OBJ );
+		
+		if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE GROUPS' ))) {
+			$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".groups VALUES( '0', ?, NOW( ), 'active' )" );
+			$stmt->execute( array( $groupName ));
+			
+			// Fetch its new ID
+			$groupID = $this->db->lastInsertId( );
+			$this->updateGroupUsers( $groupID, $groupMembers );
+			
+			return true;
+		}
+	
+		return false;
+	}
+	
+	/**
+	 * Update the users associated with a specific
+	 * permission group
+	 */
+	 
+	public function updateGroupUsers( $groupID, $groupMembers ) {
+		
+		$stmt = $this->db->prepare( "UPDATE " . DB_MAIN . ".group_users SET group_user_status='inactive' WHERE group_id=?" );
+		$stmt->execute( array( $groupID ));
+		
+		foreach( $groupMembers as $userID ) {
+			$stmt = $this->db->prepare( "SELECT group_user_id FROM " . DB_MAIN . ".group_users WHERE user_id=? AND group_id=? LIMIT 1" );
+			$stmt->execute( array( $userID, $groupID ));
+			
+			if( $stmt->rowCount( ) > 0 ) {
+				// Already Exists, Re-Activate It
+				$row = $stmt->fetch( PDO::FETCH_OBJ );
+				$stmt = $this->db->prepare( "UPDATE " . DB_MAIN . ".group_users SET group_user_status='active' WHERE group_user_id=?" );
+				$stmt->execute( array( $row->group_user_id ));
+			} else {
+				// Doesn't Exist, Add New
+				$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".group_users VALUES( '0',?, ?, NOW( ), 'active' )" );
+				$stmt->execute( array( $groupID, $userID ));
+			}
+			
+		}
+		
+	}
+	
+	/**
 	 * Get a count of all users available
 	 */
 	 

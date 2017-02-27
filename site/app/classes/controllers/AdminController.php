@@ -174,6 +174,59 @@ class AdminController extends lib\Controller {
 	}
 	
 	/**
+	 * Manage Groups
+	 * A tool for adding and editing groups for
+	 * permission settings 
+	 */
+	
+	public function ManageGroups( ) {
+		
+		lib\Session::canAccess( lib\Session::getPermission( 'MANAGE GROUPS' ));
+		
+		// Add some Manage Permissions Specific JS
+		$addonJS = $this->footerParams->get( 'ADDON_JS' );
+		$addonJS[] = "formValidation/formValidation.min.js";
+		$addonJS[] = "formValidation/bootstrap.min.js";
+		$addonJS[] = "jquery.dataTables.js";
+		$addonJS[] = "dataTables.bootstrap.js";
+		$addonJS[] = "alertify.min.js";
+		$addonJS[] = "blocks/orca-dataTableBlock.js";
+		$addonJS[] = "admin/orca-admin-manageGroups.js";
+		
+		// Add some Manager Permissions Specific CSS
+		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );
+		$addonCSS[] = "formValidation/formValidation.min.css";
+		$addonCSS[] = "dataTables.bootstrap.css";
+		$addonCSS[] = "alertify.min.css";
+		$addonCSS[] = "alertify-bootstrap.min.css";
+		
+		$this->headerParams->set( 'ADDON_CSS', $addonCSS );
+		$this->footerParams->set( 'ADDON_JS', $addonJS );
+		
+		$userHandler = new models\UserHandler( );
+		$userList = $userHandler->buildUserList( );
+		
+		$permHandler = new models\PermissionsHandler( );
+		$permCount = $permHandler->fetchPermissionCount( );
+		$permissionList=  $permHandler->getPermissionList( );
+				
+		$params = array(
+			"WEB_URL" => WEB_URL,
+			"IMG_URL" => IMG_URL,
+			"TABLE_TITLE" => "Current Permissions",
+			"ROW_COUNT" => $permCount,
+			"USERS" => $userList,
+			"PERMISSION_LIST" => $permissionList
+		);
+		
+		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Admin/ManageGroups' />" );
+		$this->headerParams->set( "TITLE", "Manage Groups" );
+		
+		$this->renderView( "admin" . DS . "AdminManageGroups.tpl", $params, false );
+				
+	}
+	
+	/**
 	 * Manage Permissions
 	 * A tool for adding and managing permission values and the settings 
 	 * each one is configured to
