@@ -1,4 +1,4 @@
-<?PHP
+<?php
 
 /**
  * Execute a process used in the handling of data files
@@ -156,6 +156,25 @@ if( isset( $postData['adminTool'] ) ) {
 				
 			} else {
 				$results = array( "STATUS" => "ERROR", "MESSAGE" => "Unable to add a new permission at this time, please try again later!" );
+			}
+			
+			echo json_encode( $results );
+			break;
+			
+		// Add a new group to the groups table
+		case 'addGroup' :
+			$results = array( );
+			if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE GROUPS' )) && isset( $postData['groupName'] ) && isset( $postData['groupMembers'] )) {
+				$userHandler = new models\UserHandler( );
+				
+				if( $userHandler->addGroup( $postData['groupName'], $postData['groupMembers'] )) {
+					$results = array( "STATUS" => "SUCCESS", "MESSAGE" => "Successfully Added New Group" );
+				} else {
+					$results = array( "STATUS" => "ERROR", "MESSAGE" => "The Group Name you Entered Already Exists" );
+				}
+				
+			} else {
+				$results = array( "STATUS" => "ERROR", "MESSAGE" => "Unable to add a new group at this time, please try again later!" );
 			}
 			
 			echo json_encode( $results );

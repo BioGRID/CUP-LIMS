@@ -40,6 +40,7 @@ class Navbar {
 		self::$rightNav['Admin']['DROPDOWN']['Change Password'] = array( "URL" => WEB_URL . "/Admin/ChangePassword", "TITLE" => 'Change Password', "STATUS" => 'observer'  );
 		self::$rightNav['Admin']['DROPDOWN']['Manage Users'] = array( "URL" => WEB_URL . "/Admin/ManageUsers", "TITLE" => 'Manage Users and Status', "STATUS" => 'poweruser' );
 		self::$rightNav['Admin']['DROPDOWN']['Manage Permissions'] = array( "URL" => WEB_URL . "/Admin/ManagePermissions", "TITLE" => 'Manage Page Access Permissions', "STATUS" => 'admin' );
+		self::$rightNav['Admin']['DROPDOWN']['Manage Groups'] = array( "URL" => WEB_URL . "/Admin/ManageGroups", "TITLE" => 'Manage Groups', "STATUS" => 'poweruser' );
 		self::$rightNav['Logout'] = array( "URL" => WEB_URL . "/Home/Logout", "TITLE" => 'Logout from Site', "STATUS" => 'observer' );
 	
 	}
