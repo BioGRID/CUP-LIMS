@@ -175,7 +175,7 @@ class AdminController extends lib\Controller {
 	
 	/**
 	 * Manage Groups
-	 * A tool for adding and editing groups for
+	 * A tool for adding and viewing groups for
 	 * permission settings 
 	 */
 	
@@ -223,6 +223,67 @@ class AdminController extends lib\Controller {
 		$this->headerParams->set( "TITLE", "Manage Groups" );
 		
 		$this->renderView( "admin" . DS . "AdminManageGroups.tpl", $params, false );
+				
+	}
+	
+	/**
+	 * Edit Group
+	 * A tool for editing groups for
+	 * permission settings 
+	 */
+	
+	public function EditGroup( ) {
+		
+		lib\Session::canAccess( lib\Session::getPermission( 'MANAGE GROUPS' ));
+		
+		// If we're not passed a numeric values and a set of group ids, show 404
+		if( !isset( $_GET['groupID'] ) || !is_numeric( $_GET['groupID'] )) {
+			lib\Session::sendPageNotFound( );
+		}
+		
+		$groupHandler = new models\GroupHandler( );
+		$groupInfo = $groupHandler->fetchGroup( $_GET['groupID'] );
+		
+		// Group Doesn't Exist
+		if( !$groupInfo ) {
+			lib\Session::sendPageNotFound( );
+		}
+		
+		// Add some Manage Permissions Specific JS
+		$addonJS = $this->footerParams->get( 'ADDON_JS' );
+		$addonJS[] = "formValidation/formValidation.min.js";
+		$addonJS[] = "formValidation/bootstrap.min.js";
+		$addonJS[] = "alertify.min.js";
+		$addonJS[] = "admin/orca-admin-manageGroups.js";
+		
+		// Add some Manager Permissions Specific CSS
+		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );
+		$addonCSS[] = "formValidation/formValidation.min.css";
+		$addonCSS[] = "alertify.min.css";
+		$addonCSS[] = "alertify-bootstrap.min.css";
+		
+		$this->headerParams->set( 'ADDON_CSS', $addonCSS );
+		$this->footerParams->set( 'ADDON_JS', $addonJS );
+		
+		$userHandler = new models\UserHandler( );
+		$userList = $userHandler->buildUserList( );
+		
+		$groupUsers = $groupHandler->fetchGroupUsers( $_GET['groupID'] );
+				
+		$params = array(
+			"WEB_URL" => WEB_URL,
+			"IMG_URL" => IMG_URL,
+			"GROUP_ID" => $groupInfo->group_id,
+			"GROUP_NAME" => $groupInfo->group_name,
+			"GROUP_DESC" => $groupInfo->group_desc,
+			"SELECTED_USERS" => $groupUsers,
+			"USERS" => $userList
+		);
+		
+		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Admin/EditGroup' />" );
+		$this->headerParams->set( "TITLE", "Edit Group" );
+		
+		$this->renderView( "admin" . DS . "AdminEditGroup.tpl", $params, false );
 				
 	}
 	

@@ -49,6 +49,34 @@ class GroupHandler {
 	}
 	
 	/**
+	 * Edit a Permission Group
+	 */
+	 
+	public function editGroup( $groupID, $groupName, $groupDesc, $groupMembers ) {
+		
+		$stmt = $this->db->prepare( "SELECT group_id FROM " . DB_MAIN . ".groups WHERE group_name=? AND group_id != ? AND group_status='active' LIMIT 1" );
+		$stmt->execute( array( $groupName, $groupID ));
+		
+		if( $stmt->rowCount( ) > 0 ) {
+			return false;
+		}
+		
+		$row = $stmt->fetch( PDO::FETCH_OBJ );
+		
+		if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE GROUPS' ))) {
+			$stmt = $this->db->prepare( "UPDATE " . DB_MAIN . ".groups SET group_name=?, group_desc=?, group_status='active' WHERE group_id=?" );
+			$stmt->execute( array( $groupName, $groupDesc, $groupID ));
+			
+			// Fetch its new ID
+			$this->updateGroupUsers( $groupID, $groupMembers );
+			
+			return true;
+		}
+	
+		return false;
+	}
+	
+	/**
 	 * Update the users associated with a specific
 	 * permission group
 	 */
@@ -188,8 +216,10 @@ class GroupHandler {
 	private function buildManageGroupOptions( $groupInfo ) {
 		
 		$options = array( );
+		
+		$options[] = '<a href="' . WEB_URL . '/Admin/EditGroup?groupID=' . $groupInfo->group_id . '"><i class="optionIcon fa fa-pencil-square-o fa-lg popoverData fileView text-success editGroup" data-title="Edit Group" data-content="Edit this Permission Group to Add or Remove new Members"></i></a>';
 			
-		$options[] = '<a title="' . "TEST" . '"><i class="optionIcon fa fa-times fa-lg popoverData fileView text-danger deleteGroup" data-groupid="' . $groupInfo->group_id . '" data-title="Delete Group" data-content="Remove this Permission Group from the Site"></i></a>';
+		$options[] = '<i class="optionIcon fa fa-times fa-lg popoverData fileView text-danger deleteGroup" data-groupid="' . $groupInfo->group_id . '" data-title="Delete Group" data-content="Remove this Permission Group from the Site"></i>';
 		
 		return implode( " ", $options );
 		
@@ -248,7 +278,7 @@ class GroupHandler {
 		$users = array( );
 		
 		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
-			$users[] = $row;
+			$users[$row->user_id] = $row;
 		}
 		
 		return $users;

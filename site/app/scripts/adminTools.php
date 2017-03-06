@@ -167,10 +167,22 @@ if( isset( $postData['adminTool'] ) ) {
 			if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE GROUPS' )) && isset( $postData['groupName'] ) && isset( $postData['groupDesc'] ) &&isset( $postData['groupMembers'] )) {
 				$groupHandler = new models\GroupHandler( );
 				
-				if( $groupHandler->addGroup( $postData['groupName'], $postData['groupDesc'], $postData['groupMembers'] )) {
-					$results = array( "STATUS" => "SUCCESS", "MESSAGE" => "Successfully Added New Group" );
+				if( !isset( $postData['groupID'] )) {
+					
+					if( $groupHandler->addGroup( $postData['groupName'], $postData['groupDesc'], $postData['groupMembers'] )) {
+						$results = array( "STATUS" => "SUCCESS", "MESSAGE" => "Successfully Added New Group" );
+					} else {
+						$results = array( "STATUS" => "ERROR", "MESSAGE" => "The Group Name you Entered Already Exists" );
+					}
+					
 				} else {
-					$results = array( "STATUS" => "ERROR", "MESSAGE" => "The Group Name you Entered Already Exists" );
+					
+					if( $groupHandler->editGroup( $postData['groupID'], $postData['groupName'], $postData['groupDesc'], $postData['groupMembers'] )) {
+						$results = array( "STATUS" => "REDIRECT", "MESSAGE" => WEB_URL . "/Admin/ManageGroups" );
+					} else {
+						$results = array( "STATUS" => "ERROR", "MESSAGE" => "The Group Name you Entered Already Exists" );
+					}
+					
 				}
 				
 			} else {

@@ -14,17 +14,21 @@
 
 	$(function( ) {
 		initializeFormValidation( );
-		$(".datatableBlock").orcaDataTableBlock({ 
-			sortCol: 0, 
-			sortDir: "ASC", 
-			pageLength: 100,
-			colTool: "manageGroupHeader", 
-			rowTool: "manageGroupRows", 
-			optionsCallback: function( datatable ) {
-				initializeGroupOptions( datatable );
-				initializeOptionPopups( );
-			}
-		});
+		
+		if( $(".datatableBlock").length ) {
+			$(".datatableBlock").orcaDataTableBlock({ 
+				sortCol: 0, 
+				sortDir: "ASC", 
+				pageLength: 1000,
+				colTool: "manageGroupHeader", 
+				rowTool: "manageGroupRows", 
+				optionsCallback: function( datatable ) {
+					initializeGroupOptions( datatable );
+					initializeOptionPopups( );
+				}
+			});
+		}
+		
 	});
 
 	
@@ -146,6 +150,7 @@
 			
 			var alertType = "success";
 			var alertIcon = "fa-check";
+			var showMsg = true;
 			if( data["STATUS"] == "ERROR" ) {
 				alertType = "danger";
 				alertIcon = "fa-warning";
@@ -154,9 +159,14 @@
 				$("#addGroupForm").trigger( "reset" );
 				$("#addGroupForm").data('formValidation').resetForm( );
 				$(".orcaDataTable").DataTable( ).draw( false );
+			} else if( data["STATUS"] == "REDIRECT" ) {
+				window.location = data["MESSAGE"];
+				showMsg = false;
 			}
 			
-			$("#messages").html( '<div class="alert alert-' + alertType + '" role="alert"><i class="fa ' + alertIcon + ' fa-lg"></i> ' + data['MESSAGE'] + '</div></div>' );
+			if( showMsg ) {
+				$("#messages").html( '<div class="alert alert-' + alertType + '" role="alert"><i class="fa ' + alertIcon + ' fa-lg"></i> ' + data['MESSAGE'] + '</div></div>' );
+			}
 			
 		}).fail( function( jqXHR, textStatus, errorThrown ) {
 			console.log( jqXHR );
