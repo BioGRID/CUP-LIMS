@@ -185,6 +185,7 @@ class AdminController extends lib\Controller {
 		
 		// Add some Manage Permissions Specific JS
 		$addonJS = $this->footerParams->get( 'ADDON_JS' );
+		$addonJS[] = "jquery.qtip.min.js";
 		$addonJS[] = "formValidation/formValidation.min.js";
 		$addonJS[] = "formValidation/bootstrap.min.js";
 		$addonJS[] = "jquery.dataTables.js";
@@ -195,6 +196,7 @@ class AdminController extends lib\Controller {
 		
 		// Add some Manager Permissions Specific CSS
 		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );
+		$addonCSS[] = "jquery.qtip.min.css";
 		$addonCSS[] = "formValidation/formValidation.min.css";
 		$addonCSS[] = "dataTables.bootstrap.css";
 		$addonCSS[] = "alertify.min.css";
@@ -206,17 +208,15 @@ class AdminController extends lib\Controller {
 		$userHandler = new models\UserHandler( );
 		$userList = $userHandler->buildUserList( );
 		
-		$permHandler = new models\PermissionsHandler( );
-		$permCount = $permHandler->fetchPermissionCount( );
-		$permissionList=  $permHandler->getPermissionList( );
+		$groupHandler = new models\GroupHandler( );
+		$groupCount = $groupHandler->fetchGroupCount( );
 				
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
-			"TABLE_TITLE" => "Current Permissions",
-			"ROW_COUNT" => $permCount,
-			"USERS" => $userList,
-			"PERMISSION_LIST" => $permissionList
+			"TABLE_TITLE" => "Current Groups",
+			"ROW_COUNT" => $groupCount,
+			"USERS" => $userList
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Admin/ManageGroups' />" );

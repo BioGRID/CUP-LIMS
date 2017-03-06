@@ -164,10 +164,10 @@ if( isset( $postData['adminTool'] ) ) {
 		// Add a new group to the groups table
 		case 'addGroup' :
 			$results = array( );
-			if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE GROUPS' )) && isset( $postData['groupName'] ) && isset( $postData['groupMembers'] )) {
-				$userHandler = new models\UserHandler( );
+			if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE GROUPS' )) && isset( $postData['groupName'] ) && isset( $postData['groupDesc'] ) &&isset( $postData['groupMembers'] )) {
+				$groupHandler = new models\GroupHandler( );
 				
-				if( $userHandler->addGroup( $postData['groupName'], $postData['groupMembers'] )) {
+				if( $groupHandler->addGroup( $postData['groupName'], $postData['groupDesc'], $postData['groupMembers'] )) {
 					$results = array( "STATUS" => "SUCCESS", "MESSAGE" => "Successfully Added New Group" );
 				} else {
 					$results = array( "STATUS" => "ERROR", "MESSAGE" => "The Group Name you Entered Already Exists" );
@@ -175,6 +175,25 @@ if( isset( $postData['adminTool'] ) ) {
 				
 			} else {
 				$results = array( "STATUS" => "ERROR", "MESSAGE" => "Unable to add a new group at this time, please try again later!" );
+			}
+			
+			echo json_encode( $results );
+			break;
+			
+		// Change the Group Status between active
+		// and inactive based on the current setting
+		case 'groupDelete' :
+		
+			$results = array( );
+			if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE GROUPS' )) && isset( $postData['groupID'] )) {
+				$groupHandler = new models\GroupHandler( );
+				if( $groupHandler->changeGroupStatus( $postData['groupID'], 'inactive' )) {
+					$results = array( "STATUS" => "SUCCESS", "MESSAGE" => "Successfully Removed Group" );
+				} else {
+					$results = array( "STATUS" => "ERROR", "MESSAGE" => "You do not have High Enough Permissions to Perform this Action" );
+				}
+			} else {
+				$results = array( "STATUS" => "ERROR", "MESSAGE" => "You do not have Valid Permission to Perform this Action" );
 			}
 			
 			echo json_encode( $results );

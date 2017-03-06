@@ -18,35 +18,35 @@
 			sortCol: 0, 
 			sortDir: "ASC", 
 			pageLength: 100,
-			colTool: "managePermissionsHeader", 
-			rowTool: "managePermissionsRows", 
+			colTool: "manageGroupHeader", 
+			rowTool: "manageGroupRows", 
 			optionsCallback: function( datatable ) {
-				initializePermissionChangeOptions( datatable );
+				initializeGroupOptions( datatable );
+				initializeOptionPopups( );
 			}
 		});
 	});
 
 	
 	/**
-	 * Setup the functionality of the permissions change radio buttons
+	 * Setup the functionality of the group icons
 	 */
 	 
-	function initializePermissionChangeOptions( datatable ) {
+	function initializeGroupOptions( datatable ) {
 		
-		$(".datatableBlock").on( "change", ".permissionChange", function( ) {
+		$(".datatableBlock").on( "click", ".deleteGroup", function( ) {
 			
 			var currentClick = $(this);
 			var submitSet = { };
 			
-			submitSet['permission'] = $(this).attr( "data-permission" );
-			submitSet['level'] = $(this).val( );
-			submitSet['adminTool'] = "permissionLevelChange";
+			submitSet['groupID'] = $(this).attr( "data-groupid" );
+			submitSet['adminTool'] = "groupDelete";
 			
 			//Convert to JSON
 			submitSet = JSON.stringify( submitSet );
 		
 			$.ajax({
-				url: baseURL + '/scripts/adminTools.php',
+				url: baseURL + 'scripts/adminTools.php',
 				type: 'POST',
 				data: { 'expData': submitSet}, 
 				dataType: 'json'
@@ -58,6 +58,7 @@
 				} else {
 					alertify.error( results['MESSAGE'] );
 				}
+				
 			});
 		});
 		
@@ -75,6 +76,14 @@
 			validators: {
 				notEmpty: {
 					message: 'You must enter a permission name'
+				}
+			}
+		};
+		
+		fieldVals['groupDesc'] = {
+			validators: {
+				notEmpty: {
+					message: 'You must enter a short description for the group'
 				}
 			}
 		};
@@ -156,5 +165,43 @@
 		});
 		
 	}
+	
+	/**
+	 * Setup tooltips for the options in the options column
+	 */
+	 
+	 function initializeOptionPopups( ) {
+		 
+		$(".datatableBlock").on( 'mouseover', '.popoverData', function( event ) {
+	 
+			var optionPopup = $(this).qtip({
+				overwrite: false,
+				content: {
+					title: $(this).data( "title" ),
+					text: $(this).data( "content" )
+				},
+				style: {
+					classes: 'qtip-bootstrap',
+					width: '250px'
+				},
+				position: {
+					my: 'bottom right',
+					at: 'top left'
+				},
+				show: {
+					event: event.type,
+					ready: true,
+					solo: true
+				},
+				hide: {
+					delay: 1000,
+					fixed: true,
+					event: 'mouseleave'
+				}
+			}, event);
+			
+		});
+		
+	 }
 	
 }));

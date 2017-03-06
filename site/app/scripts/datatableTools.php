@@ -162,6 +162,26 @@ if( isset( $postData['tool'] ) ) {
 			echo json_encode( array( "draw" => $draw, "recordsTotal" => $postData['totalRecords'], "recordsFiltered" => $recordsFiltered, "data" => $rawRows ));
 			break;
 			
+		// Fetch the column header for the Manage Groups
+		// Datatable with correct options
+		case 'manageGroupHeader' :
+			$groupHandler = new models\GroupHandler( );
+			$groupHeader = $groupHandler->fetchManageGroupColumnDefinitions( );
+			echo json_encode( $groupHeader );
+			break;
+		
+		// Fetch user rows for the Manage Groups
+		// tool for display in Datatables
+		case 'manageGroupRows' :
+			$draw = $postData['draw'];
+			
+			$groupHandler = new models\GroupHandler( );
+			$groupRows = $groupHandler->buildManageGroupRows( $postData );
+			$recordsFiltered = $groupHandler->getUnfilteredGroupCount( $postData );
+			
+			echo json_encode( array( "draw" => $draw, "recordsTotal" => $postData['totalRecords'], "recordsFiltered" => $recordsFiltered, "data" => $groupRows ));
+			break;
+			
 	}
 }
 
