@@ -1,7 +1,7 @@
 <div class='primaryContent'>
 	<div class='container-fluid'>
-		<h2>Upload New Experiment <i class='fa fa-lg fa-cloud-upload primaryIcon'></i> </h2>
-		<div class='subheadLarge'>Use the following input form to upload and store a new experiment and associated files.</div>
+		<h2>Upload Files <i class='fa fa-lg fa-cloud-upload primaryIcon'></i> </h2>
+		<div class='subheadLarge'>Use the following input form to upload and store new raw data and control files.</div>
 	</div>
 </div>
 
@@ -10,38 +10,38 @@
 		<div class='col-lg-12 col-md-12 col-sm-12 col-xs-12'>
 			<form id='uploadForm'>
 				<div class='form-group col-lg-4 col-md-4'>
-					<label for='experimentName' class='control-label'>Experiment Name</label>
-					<input type='text' class='form-control' id='experimentName' name='experimentName' placeholder='Experiment Name' />
+					<label for='fileDesc' class='control-label'>File Set Name</label>
+					<input type='text' class='form-control' id='fileDesc' name='fileDesc' placeholder='File Set Name' />
 				</div>
 				<div class='form-group col-lg-4 col-md-4'>
-					<label for='experimentDate' class='control-label'>Run Date (YYYY-MM-DD)</label>
-					<input type='text' class='form-control' id='experimentDate' name='experimentDate' placeholder='Run Date (Format: YYYY-MM-DD)' value='{{TODAY}}'	/>
+					<label for='fileDate' class='control-label'>Run Date (YYYY-MM-DD)</label>
+					<input type='text' class='form-control' id='fileDate' name='fileDate' placeholder='Run Date (Format: YYYY-MM-DD)' value='{{TODAY}}'	/>
 				</div>
 				<div class='form-group col-lg-4 col-md-4'>
-					<label for='experimentCell' class='control-label'>Cell Line</label>
-					<select class='form-control' id='experimentCell' name='experimentCell'>
+					<label for='fileCell' class='control-label'>Cell Line</label>
+					<select class='form-control' id='fileCell' name='fileCell'>
 						{% for cellLineID, cellLineName in CELL_LINES %}
 							<option value='{{cellLineID}}'>{{cellLineName}}</option>
 						{% endfor %}
 					</select>
 				</div>
 				<div class='form-group col-lg-12 col-md-12'>
-					<label for='experimentDesc' class='control-label'>Brief Description</label>
-					<input type='text' class='form-control' id='experimentDesc' name='experimentDesc' placeholder='Brief Description of Experiment (ex. viability after 15 days, resistance to West Nile Virus)' />
+					<label for='fileTags' class='control-label'>Reference Tags</label>
+					<input type='text' class='form-control' id='fileTags' name='fileTags' placeholder='Comma separated set of tags for searching (example: ubiquitin, GBM, sabatini) [optional]' />
 				</div>
 				<div id='dropzoneWrap' class=' form-group col-lg-12 col-md-12 marginTopXs'>
 					<div class='dropzone' id='dropzoneBox'>
-						<div class='dz-message'>Drag/Drop all experiment files here, including control files, or click this box to select each file individually from your file system. <strong>Must be tab-delimited text formatted files...</strong></div>
+						<div class='dz-message'>Drag/Drop all files here, including control files, or click this box to select each file individually from your file system. <strong>Must be tab-delimited text formatted files...</strong></div>
 					</div>
-					<input type='hidden' id='experimentCode' name='experimentCode' value='{{DATASET_CODE}}' />
-					<input type='hidden' id='experimentHasFile' name='experimentHasFile' value='' />
+					<input type='hidden' id='fileCode' name='fileCode' value='{{DATASET_CODE}}' />
+					<input type='hidden' id='hasFile' name='hasFile' value='' />
 				</div>
 				<div class='form-group col-lg-8 col-md-8'>
-					<label for='experimentBG' class='control-label'>Experiment Control (add control files above to populate this list)</label>
-					<select class='form-control' id='experimentBG' name='experimentBG' disabled='true' multiple></select>
+					<label for='fileBG' class='control-label'>Control Files (add control files above, and select them when they populate this list)</label>
+					<select class='form-control' id='fileBG' name='fileBG' disabled='true' multiple></select>
 				</div>
 				<div class='marginTopSm col-lg-12 col-md-12'>
-					<button class='btn btn-success btn-lg' id='experimentUploadBtn' type='submit'><strong>Submit Experiment</strong> <i class='fa fa-check'></i></button>
+					<button class='btn btn-success btn-lg' id='fileUploadBtn' type='submit'><strong>Submit Files</strong> <i class='fa fa-check'></i></button>
 				</div>
 			</form>
 		</div>

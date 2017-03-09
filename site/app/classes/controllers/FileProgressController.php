@@ -36,20 +36,15 @@ class FileProgressController extends lib\Controller {
 		lib\Session::canAccess( lib\Session::getPermission( 'VIEW FILE PROGRESS' ));
 		$lookups = new models\Lookups( );
 		
-		// Fetch and Check Experiment ID
-		$experimentID = 0;
-		if( isset( $_GET['expID'] )) {
-			if( is_numeric( $_GET['expID'] )) {
-				$experimentID = $_GET['expID'];
-			}
+		// Fetch and Check File IDs
+		$fileIDs = array( );
+		if( isset( $_GET['files'] )) {
+			$fileIDs = explode( "|", $_GET['files'] );
 		}
 		
 		$fileHandler = new models\FileHandler( );
-		$files = $fileHandler->fetchFiles( $experimentID );
+		$files = $fileHandler->fetchFilesByIDs( $fileIDs );
 		$fileData = $fileHandler->fetchFormattedFileStates( $files );
-		
-		$expHandler = new models\ExperimentHandler( );
-		$expInfo = $expHandler->fetchExperiment( $experimentID );
 		
 		$totalComplete = $fileData['STATS']['ERROR'] + $fileData['STATS']['SUCCESS'];
 		$progressPercent = ($totalComplete / $fileData['STATS']['TOTAL'])*100;
@@ -72,7 +67,7 @@ class FileProgressController extends lib\Controller {
 			"TOTAL_FILES" => $fileData['STATS']['TOTAL'],
 			"PROGRESS_PERCENT" => number_format( $progressPercent, 0 ),
 			"COMPLETED_FILES" => $totalComplete,
-			"EXPERIMENT_NAME" => $expInfo->experiment_name,
+			"EXPERIMENT_NAME" => "",
 			"IS_RUNNING" => $isRunning
 		);
 		

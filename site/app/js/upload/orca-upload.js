@@ -25,12 +25,12 @@
 	
 	function initializeDatePicker( ) {
 		
-		$("input#experimentDate").datepicker({
+		$("input#fileDate").datepicker({
 			format: 'yyyy-mm-dd',
 			todayHighlight: true,
 			forceParse: true
 		}).on( 'changeDate', function( e ) {
-			$("#uploadForm").formValidation( 'revalidateField', 'experimentDate' );
+			$("#uploadForm").formValidation( 'revalidateField', 'fileDate' );
 		});
 		
 	}
@@ -38,30 +38,30 @@
 	function initializeDropzone( ) {
 		
 		expDropzone = new Dropzone( "div#dropzoneBox", { 
-			url: baseURL + "/scripts/uploadExperiment.php",
+			url: baseURL + "/scripts/uploadFiles.php",
 			parallelUploads: 3,
 			addRemoveLinks: true,
 			sending: function( file, xhr, formData ) {
-				formData.append( 'experimentCode', $("#experimentCode").val( ) );
+				formData.append( 'fileCode', $("#fileCode").val( ) );
 			},
 			success: function( file, response ) {
 				
 				// Set to a value, to allow for validation
 				// of form submission
-				$("#experimentHasFile").val( "true" );
+				$("#hasFile").val( "true" );
 				
 				// Test to see if we are still validated
-				$("#uploadForm").formValidation( 'revalidateField', 'experimentHasFile' );
-				$("#experimentBG").append( "<option value='" + file.name + "'>" + file.name + "</option>" ).prop( 'disabled', false );
+				$("#uploadForm").formValidation( 'revalidateField', 'hasFile' );
+				$("#fileBG").append( "<option value='" + file.name + "'>" + file.name + "</option>" ).prop( 'disabled', false );
 				
 				
 			},
 			canceled: function( file ) {
-				$("#uploadForm").formValidation( 'revalidateField', 'experimentHasFile' );
+				$("#uploadForm").formValidation( 'revalidateField', 'hasFile' );
 				removeBackgroundOption( file );
 			},
 			error: function( file, message ) {
-				$("#uploadForm").formValidation( 'revalidateField', 'experimentHasFile' );
+				$("#uploadForm").formValidation( 'revalidateField', 'hasFile' );
 				removeBackgroundOption( file );
 			}
 		});
@@ -93,7 +93,7 @@
 			
 			if( !this.files.length ) {		
 				// Empty out to prevent form submission
-				$("#experimentHasFile").val( "" );
+				$("#hasFile").val( "" );
 			} else {
 				
 				// Check to see if there are any successfully
@@ -109,11 +109,11 @@
 				}
 				
 				if( !hasFile ) {
-					$("#experimentHasFile").val( "" );
+					$("#hasFile").val( "" );
 				}
 			}
 			
-			$("#uploadForm").formValidation( 'revalidateField', 'experimentHasFile' );
+			$("#uploadForm").formValidation( 'revalidateField', 'hasFile' );
 			
 		});
 		
@@ -121,9 +121,9 @@
 	
 	function removeBackgroundOption( file ) {
 		
-		$("#experimentBG option[value='" + file.name + "']").remove( );
-		if( $("#experimentBG option").length <= 0 ) {
-			$("#experimentBG").prop( "disabled", true );
+		$("#fileBG option[value='" + file.name + "']").remove( );
+		if( $("#fileBG option").length <= 0 ) {
+			$("#fileBG").prop( "disabled", true );
 		}
 		
 	}
@@ -132,39 +132,41 @@
 		
 		var fieldVals = { };
 		
-		fieldVals['experimentName'] = {
+		fieldVals['fileDesc'] = {
 			validators: {
 				notEmpty: {
-					message: 'An Experiment Name is Required'
+					message: 'A File Set Name is Required'
 				}
 			}
 		};
 		
-		fieldVals['experimentDate'] = {
+		fieldVals['fileDate'] = {
 			validators: {
 				notEmpty: {
-					message: 'An Experiment Date is Required'
+					message: 'An Run Date is Required'
 				},
 				date: {
 					format: 'YYYY-MM-DD',
-					message: 'The Experiment Date is not formatted correctly. Should be YYYY-MM-DD'
+					message: 'The Run Date is not formatted correctly. Should be YYYY-MM-DD'
 				}
 			}
 		};
 		
-		fieldVals['experimentDesc'] = {
+		fieldVals['fileTags'] = {
 			validators: {
-				notEmpty: {
-					message: 'An Experiment Description is Required'
+				stringLength: {
+					message: 'Tags must be less than 255 characters total',
+					max: 255,
+					min: 0
 				}
 			}
 		};
 		
-		fieldVals['experimentHasFile'] = {
+		fieldVals['hasFile'] = {
 			excluded: false,
 			validators: {
 				notEmpty: {
-					message: 'An Uploaded Experiment File is Required'
+					message: 'An Uploaded File is Required'
 				},
 				hasFiles: {
 					message: 'You must upload at least one valid file AND have no files still processing...'
@@ -172,7 +174,7 @@
 			}
 		};
 		
-		fieldVals['experimentBG'] = {
+		fieldVals['fileBG'] = {
 			validators: {
 				notEmpty: {
 					message: 'You must select at least one valid control file'
@@ -189,12 +191,12 @@
 			var $form = $(e.target),
 				fv = $(e.target).data( 'formValidation' );
 			
-			submitExperiment( );
+			submitFiles( );
 				
 		});
 	}
 	
-	function submitExperiment( ) {
+	function submitFiles( ) {
 		
 		var formData = $("#uploadForm").serializeArray( );
 		var submitSet = { };
@@ -205,17 +207,17 @@
 		});
 		
 		// Get successful files only
-		submitSet['experimentFiles'] = [];
+		submitSet['files'] = [];
 		$.each( expDropzone.files, function( ) {
 			if( this.status == "success" ) {
-				submitSet['experimentFiles'].push( this.name );
+				submitSet['files'].push( this.name );
 			}
 		});
 		
 		// Get multibackground select
-		submitSet['experimentBG'] = [];
-		$("#experimentBG option:selected").each( function( ) {
-			submitSet['experimentBG'].push( $(this).val( ) );
+		submitSet['fileBG'] = [];
+		$("#fileBG option:selected").each( function( ) {
+			submitSet['fileBG'].push( $(this).val( ) );
 		});
 		
 		// Convert to JSON
@@ -224,9 +226,9 @@
 		// Send via AJAX for submission to
 		// database and placement of files
 		$.ajax({
-			url: baseURL + "/scripts/submitExperiment.php",
+			url: baseURL + "/scripts/submitFiles.php",
 			type: "POST",
-			data: {"expData" : submitSet},
+			data: {"data" : submitSet},
 			dataType: 'json',
 			beforeSend: function( ) {
 				$("#messages").html( "" );
@@ -244,7 +246,7 @@
 			$("#messages").html( '<div class="alert alert-' + alertType + '" role="alert"><i class="fa ' + alertIcon + ' fa-lg"></i> ' + data['MESSAGE'] + '</div></div>' );
 			
 			if( data["STATUS"] == "success" ) {
-				window.location = baseURL + "/FileProgress?expID=" + data["ID"];
+				window.location = baseURL + "/FileProgress?files=" + data["IDS"];
 			}
 			
 		}).fail( function( jqXHR, textStatus, errorThrown ) {

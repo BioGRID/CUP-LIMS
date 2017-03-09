@@ -21,22 +21,22 @@ if( !lib\Session::isLoggedIn( ) ) {
 }
 
 use ORCA\app\classes\models;
-$experiments = new models\ExperimentHandler( );
+$fileHandler = new models\FileHandler( );
 
 $response = array( );
 
-if( isset( $_POST['expData'] )) {
-	$expData = json_decode( $_POST['expData'] );
+if( isset( $_POST['data'] )) {
+	$data = json_decode( $_POST['data'] );
 	
-	if( isset( $expData->experimentName ) && 
-		isset( $expData->experimentDate ) && 
-		isset( $expData->experimentDesc ) && 
-		isset( $expData->experimentCode ) &&
-		isset( $expData->experimentCell ) &&
-		isset( $expData->experimentHasFile ) && 
-		isset( $expData->experimentFiles )) {
+	if( isset( $data->fileDesc ) && 
+		isset( $data->fileDate ) && 
+		isset( $data->fileCode ) &&
+		isset( $data->fileTags ) &&
+		isset( $data->fileCell ) &&
+		isset( $data->hasFile ) && 
+		isset( $data->files )) {
 	
-		$response = $experiments->insertExperiment( $expData );
+		$response = $fileHandler->insertFileSet( $data );
 		
 	} else {
 		$response = array( "STATUS" => "error", "MESSAGE" => "Unable to Process Experiment due to Missing Fields in Submission" );

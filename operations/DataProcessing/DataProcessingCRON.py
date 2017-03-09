@@ -40,30 +40,19 @@ with Database.db as cursor :
 
 	lookups = Lookups.Lookups( Database.db )
 
-	cursor.execute( "SELECT file_id, file_name, file_state, experiment_id, file_isbackground FROM " + Config.DB_MAIN + ".files WHERE file_state IN ('new','redo') AND file_status='active' ORDER BY experiment_id ASC, file_isbackground DESC" )
+	cursor.execute( "SELECT file_id, file_name, file_code, file_state, file_iscontrol FROM " + Config.DB_MAIN + ".files WHERE file_state IN ('new','redo') AND file_status='active' ORDER BY file_code ASC, file_iscontrol DESC" )
 	
 	if cursor.rowcount > 0 :
 	
 		# Establish parser handler
 		parserHandler = ParserHandler.ParserHandler( Database.db )
 	
-		# Get Experiment Code Hash
-		expCodes = lookups.buildExperimentCodeHash( )
-	
 		# Get sgRNA Hash
 		sgRNAs = lookups.buildSGRNAHash( )
 			
-		prevExpID = "0"
 		for row in cursor.fetchall( ) :
 		
-			expCode = expCodes[str(row['experiment_id'])]
-			
-			# Test to see if the experiment ID we're on to now has changed
-			# if it has, update the experiment_filestate to loaded
-			if str(row['experiment_id']) != "0" and str(row['experiment_id']) != prevExpID :
-				cursor.execute( "UPDATE " + Config.DB_MAIN + ".experiments SET experiment_filestate='loaded' WHERE experiment_id=%s", [prevExpID] )
-		
-			with open( Config.PROCESSED_DIR + "/" + expCode + "/" + row['file_name'] ) as inFile :
+			with open( Config.PROCESSED_DIR + "/" + row['file_code'] + "/" + row['file_name'] ) as inFile :
 				# PROCESS FILE
 				if row['file_state'] == "redo" :
 					parserHandler.delExistingRecords( row['file_id'] )
@@ -89,12 +78,6 @@ with Database.db as cursor :
 			else :
 				parserHandler.setFileState( row['file_id'], "parsed", [] )
 				
-			# Set the prevExpID to the current one
-			# before iterating the loop
-			prevExpID = str(row['experiment_id'])
-			
-		# update the experiment_filestate to loaded
-		cursor.execute( "UPDATE " + Config.DB_MAIN + ".experiments SET experiment_filestate='loaded' WHERE experiment_id=%s", [prevExpID] )
 		Database.db.commit( )
 					
 sys.exit(0)

@@ -24,6 +24,44 @@ class FileHandler {
 		$this->twig = new \Twig_Environment( $loader );
 	}
 	
+	/** 
+	 * Insert a file set into the database if one with the same
+	 * name doesn't already exist.
+	 */
+	 
+	public function insertFileSet( $data ) {
+		
+		// Otherwise, begin insert process
+		$this->db->beginTransaction( );
+		
+		try {
+			
+			$fileIDs = array( );
+			// Enter the list of files
+			foreach( $data->files as $file ) {
+				$isBG = false;
+				if( in_array( $file, $data->fileBG ) ) {
+					$isBG = true;
+				}
+				
+				$fileID = $this->addFile( $data, $data->fileCode, $file, $isBG );
+				if( $fileID ) {
+					$fileIDs[] = $fileID;
+				}
+			}
+			
+			$this->db->commit( );
+			
+			$this->removeStagingDir( $data->fileCode );
+			return array( "STATUS" => "success", "MESSAGE" => "Successfully Added Experiment", "IDS" => implode( "|", $fileIDs ) );
+			
+		} catch( PDOException $e ) {
+			$this->db->rollback( );
+			return array( "STATUS" => "error", "MESSAGE" => "Database Insert Problem. " . $e->getMessage( ) );
+		}
+		
+	}
+	
 	/**
 	 * Convert a set of files into a formatted alert indicating the current
 	 * state of the file
@@ -134,6 +172,29 @@ class FileHandler {
 	
 	}
 	
+	/** 
+	 * Fetch a set of files from the database pertaining to a specific
+	 * set of file IDs and a status
+	 */
+	 
+	public function fetchFilesByIDs( $fileIDs ) {
+		
+		$varSet = array_fill( 0, sizeof( $fileIDs ), "?" );
+		
+		$query = "SELECT file_id, file_name, file_size, file_state, file_state_msg FROM " . DB_MAIN . ".files WHERE file_status='active' AND file_id IN (" . implode( ",", $varSet ) . ") ORDER BY file_addeddate DESC,file_id DESC";
+
+		$stmt = $this->db->prepare( $query );
+		$stmt->execute( $fileIDs );
+		
+		$files = array( );
+		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
+			$files[] = array( "NAME" => $row->file_name, "ID" => $row->file_id, "SIZE" => $this->formatFileSize( $row->file_size ), "STATE" => $row->file_state, "STATE_MSG" => json_decode( $row->file_state_msg, true ) );
+		}
+		
+		return $files;
+	
+	}
+	
 	/**
 	 * Convert file sizes into a consise value
 	 * that's easier to present
@@ -165,11 +226,14 @@ class FileHandler {
 	 * home on the file system.
 	 */
 	 
-	public function addFile( $expID, $expCode, $filename, $isBG ) {
+	public function addFile( $fileSet, $fileCode, $filename, $isBG ) {
+		
+		$oldDir = UPLOAD_TMP_PATH . DS . $fileCode;
+		$fileHash = sha1_file( $oldDir . DS . $filename );
 		
 		// See if one with the same name already exists
-		$stmt = $this->db->prepare( "SELECT file_id FROM " . DB_MAIN . ".files WHERE file_name=? AND experiment_id=? LIMIT 1" );
-		$stmt->execute( array( $filename, $expID ));
+		$stmt = $this->db->prepare( "SELECT file_id FROM " . DB_MAIN . ".files WHERE file_hash=? LIMIT 1" );
+		$stmt->execute( array( $fileHash ));
 		
 		// If it exists, return an error
 		if( $stmt->rowCount( ) > 0 ) {
@@ -180,7 +244,7 @@ class FileHandler {
 		try {
 			
 			// Move File
-			if( $fileInfo = $this->moveFileToProcessing( $filename, $expCode )) {
+			if( $fileInfo = $this->moveFileToProcessing( $filename, $fileCode )) {
 				
 				$bgVal = "0";
 				if( $isBG ) {
@@ -188,8 +252,8 @@ class FileHandler {
 				}
 		
 				// Create File
-				$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".files VALUES( '0', ?, ?, ?, '0', NOW( ), 'new','-', 'active', ?, ? )" );
-				$stmt->execute( array( $filename, $fileInfo['SIZE'], $bgVal, $expID, $_SESSION[SESSION_NAME]['ID'] ));
+				$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".files VALUES( '0', ?, ?, ?, ?, ?, ?, ?, '0', NOW( ), ?, 'new','-', 'active', ?, ?, ? )" );
+				$stmt->execute( array( $filename, $fileHash, $fileInfo['SIZE'], $fileCode, $fileSet->fileTags, $fileSet->fileDesc, $bgVal, $fileSet->fileDate, $_SESSION[SESSION_NAME]['ID'], "public", "-" ));
 				
 				// Fetch its new ID
 				$fileID = $this->db->lastInsertId( );
@@ -269,11 +333,10 @@ class FileHandler {
 		$columns[3] = array( "title" => "Total Reads", "data" => 3, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_readtotal' );
 		$columns[4] = array( "title" => "Date", "data" => 4, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_addeddate' );
 		$columns[5] = array( "title" => "State", "data" => 5, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_state' );
-		$columns[6] = array( "title" => "Experiment", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'experiment_name' );
-		$columns[7] = array( "title" => "Options", "data" => 7, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
+		$columns[6] = array( "title" => "Options", "data" => 6, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
 		
 		if( $showBGSelect ) {
-			$columns[8] = array( "title" => "Control", "data" => 8, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
+			$columns[7] = array( "title" => "Control", "data" => 7, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
 		}
 		
 		return $columns;
