@@ -44,12 +44,16 @@ class UploadController extends lib\Controller {
 		
 		$lookups = new models\Lookups( );
 		$cellLines = $lookups->buildCellLineHash( );
+		
+		$groupHandler = new models\GroupHandler( );
+		$groups = $groupHandler->fetchGroups( );
 				
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
 			"CELL_LINES" => $cellLines,
 			"DATASET_CODE" => uniqid( ),
+			"GROUPS" => $groups,
 			"TODAY" => date( 'Y-m-d', strtotime( 'today' ))
 		);
 		

@@ -29,6 +29,8 @@ if( isset( $_POST['data'] )) {
 	$data = json_decode( $_POST['data'] );
 	
 	if( isset( $data->fileDesc ) && 
+		isset( $data->filePermission ) &&
+		isset( $data->fileGroups ) &&
 		isset( $data->fileDate ) && 
 		isset( $data->fileCode ) &&
 		isset( $data->fileTags ) &&

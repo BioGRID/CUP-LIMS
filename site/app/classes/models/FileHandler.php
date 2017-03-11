@@ -250,10 +250,15 @@ class FileHandler {
 				if( $isBG ) {
 					$bgVal = "1";
 				}
+				
+				$groupVal = "-";
+				if( sizeof( $fileSet->fileGroups ) > 0 ) {
+					$groupVal = implode( "|", $fileSet->fileGroups );
+				}
 		
 				// Create File
 				$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".files VALUES( '0', ?, ?, ?, ?, ?, ?, ?, '0', NOW( ), ?, 'new','-', 'active', ?, ?, ? )" );
-				$stmt->execute( array( $filename, $fileHash, $fileInfo['SIZE'], $fileCode, $fileSet->fileTags, $fileSet->fileDesc, $bgVal, $fileSet->fileDate, $_SESSION[SESSION_NAME]['ID'], "public", "-" ));
+				$stmt->execute( array( $filename, $fileHash, $fileInfo['SIZE'], $fileCode, $fileSet->fileTags, $fileSet->fileDesc, $bgVal, $fileSet->fileDate, $_SESSION[SESSION_NAME]['ID'], $fileSet->filePermission, $groupVal ));
 				
 				// Fetch its new ID
 				$fileID = $this->db->lastInsertId( );

@@ -301,6 +301,24 @@ class GroupHandler {
 	}
 	
 	/**
+	 * Get a count of all groups available
+	 */
+	 
+	public function fetchGroups( ) {
+		
+		$stmt = $this->db->prepare( "SELECT * FROM " . DB_MAIN . ".groups WHERE group_status='active' ORDER BY group_name ASC" );
+		$stmt->execute( );
+		
+		$groups = array( );
+		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
+			$groups[$row->group_id] = $row;
+		}
+		
+		return $groups;
+		
+	}
+	
+	/**
 	 * Change a group from active to inactive or vice versa
 	 */
 	 

@@ -19,9 +19,25 @@
 		addFileValidator( );
 		initializeDropzone( );
 		initializeDatePicker( );
+		initializePermissionSwitch( );
 		initializeUploadFormValidation( );
 		
 	});
+	
+	function initializePermissionSwitch( ) {
+		
+		$("#uploadForm").on( "change", "#filePermission", function( ) {
+			
+			var selectVal = $(this).val( );
+			if( selectVal == "private" ) {
+				$("#fileGroupsBox").show( );
+			} else {
+				$("#fileGroupsBox").hide( );
+			}
+			
+		});
+		
+	}
 	
 	function initializeDatePicker( ) {
 		
@@ -181,6 +197,14 @@
 				}
 			}
 		}
+		
+		fieldVals['filePermission'] = {
+			validators: {
+				notEmpty: {
+					message: 'A File Permission Setting is Required'
+				}
+			}
+		}
 			
 		$("#uploadForm").formValidation({
 			framework: 'bootstrap',
@@ -218,6 +242,12 @@
 		submitSet['fileBG'] = [];
 		$("#fileBG option:selected").each( function( ) {
 			submitSet['fileBG'].push( $(this).val( ) );
+		});
+		
+		// Get permitted groups select
+		submitSet['fileGroups'] = [];
+		$("#fileGroups option:selected").each( function( ) {
+			submitSet['fileGroups'].push( $(this).val( ) );
 		});
 		
 		// Convert to JSON

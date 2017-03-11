@@ -37,8 +37,23 @@
 					<input type='hidden' id='hasFile' name='hasFile' value='' />
 				</div>
 				<div class='form-group col-lg-8 col-md-8'>
-					<label for='fileBG' class='control-label'>Control Files (add control files above, and select them when they populate this list)</label>
+					<label for='fileBG' class='control-label'>Control Files (add control files above, and select them when they populate this list) [choose all that apply]</label>
 					<select class='form-control' id='fileBG' name='fileBG' disabled='true' multiple></select>
+				</div>
+				<div class='form-group col-lg-12 col-md-12'>
+					<label for='filePermission' class='control-label'>File Permissions (who can see these files)</label>
+					<select class='form-control' id='filePermission' name='filePermission'>
+						<option value='public'>Public (Openly Available to all Users, Best for Published Datasets)</option>
+						<option value='private'>Private (Available Only to You, and Groups of Users You Select)</option>
+					</select>
+				</div>
+				<div id='fileGroupsBox' class='form-group col-lg-8 col-md-8' style='display: none'>
+					<label for='fileGroups' class='control-label'>Permitted Groups (if you don't choose any, only YOU alone will have access to these files) [choose all that apply]</label>
+					<select class='form-control' id='fileGroups' name='fileGroups' multiple>
+						{% for groupID, groupInfo in GROUPS %}
+							<option value='{{groupID}}'>{{groupInfo.group_name}}</option>
+						{% endfor %}
+					</select>
 				</div>
 				<div class='marginTopSm col-lg-12 col-md-12'>
 					<button class='btn btn-success btn-lg' id='fileUploadBtn' type='submit'><strong>Submit Files</strong> <i class='fa fa-check'></i></button>
