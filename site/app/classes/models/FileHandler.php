@@ -334,14 +334,17 @@ class FileHandler {
 		$columns = array( );
 		$columns[0] = array( "title" => "", "data" => 0, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
 		$columns[1] = array( "title" => "Name", "data" => 1, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'file_name' );
-		$columns[2] = array( "title" => "Size", "data" => 2, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_size' );
-		$columns[3] = array( "title" => "Total Reads", "data" => 3, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_readtotal' );
-		$columns[4] = array( "title" => "Date", "data" => 4, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_addeddate' );
-		$columns[5] = array( "title" => "State", "data" => 5, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_state' );
-		$columns[6] = array( "title" => "Options", "data" => 6, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
+		$columns[2] = array( "title" => "Desc", "data" => 2, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'file_desc' );
+		$columns[3] = array( "title" => "Tags", "data" => 3, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_tags' );
+		$columns[4] = array( "title" => "Size", "data" => 4, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_size' );
+		$columns[5] = array( "title" => "ReadSum", "data" => 5, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_readtotal' );
+		$columns[6] = array( "title" => "Date", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_addeddate' );
+		$columns[7] = array( "title" => "State", "data" => 7, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_state' );
+		$columns[8] = array( "title" => "Privacy", "data" => 8, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_permission' );
+		$columns[9] = array( "title" => "Options", "data" => 9, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
 		
 		if( $showBGSelect ) {
-			$columns[7] = array( "title" => "Control", "data" => 7, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
+			$columns[10] = array( "title" => "Control", "data" => 10, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
 		}
 		
 		return $columns;
@@ -349,33 +352,21 @@ class FileHandler {
 	}
 	
 	/**
-	 * Fetch list of backgrounds broken down by experiment ids
+	 * Fetch list of backgrounds broken down file code
 	 */
 	 
 	public function buildBGList( $params, $separated = false ) {
 		
-		$isExp = true;
-		if( isset( $params['type'] ) && $params['type'] == "file" ) {
-			$isExp = false;
-		}
-		
-		$query = "SELECT file_id, file_name, experiment_id FROM " . DB_MAIN . ".files WHERE file_status='active' AND file_iscontrol='1'";
+		$query = "SELECT file_id, file_name, file_code FROM " . DB_MAIN . ".files WHERE file_status='active' AND file_iscontrol='1'";
 		
 		$idSet = array( );
-		if( isset( $params['ids'] )) {
+		
+		if( isset( $params['ids'] ) && strlen( $params['ids'] ) > 0 ) {
 			$idSet = explode( "|", $params['ids'] );
-			if( sizeof( $idSet ) > 0 ) {
-				if( $isExp ) {
-					$options = $idSet;
-					$varSet = array_fill( 0, sizeof( $idSet ), "?" );
-					$query .= " AND experiment_id IN (" . implode( ",", $varSet ) . ")";
-				} else {
-					$options = $idSet;
-					$varSet = array_fill( 0, sizeof( $idSet ), "?" );
-					$query .= " AND file_id IN (" . implode( ",", $varSet ) . ")";
-				}
-			}
-		}
+			$options = $idSet;
+			$varSet = array_fill( 0, sizeof( $idSet ), "?" );
+			$query .= " AND file_id IN (" . implode( ",", $varSet ) . ")";
+		} 
 		
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( $idSet );
@@ -384,11 +375,11 @@ class FileHandler {
 		while( $row = $stmt->fetch( PDO::FETCH_OBJ )) {
 			
 			if( $separated ) {
-				if( !isset( $bgList[$row->experiment_id] )) {
-					$bgList[$row->experiment_id] = array( );
+				if( !isset( $bgList[$row->file_code] )) {
+					$bgList[$row->file_code] = array( );
 				}
 			
-				$bgList[$row->experiment_id][] = $row;
+				$bgList[$row->file_code][] = $row;
 				
 			} else {
 				$bgList[0][] = $row;
@@ -435,6 +426,8 @@ class FileHandler {
 				$formattedName .= " [control]";
 			}
 			$column[] = $formattedName;
+			$column[] = $fileInfo->file_desc;
+			$column[] = $fileInfo->file_tags;
 			
 			$column[] = $this->formatBytes( $fileInfo->file_size );
 			$column[] = number_format( $fileInfo->file_readtotal, 0, ".", "," );
@@ -446,15 +439,11 @@ class FileHandler {
 				$column[] = "<strong><span class='text-danger'>" . $fileInfo->file_state . " <i class='fa fa-warning'></i></span></strong>";
 			}
 			
-			$column[] = "<a href='" . WEB_URL . "/Experiment/View?id=" . $fileInfo->experiment_id . "' title='" . $fileInfo->experiment_name . "'>" . $fileInfo->experiment_name . "</a>";
+			$column[] = $fileInfo->file_permission;
 			$column[] = $this->buildFilesTableOptions( $fileInfo );
 			
 			if( isset( $params['showBGSelect'] ) && $params['showBGSelect'] == "true" ) {
 				$column[] = $this->generateBGSelect( $bgList, $fileInfo->experiment_id, "", "", false, false );
-			}
-			
-			if( $fileInfo->file_state != "parsed" ) {
-				$column['DT_RowClass'] = "orcaUnparsedFile";
 			}
 			
 			$rows[] = $column;
@@ -527,19 +516,14 @@ class FileHandler {
 			$includeBG = true;
 		}
 		
-		$isExp = true;
-		if( isset( $params['type'] ) && $params['type'] == "file" ) {
-			$isExp = false;
-		}
-		
 		$query = "SELECT ";
 		if( $countOnly ) {
 			$query .= " count(*) as rowCount";
 		} else {
-			$query .= " f.*, exp.experiment_name, exp.experiment_code";
+			$query .= " *";
 		}
 		
-		$query .= " FROM " . DB_MAIN . ".files f LEFT JOIN experiments exp ON (f.experiment_id=exp.experiment_id)";
+		$query .= " FROM " . DB_MAIN . ".files";
 		
 		# Only add in an experiment ID filter if we
 		# are passing in a specific set of experiments
@@ -552,28 +536,21 @@ class FileHandler {
 			$query .= " AND file_iscontrol='0'";
 		}
 		
-		if( isset( $params['ids'] )) {
+		if( isset( $params['ids'] ) && strlen( $params['ids'] ) > 0 ) {
 			$idSet = explode( "|", $params['ids'] );
-			if( sizeof( $idSet ) > 0 ) {
-				if( $isExp ) {
-					$options = $idSet;
-					$varSet = array_fill( 0, sizeof( $idSet ), "?" );
-					$query .= " AND f.experiment_id IN (" . implode( ",", $varSet ) . ")";
-				} else {
-					$options = $idSet;
-					$varSet = array_fill( 0, sizeof( $idSet ), "?" );
-					$query .= " AND f.file_id IN (" . implode( ",", $varSet ) . ")";
-				}
-			}
-		}
+			$options = $idSet;
+			$varSet = array_fill( 0, sizeof( $idSet ), "?" );
+			$query .= " AND file_id IN (" . implode( ",", $varSet ) . ")";
+		} 
 		
 		if( isset( $params['search'] ) && strlen($params['search']['value']) > 0 ) {
-			$query .= " AND (file_name LIKE ? OR file_size=? OR file_readtotal=? OR file_addeddate LIKE ? OR file_state=? OR experiment_name LIKE ?)";
-			array_push( $options, '%' . $params['search']['value'] . '%', $params['search']['value'], $params['search']['value'], '%' . $params['search']['value'] . '%', $params['search']['value'], '%' . $params['search']['value'] . '%' );
+			$query .= " AND (file_name LIKE ? OR file_size=? OR file_readtotal=? OR file_addeddate LIKE ? OR file_state=? OR file_desc LIKE ? OR file_tags LIKE ?)";
+			array_push( $options, '%' . $params['search']['value'] . '%', $params['search']['value'], $params['search']['value'], '%' . $params['search']['value'] . '%', $params['search']['value'], '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%' );
 		}
 		
-		// echo $query;
-		// print_r( $options );
+		// Check for valid permissions to access
+		$query .= " AND (user_id=? OR file_permission='public')";
+		$options[] = $_SESSION[SESSION_NAME]['ID'];
 		
 		return array( "QUERY" => $query, "OPTIONS" => $options );
 			
@@ -650,17 +627,15 @@ class FileHandler {
 		}
 		
 		$options = array( );
+		 
 		if( sizeof( $ids ) > 0 ) {
-			if( $isExp ) {
-				$options = $ids;
-				$varSet = array_fill( 0, sizeof( $options ), "?" );
-				$query .= " AND experiment_id IN (" . implode( ",", $varSet ) . ")";
-			} else {
-				$options = $ids;
-				$varSet = array_fill( 0, sizeof( $options ), "?" );
-				$query .= " AND file_id IN (" . implode( ",", $varSet ) . ")";
-			}
+			$options = $ids;
+			$varSet = array_fill( 0, sizeof( $options ), "?" );
+			$query .= " AND file_id IN (" . implode( ",", $varSet ) . ")";
 		} 
+		
+		$query .= " AND (user_id=? OR file_permission='public')";
+		$options[] = $_SESSION[SESSION_NAME]['ID'];
 		
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( $options );
@@ -748,7 +723,7 @@ class FileHandler {
 		$options = array( );
 
 		if( lib\Session::validateCredentials( lib\Session::getPermission( 'DOWNLOAD FILES' )) ) {
-			$options[] = '<a href="' . UPLOAD_PROCESSED_URL . "/" . $fileInfo->experiment_code . "/" . $fileInfo->file_name . '" title="' . $fileInfo->file_name . '" target="_BLANK"><i class="optionIcon fa fa-download fa-lg popoverData fileDownload text-info" data-title="Download Raw Data" data-content="Click to download this raw data file."></i></a>';
+			$options[] = '<a href="' . UPLOAD_PROCESSED_URL . "/" . $fileInfo->file_code . "/" . $fileInfo->file_name . '" title="' . $fileInfo->file_name . '" target="_BLANK"><i class="optionIcon fa fa-download fa-lg popoverData fileDownload text-info" data-title="Download Raw Data" data-content="Click to download this raw data file."></i></a>';
 		}
 		
 		$options[] = '<a href="' . WEB_URL . "/Files/View?id=" . $fileInfo->file_id . '" title="' . $fileInfo->file_name . '"><i class="optionIcon fa fa-search-plus fa-lg popoverData fileView text-primary" data-title="View File Details" data-content="Click to view this raw data file in expanded details."></i></a>';
