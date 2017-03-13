@@ -34,6 +34,7 @@
 			optionsCallback: function( datatable ) {
 				initializeOptionPopups( );
 				initializeFilesButtons( );
+				initializePrivacyPopups( );
 			}
 		});
 	});
@@ -68,6 +69,63 @@
 			} else {
 				alertify.alert( "No Files Selected", "Please check the box next to one or more files before clicking on an available view option" );
 			}
+			
+		});
+		
+	}
+	
+	/**
+	 * Setup Privacy Popup
+	 */
+	 
+	function initializePrivacyPopups( ) {
+		
+		$(".datatableBlock").on( 'click', '.permissionView', function( event ) {
+			
+			var annPopup = $(this).qtip({
+				overwrite: false,
+				content: {
+					text: function( event, api ) {
+						
+						var submitSet = { };
+						submitSet['tool'] = "fetchFilePrivacyDetails";
+						submitSet['fileID'] = $(this).data( "fileid" );
+						
+						// Convert to JSON
+						submitSet = JSON.stringify( submitSet );
+						
+						$.ajax({
+							url: baseURL + 'scripts/fileTools.php',
+							type: 'POST',
+							data: { 'data': submitSet }, 
+							dataType: 'json'
+						}).done( function( results ) {
+							api.set( 'content.text', results['DATA'] );
+						});
+						
+						return "Loading... <i class='fa fa-lg fa-spin fa-spinner'></i>";
+					}
+				},
+				style: {
+					classes: 'qtip-bootstrap',
+					width: '250px'
+				},
+				position: {
+					my: 'middle left',
+					at: 'middle right',
+					viewport: $("#datatableBlock" )
+				},
+				show: {
+					event: event.type,
+					ready: true,
+					solo: true
+				},
+				hide: {
+					delay: 1000,
+					fixed: true,
+					event: 'mouseleave'
+				}
+			}, event);
 			
 		});
 		

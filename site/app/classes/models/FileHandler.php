@@ -10,6 +10,7 @@ namespace ORCA\app\classes\models;
 
 use \PDO;
 use ORCA\app\lib;
+use ORCA\app\classes\models;
  
 class FileHandler {
 
@@ -136,7 +137,7 @@ class FileHandler {
 	 
 	public function fetchFile( $fileID ) {
 		
-		$query = "SELECT f.file_id, f.file_name, f.file_size, f.file_state, f.file_state_msg, f.user_id, f.file_addeddate, f.file_readtotal, exp.experiment_id, exp.experiment_name, experiment_code FROM " . DB_MAIN . ".files f LEFT JOIN " . DB_MAIN . ".experiments exp ON (f.experiment_id=exp.experiment_id) WHERE file_id=?";
+		$query = "SELECT file_id, file_name, file_size, file_state, file_state_msg, user_id, file_addeddate, file_readtotal, file_code, file_desc, file_tags, file_permission, file_groups FROM " . DB_MAIN . ".files WHERE file_id=?";
 
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( array( $fileID ) );
@@ -251,10 +252,12 @@ class FileHandler {
 					$bgVal = "1";
 				}
 				
-				$groupVal = "-";
+				$groupVal = array( );
 				if( sizeof( $fileSet->fileGroups ) > 0 ) {
-					$groupVal = implode( "|", $fileSet->fileGroups );
+					$groupVal = $fileSet->fileGroups;
 				}
+				
+				$groupVal = json_encode( $groupVal );
 		
 				// Create File
 				$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".files VALUES( '0', ?, ?, ?, ?, ?, ?, ?, '0', NOW( ), ?, 'new','-', 'active', ?, ?, ? )" );
@@ -273,6 +276,26 @@ class FileHandler {
 		}
 		
 		return false;
+		
+	}
+	
+	/**
+	 * Change the permissions of a single file
+	 */
+	 
+	public function changePermission( $fileID, $filePermission, $fileGroups ) {
+		
+		$groupVal = array( );
+		if( sizeof( $fileGroups ) > 0 ) {
+			$groupVal = $fileGroups;
+		}
+		
+		$groupVal = json_encode( $groupVal );
+		
+		$stmt = $this->db->prepare( "UPDATE " . DB_MAIN . ".files SET file_permission=?, file_groups=? WHERE file_id=?" );
+		$stmt->execute( array( $filePermission, $groupVal, $fileID ));
+		
+		return true;
 		
 	}
 	
@@ -439,7 +462,12 @@ class FileHandler {
 				$column[] = "<strong><span class='text-danger'>" . $fileInfo->file_state . " <i class='fa fa-warning'></i></span></strong>";
 			}
 			
-			$column[] = $fileInfo->file_permission;
+			if( $fileInfo->file_permission == "public" ) {
+				$column[] = "<strong><span data-fileid='" . $fileInfo->file_id . "' class='text-success permissionView optionIcon'>" . $fileInfo->file_permission . " <i class='fa fa-unlock'></i></span></strong>";
+			} else {
+				$column[] = "<strong><span data-fileid='" . $fileInfo->file_id . "' class='text-danger permissionView optionIcon'>" . $fileInfo->file_permission . " <i class='fa fa-lock'></i></span></strong>";
+			}
+			
 			$column[] = $this->buildFilesTableOptions( $fileInfo );
 			
 			if( isset( $params['showBGSelect'] ) && $params['showBGSelect'] == "true" ) {
@@ -548,12 +576,33 @@ class FileHandler {
 			array_push( $options, '%' . $params['search']['value'] . '%', $params['search']['value'], $params['search']['value'], '%' . $params['search']['value'] . '%', $params['search']['value'], '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%' );
 		}
 		
-		// Check for valid permissions to access
-		$query .= " AND (user_id=? OR file_permission='public')";
-		$options[] = $_SESSION[SESSION_NAME]['ID'];
+		// Addon Permission Check Query Params
+		$query = $this->buildFilesPermissionQuery( $query );
 		
 		return array( "QUERY" => $query, "OPTIONS" => $options );
 			
+	}
+	
+	/**
+	 * Return the original passed in query with attached permissions
+	 * data
+	 */
+	 
+	private function buildFilesPermissionQuery( $query ) {
+		
+		// Check for valid permissions to access
+		$query .= " AND (user_id='" . $_SESSION[SESSION_NAME]['ID'] . "' OR file_permission='public'";
+		
+		// Add Group Check
+		if( sizeof( $_SESSION[SESSION_NAME]['GROUPS'] ) > 0 ) {
+			$groupIDs = array_keys( $_SESSION[SESSION_NAME]['GROUPS'] );
+			$query .= " OR (file_groups LIKE '%\"" . implode( "\"%' OR file_groups LIKE '%\"", $groupIDs ) . "\"%'))";
+		} else {
+			$query .= ")";
+		}
+		
+		return $query;
+		
 	}
 	
 	/**
@@ -634,7 +683,9 @@ class FileHandler {
 			$query .= " AND file_id IN (" . implode( ",", $varSet ) . ")";
 		} 
 		
-		$query .= " AND (user_id=? OR file_permission='public')";
+		// Addon Permission Check Query Params
+		$query = $this->buildFilesPermissionQuery( $query );
+		
 		$options[] = $_SESSION[SESSION_NAME]['ID'];
 		
 		$stmt = $this->db->prepare( $query );
@@ -715,6 +766,44 @@ class FileHandler {
 	}
 	
 	/**
+	 * Fetch a nicely formatted set of privacy information
+	 * based on a single file ID
+	 */
+	 
+	public function fetchFormattedFilePrivacyDetails( $fileID ) {
+		
+		$userHandler = new models\UserHandler( );
+		$groupHandler = new models\GroupHandler( );
+		$groupList = $groupHandler->fetchGroups( );
+		
+		$view = "files" . DS . "FilesPrivacy.tpl";
+		$fileInfo = $this->fetchFile( $fileID );
+		
+		$userInfo = $userHandler->fetchUser( $fileInfo->user_id );
+		$owner = $userInfo->user_firstname . " " . $userInfo->user_lastname;
+		
+		if( $fileInfo->file_permission == "public" ) {
+			return $this->twig->render( $view, array( 
+				"OWNER" => $owner
+			));
+		} else if( $fileInfo->file_permission == "private" ) {
+			$groups = json_decode( $fileInfo->file_groups, true );
+			$groupSet = array( );
+			
+			foreach( $groups as $groupID ) {
+				$groupInfo = $groupList[$groupID];
+				$groupSet[] = $groupInfo->group_name;
+			}
+			
+			return $this->twig->render( $view, array( 
+				"OWNER" => $owner,
+				"GROUPS" => implode( ", ", $groupSet )
+			));
+		}
+		
+	}
+	
+	/**
 	 * Build out the options for the Files Table Field
 	 */
 	 
@@ -730,6 +819,36 @@ class FileHandler {
 
 		
 		return implode( " ", $options );
+		
+	}
+	
+	/**
+	 * Check whether a user can access this file
+	 */
+	 
+	public function canAccess( $fileID ) {
+		
+		// Public files are accessible to everyone
+		$fileInfo = $this->fetchFile( $fileID );
+		if( $fileInfo->file_permission == "public" ) {
+			return true;
+		}
+		
+		// Users can access their own created files
+		if( $fileInfo->user_id == $_SESSION[SESSION_NAME]['ID'] ) {
+			return true;
+		}
+		
+		// If the user is a member of an associated group
+		$groups = json_decode( $fileInfo->file_groups, true ); 
+		foreach( $groups as $groupID ) {
+			if( in_array( $groupID, $userGroups )) {
+				return true;
+			}
+		}
+		
+		// Otherwise, they cannot access it
+		return false;
 		
 	}
 	
