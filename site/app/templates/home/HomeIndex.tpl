@@ -20,75 +20,83 @@
 		<section class="row">
 			<div class="col-lg-6 col-md-6 col-sm-12">
 				<div class="panel panel-warning">
-					<div class="panel-heading"><strong>Experiments</strong></div>
-					<div class="pull-right"><i class="fa fa-4x fa-flask paddingLg primaryIcon"></i></div>
+					<div class="panel-heading"><strong>Files</strong></div>
+					<div class="pull-right"><i class="fa fa-4x fa-file-text paddingLg primaryIcon"></i></div>
 					<div class="panel-body">
-						Experiments are groupings of raw data and control files combined to form a logical classification based on the date the experiment was run and common parameters shared amongst all raw data files included. If your account has the correct permissions, you can <strong><a href="{{ WEB_URL }}/Upload" title="Upload a new Experiment">upload a new experiment</a></strong> or you can simply <strong><a href="{{ WEB_URL }}/Experiment" title="View Experiments">view a listing</a></strong> of already uploaded experiments</a></strong>. Below is a listing of recently uploaded experiments:
+						Files contain raw experimental data and include both screen data and control files. These form the basis of all view creation and can be combined in a variety of ways to create customized views. If your account has the correct permissions, you can <strong><a href="{{ WEB_URL }}/Upload" title="Upload a new File">upload a new file</a></strong> or you can simply <strong><a href="{{ WEB_URL }}/Files" title="View Files">view a listing</a></strong> of already uploaded files</a></strong>. Below is a listing of recently uploaded files you have access to:
 						
 						<hr class='marginTopSm marginBotSm' />
 						
-						<h4>Your Recent Experiments</h4>
-						{% if MY_EXPS %}
+						<h4>Your Recent Files</h4>
+						{% if MY_FILES %}
 							<table class='orcaRawReadsTable table table-striped table-bordered table-responsive table-condensed marginTopSm'>
 							<thead>
 								<tr>
-									<th>Experiment</th>
-									<th class='text-center'>Files</th>
+									<th>File</th>
+									<th class='text-center'>Size</th>
 									<th class='text-center'>State</th>
+									<th class='text-center'>Privacy</th>
 									<th class='text-center'>Date Added</th>
 									<th class='text-center'>User</th>
+									<th class='text-center'>Op</th>
 								</tr>
 							</thead>
 							<tbody>
-							{% for EXP in MY_EXPS %}
+							{% for FILE in MY_FILES %}
 								<tr>
-									<td><a href='{{ WEB_URL }}/Experiment/View?id={{ EXP.ID }}' title='View {{ EXP.NAME }}'>{{ EXP.NAME }}</a></td>
-									<td class='text-center'>{{ EXP.FILE_COUNT }}</td> 
-									<td class='text-center'>{{ EXP.FILE_STATE | raw }}</td>
-									<td class='text-center'>{{ EXP.ADDED_DATE }}</td>
-									<td class='text-center'>{{ EXP.USER_NAME }}</td>
+									<td><a href='{{ WEB_URL }}/Files/View?id={{ FILE.ID }}' title='View {{ FILE.NAME }}'>{{ FILE.NAME }}</a></td>
+									<td class='text-center'>{{ FILE.SIZE }}</td> 
+									<td class='text-center'>{{ FILE.STATE | raw }}</td>
+									<td class='text-center'>{{ FILE.PERMISSION | raw }}</td>
+									<td class='text-center'>{{ FILE.ADDED_DATE }}</td>
+									<td class='text-center'>{{ FILE.USER_NAME }}</td>
+									<td class='text-center'>{{ FILE.OPTIONS | raw }}</td>
 								</tr>
 							{% endfor %}
 							</tbody>
 							</table>
 						{% else %}
 							<div class='marginBotSm'>
-								You have not yet uploaded any experiments
+								You have not yet uploaded any files
 							</div>
 						{% endif %}
 						
-						<h4>Global Recent Experiments</h4>
-						{% if ALL_EXPS %}
+						<h4>Other Recent Files</h4>
+						{% if ALL_FILES %}
 							<table class='orcaRawReadsTable table table-striped table-bordered table-responsive table-condensed marginTopSm'>
 							<thead>
 								<tr>
-									<th>Experiment</th>
-									<th class='text-center'>Files</th>
+									<th>File</th>
+									<th class='text-center'>Size</th>
 									<th class='text-center'>State</th>
+									<th class='text-center'>Privacy</th>
 									<th class='text-center'>Date Added</th>
 									<th class='text-center'>User</th>
+									<th class='text-center'>Op</th>
 								</tr>
 							</thead>
 							<tbody>
-							{% for EXP in ALL_EXPS %}
+							{% for FILE in ALL_FILES %}
 								<tr>
-									<td><a href='{{ WEB_URL }}/Experiment/View?id={{ EXP.ID }}' title='View {{ EXP.NAME }}'>{{ EXP.NAME }}</a></td>
-									<td class='text-center'>{{ EXP.FILE_COUNT }}</td> 
-									<td class='text-center'>{{ EXP.FILE_STATE | raw }}</td>
-									<td class='text-center'>{{ EXP.ADDED_DATE }}</td>
-									<td class='text-center'>{{ EXP.USER_NAME }}</td>
+									<td><a href='{{ WEB_URL }}/File/View?id={{ FILE.ID }}' title='View {{ FILE.NAME }}'>{{ FILE.NAME }}</a></td>
+									<td class='text-center'>{{ FILE.SIZE }}</td> 
+									<td class='text-center'>{{ FILE.STATE | raw }}</td>
+									<td class='text-center'>{{ FILE.PERMISSION | raw }}</td>
+									<td class='text-center'>{{ FILE.ADDED_DATE }}</td>
+									<td class='text-center'>{{ FILE.USER_NAME }}</td>
+									<td class='text-center'>{{ FILE.OPTIONS | raw }}</td>
 								</tr>
 							{% endfor %}
 							</tbody>
 							</table>
 						{% else %}
 							<div class='marginBotSm'>
-								There are no uploaded experiments
+								There are no uploaded files
 							</div>
 						{% endif %}
 						
 						<div class='text-center'>
-							<a href='{{ WEB_URL }}/Experiment' title='View All Experiments' class='btn btn-warning btn-sm'>Browse All Experiments</a>
+							<a href='{{ WEB_URL }}/Files' title='View All Files' class='btn btn-warning btn-sm'>Browse All Files</a>
 						</div>
 						
 					</div>

@@ -17,6 +17,13 @@ class HomeController extends lib\Controller {
 	
 	public function __construct( $twig ) {
 		parent::__construct( $twig );
+		
+		$addonJS = array( );
+		$addonCSS = array( );
+		
+		$this->headerParams->set( 'ADDON_CSS', $addonCSS );
+		$this->footerParams->set( 'ADDON_JS', $addonJS );
+		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "' />" );
 		$this->headerParams->set( "TITLE", CONFIG['WEB']['WEB_NAME'] );
 	}
@@ -39,6 +46,19 @@ class HomeController extends lib\Controller {
 	 public function Member( ) {
 		 
 		lib\Session::canAccess( lib\Session::getPermission( 'VIEW DASHBOARD' ));
+		
+		// Add some JS
+		$addonJS = $this->footerParams->get( 'ADDON_JS' );
+		$addonJS[] = "jquery.qtip.min.js";
+		$addonJS[] = "files/orca-files-common.js";
+		
+		// Add some CSS
+		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );
+		$addonCSS[] = "jquery.qtip.min.css";
+		
+		// Set modified Params
+		$this->headerParams->set( 'ADDON_CSS', $addonCSS );
+		$this->footerParams->set( 'ADDON_JS', $addonJS );
 		
 		// Figure out what valid admin tools this person has access to...
 		$adminTools = array( );
@@ -69,9 +89,9 @@ class HomeController extends lib\Controller {
 		}
 		
 		// Grab Experiment Info
-		$expHandler = new models\ExperimentHandler( );
-		$myExps = $expHandler->fetchExperimentList( $_SESSION[SESSION_NAME]['ID'], $this->RECENT_TO_SHOW );
-		$allExps = $expHandler->fetchExperimentList( "", $this->RECENT_TO_SHOW );
+		$fileHandler = new models\FileHandler( );
+		$myFiles = $fileHandler->fetchFileList( $_SESSION[SESSION_NAME]['ID'], $this->RECENT_TO_SHOW );
+		$allFiles = $fileHandler->fetchFileList( "", $this->RECENT_TO_SHOW );
 		
 		// Grab View Info
 		$viewHandler = new models\ViewHandler( );
@@ -88,8 +108,8 @@ class HomeController extends lib\Controller {
 			"LASTNAME" => $_SESSION[SESSION_NAME]['LASTNAME'],
 			"IMG_URL" => IMG_URL,
 			"ADMIN_TOOLS" => $adminTools,
-			"MY_EXPS" => $myExps,
-			"ALL_EXPS" => $allExps,
+			"MY_FILES" => $myFiles,
+			"ALL_FILES" => $allFiles,
 			"MY_VIEWS" => $myViews,
 			"ALL_VIEWS" => $allViews
 		);

@@ -115,11 +115,11 @@ class ViewController extends lib\Controller {
 		lib\Session::canAccess( lib\Session::getPermission( 'CREATE VIEWS' ));
 		
 		// If we're not passed an ID, show 404
-		if( !isset( $_GET['expIDs'] )) {
+		if( !isset( $_GET['fileIDs'] )) {
 			lib\Session::sendPageNotFound( );
 		}
 		
-		$expIDs = explode( "|", $_GET['expIDs'] );
+		$fileIDs = explode( "|", $_GET['fileIDs'] );
 		
 		// Add some Manage Permissions Specific JS
 		$addonJS = $this->footerParams->get( 'ADDON_JS' );
@@ -130,6 +130,7 @@ class ViewController extends lib\Controller {
 		$addonJS[] = "dataTables.bootstrap.js";
 		$addonJS[] = "alertify.min.js";
 		$addonJS[] = "blocks/orca-dataTableBlock.js";
+		$addonJS[] = "files/orca-files-common.js";
 		$addonJS[] = "view/orca-view-create.js";
 		
 		// Add some Manager Permissions Specific CSS
@@ -145,8 +146,8 @@ class ViewController extends lib\Controller {
 		
 		// Fetch requirements for building the file listing
 		$fileHandler = new models\FileHandler( );
-		$fileCount = $fileHandler->fetchFileCount( $expIDs, false );
-		$buttons = $fileHandler->fetchFileToolbarForAddView( $expIDs );
+		$fileCount = $fileHandler->fetchFileCount( $fileIDs, false );
+		$buttons = $fileHandler->fetchFileToolbarForAddView( $fileIDs );
 		$showFiles = true;
 		
 		// Fetch View Lists for Building Form
@@ -164,7 +165,7 @@ class ViewController extends lib\Controller {
 			"SHOW_FILES" => $showFiles,
 			"VIEW_TYPES" => $viewTypes,
 			"VIEW_VALUES" => $viewValues,
-			"EXP_IDS" => implode( "|", $expIDs ),
+			"EXP_IDS" => implode( "|", $fileIDs ),
 			"BUTTONS" => $buttons
 		);
 		

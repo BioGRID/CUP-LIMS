@@ -55,6 +55,7 @@ class FilesController extends lib\Controller {
 		lib\Session::canAccess( lib\Session::getPermission( 'VIEW FILES' ));
 		
 		$addonJS = $this->footerParams->get( 'ADDON_JS' );
+		$addonJS[] = "files/orca-files-common.js";
 		$addonJS[] = "files/orca-files.js";
 		
 		$this->footerParams->set( 'ADDON_JS', $addonJS );
@@ -73,8 +74,8 @@ class FilesController extends lib\Controller {
 			$type = "file";
 		}
 		
-		$includeBG = false;
-		$incBGString = "false";
+		$includeBG = true;
+		$incBGString = "true";
 		if( isset( $_GET['includeBG'] ) && $_GET['includeBG'] == "true" ) {
 			$includeBG = true;
 			$incBGString = "true";
@@ -91,7 +92,7 @@ class FilesController extends lib\Controller {
 			"TABLE_TITLE" => "Raw File List",
 			"ROW_COUNT" => $fileCount,
 			"WEB_NAME_ABBR" => CONFIG['WEB']['WEB_NAME_ABBR'],
-			"SHOW_TOOLBAR" => false,
+			"SHOW_TOOLBAR" => true,
 			"IDS" => implode( '|', $ids ),
 			"INCLUDE_BG" => $incBGString,
 			"TYPE" => $type,

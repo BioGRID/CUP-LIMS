@@ -27,7 +27,6 @@
 			hasToolbar: true,
 			addonParams: { "ids" : expIDs, "showBGSelect" : "true" },
 			optionsCallback: function( datatable ) {
-				initializeOptionPopups( );
 				initializeGlobalBGSelect( );
 				initializeCheckboxCheck( );
 			}
@@ -106,44 +105,6 @@
 		
 		$("#addViewForm").formValidation( 'revalidateField', 'viewChecked' );
 	}
-	
-	/**
-	 * Setup tooltips for the options in the options column
-	 */
-	 
-	 function initializeOptionPopups( ) {
-		 
-		$(".datatableBlock").on( 'mouseover', '.popoverData', function( event ) {
-	 
-			var optionPopup = $(this).qtip({
-				overwrite: false,
-				content: {
-					title: $(this).data( "title" ),
-					text: $(this).data( "content" )
-				},
-				style: {
-					classes: 'qtip-bootstrap',
-					width: '250px'
-				},
-				position: {
-					my: 'bottom right',
-					at: 'top left'
-				},
-				show: {
-					event: event.type,
-					ready: true,
-					solo: true
-				},
-				hide: {
-					delay: 1000,
-					fixed: true,
-					event: 'mouseleave'
-				}
-			}, event);
-			
-		});
-		
-	 }
 	 
 	/**
 	 * Setup the validation for the add new view form

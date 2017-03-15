@@ -16,6 +16,7 @@ class FileHandler {
 
 	private $db;
 	private $twig;
+	private $maxNameLength = 40;
 
 	public function __construct( ) {
 		$this->db = new PDO( DB_CONNECT, DB_USER, DB_PASS );
@@ -384,8 +385,8 @@ class FileHandler {
 		
 		$idSet = array( );
 		
-		if( isset( $params['ids'] ) && strlen( $params['ids'] ) > 0 ) {
-			$idSet = explode( "|", $params['ids'] );
+		if( isset( $params['fileIDs'] ) && strlen( $params['fileIDs'] ) > 0 ) {
+			$idSet = explode( "|", $params['fileIDs'] );
 			$options = $idSet;
 			$varSet = array_fill( 0, sizeof( $idSet ), "?" );
 			$query .= " AND file_id IN (" . implode( ",", $varSet ) . ")";
@@ -456,22 +457,14 @@ class FileHandler {
 			$column[] = number_format( $fileInfo->file_readtotal, 0, ".", "," );
 			$column[] = $fileInfo->file_addeddate;
 			
-			if( $fileInfo->file_state == "parsed" ) {
-				$column[] = "<strong><span class='text-success'>" . $fileInfo->file_state . " <i class='fa fa-check'></i></span></strong>";
-			} else {
-				$column[] = "<strong><span class='text-danger'>" . $fileInfo->file_state . " <i class='fa fa-warning'></i></span></strong>";
-			}
+			$column[] = $this->formatState( $fileInfo );
 			
-			if( $fileInfo->file_permission == "public" ) {
-				$column[] = "<strong><span data-fileid='" . $fileInfo->file_id . "' class='text-success permissionView optionIcon'>" . $fileInfo->file_permission . " <i class='fa fa-unlock'></i></span></strong>";
-			} else {
-				$column[] = "<strong><span data-fileid='" . $fileInfo->file_id . "' class='text-danger permissionView optionIcon'>" . $fileInfo->file_permission . " <i class='fa fa-lock'></i></span></strong>";
-			}
+			$column[] = $this->formatPermission( $fileInfo );
 			
 			$column[] = $this->buildFilesTableOptions( $fileInfo );
 			
 			if( isset( $params['showBGSelect'] ) && $params['showBGSelect'] == "true" ) {
-				$column[] = $this->generateBGSelect( $bgList, $fileInfo->experiment_id, "", "", false, false );
+				$column[] = $this->generateBGSelect( $bgList, $fileInfo->file_code, "", "", false, false );
 			}
 			
 			$rows[] = $column;
@@ -482,17 +475,51 @@ class FileHandler {
 	}
 	
 	/**
+	 * Format a State Entry for Display
+	 */
+	 
+	private function formatState( $fileInfo ) {
+		
+		$state = "";
+		if( $fileInfo->file_state == "parsed" ) {
+			$state = "<strong><span class='text-success'>" . $fileInfo->file_state . " <i class='fa fa-check'></i></span></strong>";
+		} else {
+			$state = "<strong><span class='text-danger'>" . $fileInfo->file_state . " <i class='fa fa-warning'></i></span></strong>";
+		}
+		
+		return $state;
+		
+	}
+	
+	/**
+	 * Format a Permission Entry for Display
+	 */
+	 
+	private function formatPermission( $fileInfo ) {
+		
+		$permission = "";
+		if( $fileInfo->file_permission == "public" ) {
+			$permission = "<strong><span data-fileid='" . $fileInfo->file_id . "' class='text-success permissionView optionIcon'>" . $fileInfo->file_permission . " <i class='fa fa-unlock'></i></span></strong>";
+		} else {
+			$permission = "<strong><span data-fileid='" . $fileInfo->file_id . "' class='text-danger permissionView optionIcon'>" . $fileInfo->file_permission . " <i class='fa fa-lock'></i></span></strong>";
+		}
+		
+		return $permission;
+		
+	}
+	
+	/**
 	 * Build a select list of backgrounds based on the passed in list
 	 */
 	 
-	private function generateBGSelect( $bgList, $expID, $selectClass = "", $selectLabel = "", $skipAll = false, $forToolbar = false ) {
+	private function generateBGSelect( $bgList, $fileCode, $selectClass = "", $selectLabel = "", $skipAll = false, $forToolbar = false ) {
 		$selectOptions = array( );
 		
-		if( isset( $bgList[$expID] )) {
+		if( isset( $bgList[$fileCode] )) {
 			
 			$allList = array( );
 			$nameTest = array( );
-			foreach( $bgList[$expID] as $bgInfo ) {
+			foreach( $bgList[$fileCode] as $bgInfo ) {
 				
 				$addOption = true;
 				if( $forToolbar ) {
@@ -509,7 +536,7 @@ class FileHandler {
 				$allList[] = $bgInfo->file_id;
 			}
 			
-			if( !$skipAll && sizeof( $bgList[$expID] ) > 1 ) {
+			if( !$skipAll && sizeof( $bgList[$fileCode] ) > 1 ) {
 				$selectOptions[implode( "|", $allList )] = array( "SELECTED" => "selected", "NAME" => "All Control Files" );;
 			}
 			
@@ -588,15 +615,23 @@ class FileHandler {
 	 * data
 	 */
 	 
-	private function buildFilesPermissionQuery( $query ) {
+	private function buildFilesPermissionQuery( $query, $prepend = "" ) {
 		
 		// Check for valid permissions to access
-		$query .= " AND (user_id='" . $_SESSION[SESSION_NAME]['ID'] . "' OR file_permission='public'";
+		if( $prepend != "" ) {
+			$query .= " AND (" . $prepend . "user_id='" . $_SESSION[SESSION_NAME]['ID'] . "' OR " . $prepend . "file_permission='public'";
+		} else {
+			$query .= " AND (user_id='" . $_SESSION[SESSION_NAME]['ID'] . "' OR file_permission='public'";
+		}
 		
 		// Add Group Check
 		if( sizeof( $_SESSION[SESSION_NAME]['GROUPS'] ) > 0 ) {
 			$groupIDs = array_keys( $_SESSION[SESSION_NAME]['GROUPS'] );
-			$query .= " OR (file_groups LIKE '%\"" . implode( "\"%' OR file_groups LIKE '%\"", $groupIDs ) . "\"%'))";
+			if( $prepend != "" ) {
+				$query .= " OR (" . $prepend . "file_groups LIKE '%\"" . implode( "\"%' OR " . $prepend . "file_groups LIKE '%\"", $groupIDs ) . "\"%'))";
+			} else {
+				$query .= " OR (file_groups LIKE '%\"" . implode( "\"%' OR file_groups LIKE '%\"", $groupIDs ) . "\"%'))";
+			}
 		} else {
 			$query .= ")";
 		}
@@ -667,7 +702,7 @@ class FileHandler {
 	 * Get a count of all files available
 	 */
 	 
-	public function fetchFileCount( $ids, $includeBG = false, $isExp = true ) {
+	public function fetchFileCount( $ids, $includeBG = false ) {
 		
 		$query = "SELECT COUNT(*) as fileCount FROM " . DB_MAIN . ".files WHERE file_status='active'";
 
@@ -685,8 +720,6 @@ class FileHandler {
 		
 		// Addon Permission Check Query Params
 		$query = $this->buildFilesPermissionQuery( $query );
-		
-		$options[] = $_SESSION[SESSION_NAME]['ID'];
 		
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( $options );
@@ -738,26 +771,14 @@ class FileHandler {
 		
 		$buttons = array( );
 		
-		// if( lib\Session::validateCredentials( lib\Session::getPermission( 'VIEW FILES' )) ) {
-			// $view = "blocks" . DS . "ORCADataTableToolbarButton.tpl";
-			// $buttons[] = $this->twig->render( $view, array( 
-				// "BTN_CLASS" => "btn-info experimentViewFilesBtn",
-				// "BTN_LINK" => "",
-				// "BTN_ID" => "experimentViewFilesBtn",
-				// "BTN_ICON" => "fa-file-text",
-				// "BTN_TEXT" => "View Files"
-			// ));
-		// }
-		
 		if( lib\Session::validateCredentials( lib\Session::getPermission( 'CREATE VIEW' )) ) {
-			$view = "blocks" . DS . "ORCADataTableToolbarDropdown.tpl";
-			$buttons[] = $this->twig->render( $view, array(
-				"BTN_CLASS" => "btn-info",
-				"BTN_ICON" => "fa-table",
-				"BTN_TEXT" => "Matrix View",
-				"LINKS" => array(
-					"viewMatrixLog2" => array( "linkHREF" => "", "linkText" => "View Files in Log2 Matrix", "linkClass" => "viewClick", "linkData" => array( "type" => "1", "values" => "1" ))
-				)
+			$view = "blocks" . DS . "ORCADataTableToolbarButton.tpl";
+			$buttons[] = $this->twig->render( $view, array( 
+				"BTN_CLASS" => "btn-orca2 fileCreateViewBtn",
+				"BTN_LINK" => "",
+				"BTN_ID" => "fileCreateViewBtn",
+				"BTN_ICON" => "fa-bar-chart",
+				"BTN_TEXT" => "Create View"
 			));
 		}
 		
@@ -849,6 +870,52 @@ class FileHandler {
 		
 		// Otherwise, they cannot access it
 		return false;
+		
+	}
+	
+	/** 
+	 * Fetch a recent list of files limited by ID if not empty
+	 */
+	 
+	public function fetchFileList( $userID = "", $limit = 5 ) {
+
+		$options = array( );
+		$query = "SELECT f.file_id, f.file_name, f.file_size, f.file_addeddate, f.file_code, DATE_FORMAT( f.file_addeddate, '%Y-%m-%d'  ) as addedDate, f.file_state, f.file_permission, u.user_name FROM " . DB_MAIN . ".files f LEFT JOIN " . DB_MAIN . ".users u ON (f.user_id=u.user_id) WHERE f.file_status='active' AND file_iscontrol='0'";
+		
+		if( $userID != "" ) {
+			$options[] = $userID;
+			$query .= " AND u.user_id=?";
+		}
+		
+		$query = $this->buildFilesPermissionQuery( $query, "f." );
+		
+		$query .= " ORDER BY f.file_addeddate DESC LIMIT " . $limit;
+		
+		$stmt = $this->db->prepare( $query );
+		$stmt->execute( $options );
+		
+		$files = array( );
+		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
+			
+			// Keep Name Small for Home Display
+			$formattedName = $row->file_name;
+			if( strlen( $formattedName ) > $this->maxNameLength ) {
+				$formattedName = substr( $formattedName, 0, $this->maxNameLength ) . "...";
+			}
+			
+			$files[$row->file_id] = array( 
+				"ID" => $row->file_id,
+				"NAME" => $formattedName,
+				"ADDED_DATE" => $row->addedDate,
+				"SIZE" => $this->formatBytes( $row->file_size ),
+				"PERMISSION" => $this->formatPermission( $row ),
+				"STATE" => $this->formatState( $row ),
+				"USER_NAME" => $row->user_name,
+				"OPTIONS" => $this->buildFilesTableOptions( $row )
+			);
+		}
+		
+		return $files;
 		
 	}
 	
