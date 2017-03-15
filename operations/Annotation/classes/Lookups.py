@@ -39,6 +39,6 @@ class Lookups( ) :
 		self.cursor.execute( "SELECT sgrna_group_id, sgrna_id FROM " + Config.DB_MAIN + ".sgRNA_group_mappings" )
 		
 		for row in self.cursor.fetchall( ) :
-			mapping.add( str(sgrna_group_id) + "|" + str(sgrna_id) )
+			mapping.add( str(row['sgrna_group_id']) + "|" + str(row['sgrna_id']) )
 			
 		return mapping
