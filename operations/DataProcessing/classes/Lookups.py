@@ -10,18 +10,6 @@ class Lookups( ) :
 		self.db = db
 		self.cursor = self.db.cursor( )
 		
-	def buildExperimentCodeHash( self ) :
-		
-		"""Build a set of experiment codes mapped to experiment ids"""
-		
-		mapping = { }
-		self.cursor.execute( "SELECT experiment_id, experiment_code FROM " + Config.DB_MAIN + ".experiments" )
-		
-		for row in self.cursor.fetchall( ) :
-			mapping[str(row['experiment_id'])] = str(row['experiment_code'])
-			
-		return mapping
-		
 	def buildSGRNAHash( self ) :
 		
 		"""Build a set of sgRNAs mapped to sgRNA IDs"""

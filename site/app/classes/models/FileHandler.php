@@ -10,11 +10,13 @@ namespace ORCA\app\classes\models;
 
 use \PDO;
 use ORCA\app\lib;
+use ORCA\app\classes\models;
  
 class FileHandler {
 
 	private $db;
 	private $twig;
+	private $maxNameLength = 40;
 
 	public function __construct( ) {
 		$this->db = new PDO( DB_CONNECT, DB_USER, DB_PASS );
@@ -22,6 +24,44 @@ class FileHandler {
 		
 		$loader = new \Twig_Loader_Filesystem( TEMPLATE_PATH );
 		$this->twig = new \Twig_Environment( $loader );
+	}
+	
+	/** 
+	 * Insert a file set into the database if one with the same
+	 * name doesn't already exist.
+	 */
+	 
+	public function insertFileSet( $data ) {
+		
+		// Otherwise, begin insert process
+		$this->db->beginTransaction( );
+		
+		try {
+			
+			$fileIDs = array( );
+			// Enter the list of files
+			foreach( $data->files as $file ) {
+				$isBG = false;
+				if( in_array( $file, $data->fileBG ) ) {
+					$isBG = true;
+				}
+				
+				$fileID = $this->addFile( $data, $data->fileCode, $file, $isBG );
+				if( $fileID ) {
+					$fileIDs[] = $fileID;
+				}
+			}
+			
+			$this->db->commit( );
+			
+			$this->removeStagingDir( $data->fileCode );
+			return array( "STATUS" => "success", "MESSAGE" => "Successfully Added Files", "IDS" => implode( "|", $fileIDs ) );
+			
+		} catch( PDOException $e ) {
+			$this->db->rollback( );
+			return array( "STATUS" => "error", "MESSAGE" => "Database Insert Problem. " . $e->getMessage( ) );
+		}
+		
 	}
 	
 	/**
@@ -98,7 +138,7 @@ class FileHandler {
 	 
 	public function fetchFile( $fileID ) {
 		
-		$query = "SELECT f.file_id, f.file_name, f.file_size, f.file_state, f.file_state_msg, f.user_id, f.file_addeddate, f.file_readtotal, exp.experiment_id, exp.experiment_name, experiment_code FROM " . DB_MAIN . ".files f LEFT JOIN " . DB_MAIN . ".experiments exp ON (f.experiment_id=exp.experiment_id) WHERE file_id=?";
+		$query = "SELECT file_id, file_name, file_size, file_state, file_state_msg, user_id, file_addeddate, file_readtotal, file_code, file_desc, file_tags, file_permission, file_groups FROM " . DB_MAIN . ".files WHERE file_id=?";
 
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( array( $fileID ) );
@@ -124,6 +164,29 @@ class FileHandler {
 
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( array( $expID ) );
+		
+		$files = array( );
+		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
+			$files[] = array( "NAME" => $row->file_name, "ID" => $row->file_id, "SIZE" => $this->formatFileSize( $row->file_size ), "STATE" => $row->file_state, "STATE_MSG" => json_decode( $row->file_state_msg, true ) );
+		}
+		
+		return $files;
+	
+	}
+	
+	/** 
+	 * Fetch a set of files from the database pertaining to a specific
+	 * set of file IDs and a status
+	 */
+	 
+	public function fetchFilesByIDs( $fileIDs ) {
+		
+		$varSet = array_fill( 0, sizeof( $fileIDs ), "?" );
+		
+		$query = "SELECT file_id, file_name, file_size, file_state, file_state_msg FROM " . DB_MAIN . ".files WHERE file_status='active' AND file_id IN (" . implode( ",", $varSet ) . ") ORDER BY file_addeddate DESC,file_id DESC";
+
+		$stmt = $this->db->prepare( $query );
+		$stmt->execute( $fileIDs );
 		
 		$files = array( );
 		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
@@ -165,11 +228,14 @@ class FileHandler {
 	 * home on the file system.
 	 */
 	 
-	public function addFile( $expID, $expCode, $filename, $isBG ) {
+	public function addFile( $fileSet, $fileCode, $filename, $isBG ) {
+		
+		$oldDir = UPLOAD_TMP_PATH . DS . $fileCode;
+		$fileHash = sha1_file( $oldDir . DS . $filename );
 		
 		// See if one with the same name already exists
-		$stmt = $this->db->prepare( "SELECT file_id FROM " . DB_MAIN . ".files WHERE file_name=? AND experiment_id=? LIMIT 1" );
-		$stmt->execute( array( $filename, $expID ));
+		$stmt = $this->db->prepare( "SELECT file_id FROM " . DB_MAIN . ".files WHERE file_hash=? LIMIT 1" );
+		$stmt->execute( array( $fileHash ));
 		
 		// If it exists, return an error
 		if( $stmt->rowCount( ) > 0 ) {
@@ -180,16 +246,23 @@ class FileHandler {
 		try {
 			
 			// Move File
-			if( $fileInfo = $this->moveFileToProcessing( $filename, $expCode )) {
+			if( $fileInfo = $this->moveFileToProcessing( $filename, $fileCode )) {
 				
 				$bgVal = "0";
 				if( $isBG ) {
 					$bgVal = "1";
 				}
+				
+				$groupVal = array( );
+				if( sizeof( $fileSet->fileGroups ) > 0 ) {
+					$groupVal = $fileSet->fileGroups;
+				}
+				
+				$groupVal = json_encode( $groupVal );
 		
 				// Create File
-				$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".files VALUES( '0', ?, ?, ?, '0', NOW( ), 'new','-', 'active', ?, ? )" );
-				$stmt->execute( array( $filename, $fileInfo['SIZE'], $bgVal, $expID, $_SESSION[SESSION_NAME]['ID'] ));
+				$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".files VALUES( '0', ?, ?, ?, ?, ?, ?, ?, '0', NOW( ), ?, 'new','-', 'active', ?, ?, ? )" );
+				$stmt->execute( array( $filename, $fileHash, $fileInfo['SIZE'], $fileCode, $fileSet->fileTags, $fileSet->fileDesc, $bgVal, $fileSet->fileDate, $_SESSION[SESSION_NAME]['ID'], $fileSet->filePermission, $groupVal ));
 				
 				// Fetch its new ID
 				$fileID = $this->db->lastInsertId( );
@@ -204,6 +277,26 @@ class FileHandler {
 		}
 		
 		return false;
+		
+	}
+	
+	/**
+	 * Change the permissions of a single file
+	 */
+	 
+	public function changePermission( $fileID, $filePermission, $fileGroups ) {
+		
+		$groupVal = array( );
+		if( sizeof( $fileGroups ) > 0 ) {
+			$groupVal = $fileGroups;
+		}
+		
+		$groupVal = json_encode( $groupVal );
+		
+		$stmt = $this->db->prepare( "UPDATE " . DB_MAIN . ".files SET file_permission=?, file_groups=? WHERE file_id=?" );
+		$stmt->execute( array( $filePermission, $groupVal, $fileID ));
+		
+		return true;
 		
 	}
 	
@@ -265,15 +358,17 @@ class FileHandler {
 		$columns = array( );
 		$columns[0] = array( "title" => "", "data" => 0, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
 		$columns[1] = array( "title" => "Name", "data" => 1, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'file_name' );
-		$columns[2] = array( "title" => "Size", "data" => 2, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_size' );
-		$columns[3] = array( "title" => "Total Reads", "data" => 3, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_readtotal' );
-		$columns[4] = array( "title" => "Date", "data" => 4, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_addeddate' );
-		$columns[5] = array( "title" => "State", "data" => 5, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_state' );
-		$columns[6] = array( "title" => "Experiment", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'experiment_name' );
-		$columns[7] = array( "title" => "Options", "data" => 7, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
+		$columns[2] = array( "title" => "Desc", "data" => 2, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'file_desc' );
+		$columns[3] = array( "title" => "Tags", "data" => 3, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_tags' );
+		$columns[4] = array( "title" => "Size", "data" => 4, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_size' );
+		$columns[5] = array( "title" => "ReadSum", "data" => 5, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_readtotal' );
+		$columns[6] = array( "title" => "Date", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_addeddate' );
+		$columns[7] = array( "title" => "State", "data" => 7, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_state' );
+		$columns[8] = array( "title" => "Privacy", "data" => 8, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_permission' );
+		$columns[9] = array( "title" => "Options", "data" => 9, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
 		
 		if( $showBGSelect ) {
-			$columns[8] = array( "title" => "Control", "data" => 8, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
+			$columns[10] = array( "title" => "Control", "data" => 10, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
 		}
 		
 		return $columns;
@@ -281,33 +376,21 @@ class FileHandler {
 	}
 	
 	/**
-	 * Fetch list of backgrounds broken down by experiment ids
+	 * Fetch list of backgrounds broken down file code
 	 */
 	 
 	public function buildBGList( $params, $separated = false ) {
 		
-		$isExp = true;
-		if( isset( $params['type'] ) && $params['type'] == "file" ) {
-			$isExp = false;
-		}
-		
-		$query = "SELECT file_id, file_name, experiment_id FROM " . DB_MAIN . ".files WHERE file_status='active' AND file_iscontrol='1'";
+		$query = "SELECT file_id, file_name, file_code FROM " . DB_MAIN . ".files WHERE file_status='active' AND file_iscontrol='1'";
 		
 		$idSet = array( );
-		if( isset( $params['ids'] )) {
-			$idSet = explode( "|", $params['ids'] );
-			if( sizeof( $idSet ) > 0 ) {
-				if( $isExp ) {
-					$options = $idSet;
-					$varSet = array_fill( 0, sizeof( $idSet ), "?" );
-					$query .= " AND experiment_id IN (" . implode( ",", $varSet ) . ")";
-				} else {
-					$options = $idSet;
-					$varSet = array_fill( 0, sizeof( $idSet ), "?" );
-					$query .= " AND file_id IN (" . implode( ",", $varSet ) . ")";
-				}
-			}
-		}
+		
+		if( isset( $params['fileIDs'] ) && strlen( $params['fileIDs'] ) > 0 ) {
+			$idSet = explode( "|", $params['fileIDs'] );
+			$options = $idSet;
+			$varSet = array_fill( 0, sizeof( $idSet ), "?" );
+			$query .= " AND file_id IN (" . implode( ",", $varSet ) . ")";
+		} 
 		
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( $idSet );
@@ -316,11 +399,11 @@ class FileHandler {
 		while( $row = $stmt->fetch( PDO::FETCH_OBJ )) {
 			
 			if( $separated ) {
-				if( !isset( $bgList[$row->experiment_id] )) {
-					$bgList[$row->experiment_id] = array( );
+				if( !isset( $bgList[$row->file_code] )) {
+					$bgList[$row->file_code] = array( );
 				}
 			
-				$bgList[$row->experiment_id][] = $row;
+				$bgList[$row->file_code][] = $row;
 				
 			} else {
 				$bgList[0][] = $row;
@@ -367,26 +450,21 @@ class FileHandler {
 				$formattedName .= " [control]";
 			}
 			$column[] = $formattedName;
+			$column[] = $fileInfo->file_desc;
+			$column[] = $fileInfo->file_tags;
 			
 			$column[] = $this->formatBytes( $fileInfo->file_size );
 			$column[] = number_format( $fileInfo->file_readtotal, 0, ".", "," );
 			$column[] = $fileInfo->file_addeddate;
 			
-			if( $fileInfo->file_state == "parsed" ) {
-				$column[] = "<strong><span class='text-success'>" . $fileInfo->file_state . " <i class='fa fa-check'></i></span></strong>";
-			} else {
-				$column[] = "<strong><span class='text-danger'>" . $fileInfo->file_state . " <i class='fa fa-warning'></i></span></strong>";
-			}
+			$column[] = $this->formatState( $fileInfo );
 			
-			$column[] = "<a href='" . WEB_URL . "/Experiment/View?id=" . $fileInfo->experiment_id . "' title='" . $fileInfo->experiment_name . "'>" . $fileInfo->experiment_name . "</a>";
+			$column[] = $this->formatPermission( $fileInfo );
+			
 			$column[] = $this->buildFilesTableOptions( $fileInfo );
 			
 			if( isset( $params['showBGSelect'] ) && $params['showBGSelect'] == "true" ) {
-				$column[] = $this->generateBGSelect( $bgList, $fileInfo->experiment_id, "", "", false, false );
-			}
-			
-			if( $fileInfo->file_state != "parsed" ) {
-				$column['DT_RowClass'] = "orcaUnparsedFile";
+				$column[] = $this->generateBGSelect( $bgList, $fileInfo->file_code, "", "", false, false );
 			}
 			
 			$rows[] = $column;
@@ -397,17 +475,51 @@ class FileHandler {
 	}
 	
 	/**
+	 * Format a State Entry for Display
+	 */
+	 
+	private function formatState( $fileInfo ) {
+		
+		$state = "";
+		if( $fileInfo->file_state == "parsed" ) {
+			$state = "<strong><span class='text-success'>" . $fileInfo->file_state . " <i class='fa fa-check'></i></span></strong>";
+		} else {
+			$state = "<strong><span class='text-danger'>" . $fileInfo->file_state . " <i class='fa fa-warning'></i></span></strong>";
+		}
+		
+		return $state;
+		
+	}
+	
+	/**
+	 * Format a Permission Entry for Display
+	 */
+	 
+	private function formatPermission( $fileInfo ) {
+		
+		$permission = "";
+		if( $fileInfo->file_permission == "public" ) {
+			$permission = "<strong><span data-fileid='" . $fileInfo->file_id . "' class='text-success filePermissionPopup optionIcon'>" . $fileInfo->file_permission . " <i class='fa fa-unlock'></i></span></strong>";
+		} else {
+			$permission = "<strong><span data-fileid='" . $fileInfo->file_id . "' class='text-danger filePermissionPopup optionIcon'>" . $fileInfo->file_permission . " <i class='fa fa-lock'></i></span></strong>";
+		}
+		
+		return $permission;
+		
+	}
+	
+	/**
 	 * Build a select list of backgrounds based on the passed in list
 	 */
 	 
-	private function generateBGSelect( $bgList, $expID, $selectClass = "", $selectLabel = "", $skipAll = false, $forToolbar = false ) {
+	private function generateBGSelect( $bgList, $fileCode, $selectClass = "", $selectLabel = "", $skipAll = false, $forToolbar = false ) {
 		$selectOptions = array( );
 		
-		if( isset( $bgList[$expID] )) {
+		if( isset( $bgList[$fileCode] )) {
 			
 			$allList = array( );
 			$nameTest = array( );
-			foreach( $bgList[$expID] as $bgInfo ) {
+			foreach( $bgList[$fileCode] as $bgInfo ) {
 				
 				$addOption = true;
 				if( $forToolbar ) {
@@ -424,7 +536,7 @@ class FileHandler {
 				$allList[] = $bgInfo->file_id;
 			}
 			
-			if( !$skipAll && sizeof( $bgList[$expID] ) > 1 ) {
+			if( !$skipAll && sizeof( $bgList[$fileCode] ) > 1 ) {
 				$selectOptions[implode( "|", $allList )] = array( "SELECTED" => "selected", "NAME" => "All Control Files" );;
 			}
 			
@@ -459,19 +571,14 @@ class FileHandler {
 			$includeBG = true;
 		}
 		
-		$isExp = true;
-		if( isset( $params['type'] ) && $params['type'] == "file" ) {
-			$isExp = false;
-		}
-		
 		$query = "SELECT ";
 		if( $countOnly ) {
 			$query .= " count(*) as rowCount";
 		} else {
-			$query .= " f.*, exp.experiment_name, exp.experiment_code";
+			$query .= " *";
 		}
 		
-		$query .= " FROM " . DB_MAIN . ".files f LEFT JOIN experiments exp ON (f.experiment_id=exp.experiment_id)";
+		$query .= " FROM " . DB_MAIN . ".files";
 		
 		# Only add in an experiment ID filter if we
 		# are passing in a specific set of experiments
@@ -484,31 +591,53 @@ class FileHandler {
 			$query .= " AND file_iscontrol='0'";
 		}
 		
-		if( isset( $params['ids'] )) {
+		if( isset( $params['ids'] ) && strlen( $params['ids'] ) > 0 ) {
 			$idSet = explode( "|", $params['ids'] );
-			if( sizeof( $idSet ) > 0 ) {
-				if( $isExp ) {
-					$options = $idSet;
-					$varSet = array_fill( 0, sizeof( $idSet ), "?" );
-					$query .= " AND f.experiment_id IN (" . implode( ",", $varSet ) . ")";
-				} else {
-					$options = $idSet;
-					$varSet = array_fill( 0, sizeof( $idSet ), "?" );
-					$query .= " AND f.file_id IN (" . implode( ",", $varSet ) . ")";
-				}
-			}
-		}
+			$options = $idSet;
+			$varSet = array_fill( 0, sizeof( $idSet ), "?" );
+			$query .= " AND file_id IN (" . implode( ",", $varSet ) . ")";
+		} 
 		
 		if( isset( $params['search'] ) && strlen($params['search']['value']) > 0 ) {
-			$query .= " AND (file_name LIKE ? OR file_size=? OR file_readtotal=? OR file_addeddate LIKE ? OR file_state=? OR experiment_name LIKE ?)";
-			array_push( $options, '%' . $params['search']['value'] . '%', $params['search']['value'], $params['search']['value'], '%' . $params['search']['value'] . '%', $params['search']['value'], '%' . $params['search']['value'] . '%' );
+			$query .= " AND (file_name LIKE ? OR file_size=? OR file_readtotal=? OR file_addeddate LIKE ? OR file_state=? OR file_desc LIKE ? OR file_tags LIKE ?)";
+			array_push( $options, '%' . $params['search']['value'] . '%', $params['search']['value'], $params['search']['value'], '%' . $params['search']['value'] . '%', $params['search']['value'], '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%' );
 		}
 		
-		// echo $query;
-		// print_r( $options );
+		// Addon Permission Check Query Params
+		$query = $this->buildFilesPermissionQuery( $query );
 		
 		return array( "QUERY" => $query, "OPTIONS" => $options );
 			
+	}
+	
+	/**
+	 * Return the original passed in query with attached permissions
+	 * data
+	 */
+	 
+	private function buildFilesPermissionQuery( $query, $prepend = "" ) {
+		
+		// Check for valid permissions to access
+		if( $prepend != "" ) {
+			$query .= " AND (" . $prepend . "user_id='" . $_SESSION[SESSION_NAME]['ID'] . "' OR " . $prepend . "file_permission='public'";
+		} else {
+			$query .= " AND (user_id='" . $_SESSION[SESSION_NAME]['ID'] . "' OR file_permission='public'";
+		}
+		
+		// Add Group Check
+		if( sizeof( $_SESSION[SESSION_NAME]['GROUPS'] ) > 0 ) {
+			$groupIDs = array_keys( $_SESSION[SESSION_NAME]['GROUPS'] );
+			if( $prepend != "" ) {
+				$query .= " OR (" . $prepend . "file_groups LIKE '%\"" . implode( "\"%' OR " . $prepend . "file_groups LIKE '%\"", $groupIDs ) . "\"%'))";
+			} else {
+				$query .= " OR (file_groups LIKE '%\"" . implode( "\"%' OR file_groups LIKE '%\"", $groupIDs ) . "\"%'))";
+			}
+		} else {
+			$query .= ")";
+		}
+		
+		return $query;
+		
 	}
 	
 	/**
@@ -573,7 +702,7 @@ class FileHandler {
 	 * Get a count of all files available
 	 */
 	 
-	public function fetchFileCount( $ids, $includeBG = false, $isExp = true ) {
+	public function fetchFileCount( $ids, $includeBG = false ) {
 		
 		$query = "SELECT COUNT(*) as fileCount FROM " . DB_MAIN . ".files WHERE file_status='active'";
 
@@ -582,17 +711,15 @@ class FileHandler {
 		}
 		
 		$options = array( );
+		 
 		if( sizeof( $ids ) > 0 ) {
-			if( $isExp ) {
-				$options = $ids;
-				$varSet = array_fill( 0, sizeof( $options ), "?" );
-				$query .= " AND experiment_id IN (" . implode( ",", $varSet ) . ")";
-			} else {
-				$options = $ids;
-				$varSet = array_fill( 0, sizeof( $options ), "?" );
-				$query .= " AND file_id IN (" . implode( ",", $varSet ) . ")";
-			}
+			$options = $ids;
+			$varSet = array_fill( 0, sizeof( $options ), "?" );
+			$query .= " AND file_id IN (" . implode( ",", $varSet ) . ")";
 		} 
+		
+		// Addon Permission Check Query Params
+		$query = $this->buildFilesPermissionQuery( $query );
 		
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( $options );
@@ -644,30 +771,56 @@ class FileHandler {
 		
 		$buttons = array( );
 		
-		// if( lib\Session::validateCredentials( lib\Session::getPermission( 'VIEW FILES' )) ) {
-			// $view = "blocks" . DS . "ORCADataTableToolbarButton.tpl";
-			// $buttons[] = $this->twig->render( $view, array( 
-				// "BTN_CLASS" => "btn-info experimentViewFilesBtn",
-				// "BTN_LINK" => "",
-				// "BTN_ID" => "experimentViewFilesBtn",
-				// "BTN_ICON" => "fa-file-text",
-				// "BTN_TEXT" => "View Files"
-			// ));
-		// }
-		
 		if( lib\Session::validateCredentials( lib\Session::getPermission( 'CREATE VIEW' )) ) {
-			$view = "blocks" . DS . "ORCADataTableToolbarDropdown.tpl";
-			$buttons[] = $this->twig->render( $view, array(
-				"BTN_CLASS" => "btn-info",
-				"BTN_ICON" => "fa-table",
-				"BTN_TEXT" => "Matrix View",
-				"LINKS" => array(
-					"viewMatrixLog2" => array( "linkHREF" => "", "linkText" => "View Files in Log2 Matrix", "linkClass" => "viewClick", "linkData" => array( "type" => "1", "values" => "1" ))
-				)
+			$view = "blocks" . DS . "ORCADataTableToolbarButton.tpl";
+			$buttons[] = $this->twig->render( $view, array( 
+				"BTN_CLASS" => "btn-orca2 fileCreateViewBtn",
+				"BTN_LINK" => "",
+				"BTN_ID" => "fileCreateViewBtn",
+				"BTN_ICON" => "fa-bar-chart",
+				"BTN_TEXT" => "Create View"
 			));
 		}
 		
 		return implode( "", $buttons );
+		
+	}
+	
+	/**
+	 * Fetch a nicely formatted set of privacy information
+	 * based on a single file ID
+	 */
+	 
+	public function fetchFormattedFilePrivacyDetails( $fileID ) {
+		
+		$userHandler = new models\UserHandler( );
+		$groupHandler = new models\GroupHandler( );
+		$groupList = $groupHandler->fetchGroups( );
+		
+		$view = "blocks" . DS . "ORCAPrivacyPopup.tpl";
+		$fileInfo = $this->fetchFile( $fileID );
+		
+		$userInfo = $userHandler->fetchUser( $fileInfo->user_id );
+		$owner = $userInfo->user_firstname . " " . $userInfo->user_lastname;
+		
+		if( $fileInfo->file_permission == "public" ) {
+			return $this->twig->render( $view, array( 
+				"OWNER" => $owner
+			));
+		} else if( $fileInfo->file_permission == "private" ) {
+			$groups = json_decode( $fileInfo->file_groups, true );
+			$groupSet = array( );
+			
+			foreach( $groups as $groupID ) {
+				$groupInfo = $groupList[$groupID];
+				$groupSet[] = $groupInfo->group_name;
+			}
+			
+			return $this->twig->render( $view, array( 
+				"OWNER" => $owner,
+				"GROUPS" => implode( ", ", $groupSet )
+			));
+		}
 		
 	}
 	
@@ -680,13 +833,91 @@ class FileHandler {
 		$options = array( );
 
 		if( lib\Session::validateCredentials( lib\Session::getPermission( 'DOWNLOAD FILES' )) ) {
-			$options[] = '<a href="' . UPLOAD_PROCESSED_URL . "/" . $fileInfo->experiment_code . "/" . $fileInfo->file_name . '" title="' . $fileInfo->file_name . '" target="_BLANK"><i class="optionIcon fa fa-download fa-lg popoverData fileDownload text-info" data-title="Download Raw Data" data-content="Click to download this raw data file."></i></a>';
+			$options[] = '<a href="' . UPLOAD_PROCESSED_URL . "/" . $fileInfo->file_code . "/" . $fileInfo->file_name . '" title="' . $fileInfo->file_name . '" target="_BLANK"><i class="optionIcon fa fa-download fa-lg popoverData fileDownload text-info" data-title="Download Raw Data" data-content="Click to download this raw data file."></i></a>';
 		}
 		
 		$options[] = '<a href="' . WEB_URL . "/Files/View?id=" . $fileInfo->file_id . '" title="' . $fileInfo->file_name . '"><i class="optionIcon fa fa-search-plus fa-lg popoverData fileView text-primary" data-title="View File Details" data-content="Click to view this raw data file in expanded details."></i></a>';
 
 		
 		return implode( " ", $options );
+		
+	}
+	
+	/**
+	 * Check whether a user can access this file
+	 */
+	 
+	public function canAccess( $fileID ) {
+		
+		// Public files are accessible to everyone
+		$fileInfo = $this->fetchFile( $fileID );
+		if( $fileInfo->file_permission == "public" ) {
+			return true;
+		}
+		
+		// Users can access their own created files
+		if( $fileInfo->user_id == $_SESSION[SESSION_NAME]['ID'] ) {
+			return true;
+		}
+		
+		// If the user is a member of an associated group
+		$groups = json_decode( $fileInfo->file_groups, true ); 
+		$userGroups = array_keys( $_SESSION[SESSION_NAME]['GROUPS'] );
+		
+		foreach( $groups as $groupID ) {
+			if( in_array( $groupID, $userGroups )) {
+				return true;
+			}
+		}
+		
+		// Otherwise, they cannot access it
+		return false;
+		
+	}
+	
+	/** 
+	 * Fetch a recent list of files limited by ID if not empty
+	 */
+	 
+	public function fetchFileList( $userID = "", $limit = 5 ) {
+
+		$options = array( );
+		$query = "SELECT f.file_id, f.file_name, f.file_size, f.file_addeddate, f.file_code, DATE_FORMAT( f.file_addeddate, '%Y-%m-%d'  ) as addedDate, f.file_state, f.file_permission, u.user_name FROM " . DB_MAIN . ".files f LEFT JOIN " . DB_MAIN . ".users u ON (f.user_id=u.user_id) WHERE f.file_status='active' AND file_iscontrol='0'";
+		
+		if( $userID != "" ) {
+			$options[] = $userID;
+			$query .= " AND u.user_id=?";
+		}
+		
+		$query = $this->buildFilesPermissionQuery( $query, "f." );
+		
+		$query .= " ORDER BY f.file_addeddate DESC LIMIT " . $limit;
+		
+		$stmt = $this->db->prepare( $query );
+		$stmt->execute( $options );
+		
+		$files = array( );
+		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
+			
+			// Keep Name Small for Home Display
+			$formattedName = $row->file_name;
+			if( strlen( $formattedName ) > $this->maxNameLength ) {
+				$formattedName = substr( $formattedName, 0, $this->maxNameLength ) . "...";
+			}
+			
+			$files[$row->file_id] = array( 
+				"ID" => $row->file_id,
+				"NAME" => $formattedName,
+				"ADDED_DATE" => $row->addedDate,
+				"SIZE" => $this->formatBytes( $row->file_size ),
+				"PERMISSION" => $this->formatPermission( $row ),
+				"STATE" => $this->formatState( $row ),
+				"USER_NAME" => $row->user_name,
+				"OPTIONS" => $this->buildFilesTableOptions( $row )
+			);
+		}
+		
+		return $files;
 		
 	}
 	

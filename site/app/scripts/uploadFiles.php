@@ -21,7 +21,7 @@ if( !empty( $_FILES )) {
 	
 	// Generate random directory for it to prevent possible
 	// conflicts
-	$directory = UPLOAD_TMP_PATH . DS . $_POST['experimentCode'];
+	$directory = UPLOAD_TMP_PATH . DS . $_POST['fileCode'];
 	
 	if( !is_dir( $directory )) {
 		mkdir( $directory, 0777, false );

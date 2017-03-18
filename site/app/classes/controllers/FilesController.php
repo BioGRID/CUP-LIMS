@@ -55,7 +55,9 @@ class FilesController extends lib\Controller {
 		lib\Session::canAccess( lib\Session::getPermission( 'VIEW FILES' ));
 		
 		$addonJS = $this->footerParams->get( 'ADDON_JS' );
+		$addonJS[] = "files/orca-files-common.js";
 		$addonJS[] = "files/orca-files.js";
+		$addonJS[] = "blocks/orca-qtipCommon.js";
 		
 		$this->footerParams->set( 'ADDON_JS', $addonJS );
 		
@@ -91,7 +93,7 @@ class FilesController extends lib\Controller {
 			"TABLE_TITLE" => "Raw File List",
 			"ROW_COUNT" => $fileCount,
 			"WEB_NAME_ABBR" => CONFIG['WEB']['WEB_NAME_ABBR'],
-			"SHOW_TOOLBAR" => false,
+			"SHOW_TOOLBAR" => true,
 			"IDS" => implode( '|', $ids ),
 			"INCLUDE_BG" => $incBGString,
 			"TYPE" => $type,
@@ -128,6 +130,14 @@ class FilesController extends lib\Controller {
 		$fileHandler = new models\FileHandler( );
 		$fileInfo = $fileHandler->fetchFile( $_GET['id'] );
 		
+		if( !$fileInfo ) {
+			lib\Session::sendPageNotFound( );
+		}
+		
+		if( !$fileHandler->canAccess( $_GET['id'] ) ) {
+			lib\Session::sendPermissionDenied( );
+		}
+		
 		// If we got an id but it's invalid
 		// show 404 error
 		if( !$fileInfo ) {
@@ -141,7 +151,7 @@ class FilesController extends lib\Controller {
 		$viewHandler = new models\ViewHandler( );
 		$fileSet = array( );
 		$fileSet[] = array( "fileID" => $fileInfo->file_id, "backgroundID" => "0" );
-		$viewDetails = $viewHandler->addView( "File #" . $fileInfo->file_id . " Annotated Raw Data", "Raw Data Annotated with Group Info", 2, 2, $fileSet );
+		$viewDetails = $viewHandler->addView( "File #" . $fileInfo->file_id . " Annotated Raw Data", "Raw Data Annotated with Group Info", 2, 2, $fileSet, "public", array( )  );
 		$view = $viewHandler->fetchView( $viewDetails['ID'] );
 		$viewHandler->updateLastViewed( $view->view_id );
 		
@@ -151,6 +161,23 @@ class FilesController extends lib\Controller {
 			$rawViewHandler = new models\RawAnnotatedViewHandler( $view->view_id );
 			$rawCount = $rawViewHandler->fetchRowCount( $_GET['id'] );
 		}
+		
+		// File Permissions Handling
+		$canEdit = false;
+		if( $fileInfo->user_id == $_SESSION[SESSION_NAME]['ID'] ) {
+			$canEdit = true;
+		}
+		
+		$isPrivate = false;
+		if( $fileInfo->file_permission == "private" ) {
+			$isPrivate = true;
+		}
+		
+		// Get List of Groups
+		$groupHandler = new models\GroupHandler( );
+		$groups = $groupHandler->fetchGroups( );
+		
+		$selectedGroups = json_decode( $fileInfo->file_groups );
 				 
 		$params = array(
 			"WEB_URL" => WEB_URL,
@@ -162,14 +189,16 @@ class FilesController extends lib\Controller {
 			"FILE_READTOTAL" => $fileInfo->file_readtotal,
 			"USER_NAME" => $userInfo['NAME'],
 			"FILE_SIZE" => $fileHandler->formatFileSize( $fileInfo->file_size ),
-			"EXPERIMENT_ID" => $fileInfo->experiment_id,
-			"EXPERIMENT_NAME" => $fileInfo->experiment_name,
 			"UPLOAD_PROCESSED_URL" => UPLOAD_PROCESSED_URL,
-			"EXPERIMENT_CODE" => $fileInfo->experiment_code,
+			"FILE_CODE" => $fileInfo->file_code,
 			"TABLE_TITLE" => "Raw Data",
 			"VIEW_ID" => $view->view_id,
 			"VIEW_STATE" => $view->view_state,
-			"ROW_COUNT" => $rawCount
+			"ROW_COUNT" => $rawCount,
+			"CAN_EDIT" => $canEdit,
+			"IS_PRIVATE" => $isPrivate,
+			"GROUPS" => $groups,
+			"SELECTED_GROUPS" => $selectedGroups
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Files' />" );

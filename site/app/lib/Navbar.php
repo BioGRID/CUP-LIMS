@@ -29,7 +29,7 @@ class Navbar {
 		
 		// LEFT SIDE OF NAVBAR
 		self::$leftNav['Home'] = array( "URL" => WEB_URL, "TITLE" => 'Return to Homepage', "STATUS" => 'public' );
-		self::$leftNav['Experiments'] = array( "URL" => WEB_URL . "/Experiment", "TITLE" => 'View Experiments', "STATUS" => 'observer' );
+		self::$leftNav['Files'] = array( "URL" => WEB_URL . "/Files", "TITLE" => 'View Files', "STATUS" => 'observer' );
 		self::$leftNav['Upload'] = array( "URL" => WEB_URL . "/Upload", "TITLE" => 'Upload Dataset', "STATUS" => lib\Session::getPermission( 'VIEW UPLOAD TOOL' ));
 		self::$leftNav['Views'] = array( "URL" => WEB_URL . "/View", "TITLE" => 'View Datasets', "STATUS" => lib\Session::getPermission( 'VIEW VIEWS' ));
 		self::$leftNav['Wiki'] = array( "URL" => CONFIG['WEB']['WIKI_URL'], "TITLE" => 'ORCA Help Wiki', "STATUS" => 'observer' );

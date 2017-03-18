@@ -14,6 +14,8 @@
 
 	$(function( ) {
 		
+		initializePermissionTools( );
+		
 		var viewState = $("#viewState").val( );
 		if( viewState == "building" ) {
 			
@@ -40,6 +42,71 @@
 			
 		}
 	});
+	
+	/**
+	 * Initialize Permission Setting Tools
+	 */
+	 
+	function initializePermissionTools( ) {
+		
+		$("#permissionDetailsWrap").on( "change", "#filePermission", function( ) {
+			
+			var selectVal = $(this).val( );
+			if( selectVal == "private" ) {
+				$("#fileGroupsBox").show( );
+			} else {
+				$("#fileGroupsBox").hide( );
+			}
+			
+		});
+		
+		$("#permissionDetailsWrap").on( "click", "#permissionChangeBtn", function( ) {
+			
+			var submitSet = { 
+				"tool" : "changePermission",
+				"fileID" : $("#fileID").val( ),
+				"filePermission" : $("#filePermission").val( )
+			};
+		
+			// Get permitted groups select
+			submitSet['fileGroups'] = [];
+			$("#fileGroups option:selected").each( function( ) {
+				submitSet['fileGroups'].push( $(this).val( ) );
+			});
+		
+			// Convert to JSON
+			submitSet = JSON.stringify( submitSet );
+		
+			// Send via AJAX for submission to
+			// database and placement of files
+			$.ajax({
+				url: baseURL + "/scripts/fileTools.php",
+				type: "POST",
+				data: {"data" : submitSet},
+				dataType: 'json',
+				beforeSend: function( ) {
+					$("#messages").html( "" );
+				}
+				
+			}).done( function( data, textStatus, jqXHR ) {
+			
+				var alertType = "success";
+				var alertIcon = "fa-check";
+				if( data["STATUS"] == "error" ) {
+					alertType = "danger";
+					alertIcon = "fa-warning";
+				} 
+			
+				$("#messages").html( '<div class="alert alert-' + alertType + '" role="alert"><i class="fa ' + alertIcon + ' fa-lg"></i> ' + data['MESSAGE'] + '</div></div>');
+			
+			}).fail( function( jqXHR, textStatus, errorThrown ) {
+				console.log( jqXHR );
+				console.log( textStatus );
+			});
+			
+		});
+		
+	}
 	
 	/**
 	 * Initialize Popups for when a person clicks on a group name

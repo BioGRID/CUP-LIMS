@@ -190,12 +190,12 @@ class User {
 	 
 	private function fetchUserGroups( $userID ) {
 	 
-		$stmt = $this->db->prepare( "SELECT group_id, group_name, group_isuser FROM " . DB_MAIN . ".groups WHERE group_status='active' AND group_id IN ( SELECT group_id FROM " . DB_MAIN . ".group_users WHERE group_user_status='active' AND user_id=?)" );
+		$stmt = $this->db->prepare( "SELECT group_id, group_name FROM " . DB_MAIN . ".groups WHERE group_status='active' AND group_id IN ( SELECT group_id FROM " . DB_MAIN . ".group_users WHERE group_user_status='active' AND user_id=?)" );
 		$stmt->execute( array( $userID ) );
 
 		$groups = array( );
 		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
-			$group = array( "ID" => $row->group_id, "NAME" => $row->group_name, "IS_USER" => $row->group_isuser ); 
+			$group = array( "ID" => $row->group_id, "NAME" => $row->group_name ); 
 			$groups[$group["ID"]] = $group;
 		}
 

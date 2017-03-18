@@ -30,7 +30,7 @@ class ViewHandler {
 	 * options doesn't already exist and isn't out of date. 
 	 */
 	
-	public function addView( $viewName, $viewDesc, $typeID, $valueID, $files ) {
+	public function addView( $viewName, $viewDesc, $typeID, $valueID, $files, $permission, $groups ) {
 		
 		$fileSet = array( );
 		foreach( $files as $fileInfo ) {
@@ -64,8 +64,15 @@ class ViewHandler {
 		$viewCode = uniqid( );
 		$emptyArray = json_encode( array( ) );
 		
-		$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".views VALUES( '0', ?, ?, ?, ?, ?, ?, ?, '0000-00-00 00:00:00', NOW( ), 'building', 'active', ?, ?, ? )" );
-		$stmt->execute( array( $viewName, $viewDesc, $viewCode, $typeID, $valueID, $fileSet, "summary", $emptyArray, $emptyArray, $_SESSION[SESSION_NAME]['ID'] ));
+		$groupVal = array( );
+		if( sizeof( $groups ) > 0 ) {
+			$groupVal = $groups;
+		}
+				
+		$groupVal = json_encode( $groupVal );
+		
+		$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".views VALUES( '0', ?, ?, ?, ?, ?, ?, ?, '0000-00-00 00:00:00', NOW( ), 'building', 'active', ?, ?, ?, ?, ? )" );
+		$stmt->execute( array( $viewName, $viewDesc, $viewCode, $typeID, $valueID, $fileSet, "summary", $emptyArray, $emptyArray, $_SESSION[SESSION_NAME]['ID'], $permission, $groupVal ));
 		
 		if( CONFIG['VIEWGENERATOR']['ACTIVE'] ) {
 			// Run Active View Generator Service
@@ -249,7 +256,8 @@ class ViewHandler {
 		$columns[5] = array( "title" => "Run Date", "data" => 5, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'view_addeddate' );
 		$columns[6] = array( "title" => "Files", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'view_files' );
 		$columns[7] = array( "title" => "State", "data" => 7, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'view_state' );
-		$columns[8] = array( "title" => "User", "data" => 8, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'user_name' );
+		$columns[8] = array( "title" => "Privacy", "data" => 8, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'view_permission' );
+		$columns[9] = array( "title" => "User", "data" => 9, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'user_name' );
 		
 		return $columns;
 		
@@ -299,12 +307,43 @@ class ViewHandler {
 			$column[] = "[<a href='" . WEB_URL . "/Files?fileIDs=" . implode( "|", $fileList ) . "' title='View " . sizeof( $fileList ) . " Files'>View " . sizeof( $fileList ) . " Files</a>]";
 			
 			$column[] = $this->generateViewState( $viewInfo );
+			$column[] = $this->formatPermission( $viewInfo );
 			
 			$column[] = $viewInfo->user_name;
 			$rows[] = $column;
 		}
 		
 		return $rows;
+		
+	}
+	
+	/**
+	 * Return the original passed in query with attached permissions
+	 * data
+	 */
+	 
+	private function buildViewPermissionQuery( $query, $prepend = "" ) {
+		
+		// Check for valid permissions to access
+		if( $prepend != "" ) {
+			$query .= " AND (" . $prepend . "user_id='" . $_SESSION[SESSION_NAME]['ID'] . "' OR " . $prepend . "view_permission='public'";
+		} else {
+			$query .= " AND (user_id='" . $_SESSION[SESSION_NAME]['ID'] . "' OR view_permission='public'";
+		}
+		
+		// Add Group Check
+		if( sizeof( $_SESSION[SESSION_NAME]['GROUPS'] ) > 0 ) {
+			$groupIDs = array_keys( $_SESSION[SESSION_NAME]['GROUPS'] );
+			if( $prepend != "" ) {
+				$query .= " OR (" . $prepend . "view_groups LIKE '%\"" . implode( "\"%' OR " . $prepend . "view_groups LIKE '%\"", $groupIDs ) . "\"%'))";
+			} else {
+				$query .= " OR (view_groups LIKE '%\"" . implode( "\"%' OR view_groups LIKE '%\"", $groupIDs ) . "\"%'))";
+			}
+		} else {
+			$query .= ")";
+		}
+		
+		return $query;
 		
 	}
 	
@@ -343,6 +382,9 @@ class ViewHandler {
 			$query .= " AND (view_title LIKE ? OR view_desc LIKE ? OR view_type_name LIKE ? OR view_value_name LIKE ? OR view_state=? OR view_addeddate=? OR user_name LIKE ?)";
 			array_push( $options, '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', $params['search']['value'], $params['search']['value'], '%' . $params['search']['value'] . '%' );
 		}
+		
+		// Addon Permission Check Query Params
+		$query = $this->buildViewPermissionQuery( $query, "view." );
 		
 		return array( "QUERY" => $query, "OPTIONS" => $options );
 			
@@ -412,7 +454,12 @@ class ViewHandler {
 	 
 	public function fetchViewCount( ) {
 		
-		$stmt = $this->db->prepare( "SELECT COUNT(*) as viewCount FROM " . DB_MAIN . ".views" );
+		$query = "SELECT COUNT(*) as viewCount FROM " . DB_MAIN . ".views WHERE view_id > 1";
+		
+		// Addon Permission Check Query Params
+		$query = $this->buildViewPermissionQuery( $query );
+		
+		$stmt = $this->db->prepare( $query );
 		$stmt->execute( );
 		
 		$row = $stmt->fetch( PDO::FETCH_OBJ );
@@ -504,11 +551,14 @@ class ViewHandler {
 		$viewValues = $this->fetchViewValues( );
 
 		$options = array( );
-		$query = "SELECT v.view_id, v.view_title, v.view_type_id, DATE_FORMAT( v.view_addeddate, '%Y-%m-%d'  ) as addedDate, v.view_state, v.view_value_id, u.user_name FROM " . DB_MAIN . ".views v LEFT JOIN " . DB_MAIN . ".users u ON (v.user_id=u.user_id) WHERE v.view_type_id != '2'";
+		$query = "SELECT v.view_id, v.view_title, v.view_type_id, DATE_FORMAT( v.view_addeddate, '%Y-%m-%d'  ) as addedDate, v.view_state, v.view_permission, v.view_value_id, u.user_name FROM " . DB_MAIN . ".views v LEFT JOIN " . DB_MAIN . ".users u ON (v.user_id=u.user_id) WHERE v.view_type_id != '2'";
 		if( $userID != "" ) {
 			$options[] = $userID;
 			$query .= " AND v.user_id=?";
 		}
+		
+		$query = $this->buildViewPermissionQuery( $query, "v." );
+		
 		$query .= " ORDER BY v.view_addeddate DESC LIMIT " . $limit;
 		
 		$stmt = $this->db->prepare( $query );
@@ -526,6 +576,7 @@ class ViewHandler {
 				"TYPE_ICON" => $viewTypeIcon,
 				"STATE" => $this->generateViewState( $row ),
 				"VALUE" => $viewValues[$row->view_value_id],
+				"PERMISSION" => $this->formatPermission( $row ),
 				"USER_NAME" => $row->user_name
 			);
 		}
@@ -605,6 +656,113 @@ class ViewHandler {
 		}
 		
 		return false;
+		
+	}
+	
+	/**
+	 * Check whether a user can access this view
+	 */
+	 
+	public function canAccess( $viewID ) {
+		
+		// Public views are accessible to everyone
+		$viewInfo = $this->fetchView( $viewID );
+		if( $viewInfo->view_permission == "public" ) {
+			return true;
+		}
+		
+		// Users can access their own created views
+		if( $viewInfo->user_id == $_SESSION[SESSION_NAME]['ID'] ) {
+			return true;
+		}
+		
+		// If the user is a member of an associated group
+		$groups = json_decode( $viewInfo->view_groups, true ); 
+		$userGroups = array_keys( $_SESSION[SESSION_NAME]['GROUPS'] );
+		
+		foreach( $groups as $groupID ) {
+			if( in_array( $groupID, $userGroups )) {
+				return true;
+			}
+		}
+		
+		// Otherwise, they cannot access it
+		return false;
+		
+	}
+	
+	/**
+	 * Format a Permission Entry for Display
+	 */
+	 
+	private function formatPermission( $viewInfo ) {
+		
+		$permission = "";
+		if( $viewInfo->view_permission == "public" ) {
+			$permission = "<strong><span data-viewid='" . $viewInfo->view_id . "' class='text-success viewPermissionPopup optionIcon'>" . $viewInfo->view_permission . " <i class='fa fa-unlock'></i></span></strong>";
+		} else {
+			$permission = "<strong><span data-viewid='" . $viewInfo->view_id . "' class='text-danger viewPermissionPopup optionIcon'>" . $viewInfo->view_permission . " <i class='fa fa-lock'></i></span></strong>";
+		}
+		
+		return $permission;
+		
+	}
+	
+	/**
+	 * Fetch a nicely formatted set of privacy information
+	 * based on a single view ID
+	 */
+	 
+	public function fetchFormattedViewPrivacyDetails( $viewID ) {
+		
+		$userHandler = new models\UserHandler( );
+		$groupHandler = new models\GroupHandler( );
+		$groupList = $groupHandler->fetchGroups( );
+		
+		$view = "blocks" . DS . "ORCAPrivacyPopup.tpl";
+		$viewInfo = $this->fetchView( $viewID );
+		
+		$userInfo = $userHandler->fetchUser( $viewInfo->view_id );
+		$owner = $userInfo->user_firstname . " " . $userInfo->user_lastname;
+		
+		if( $viewInfo->view_permission == "public" ) {
+			return $this->twig->render( $view, array( 
+				"OWNER" => $owner
+			));
+		} else if( $viewInfo->view_permission == "private" ) {
+			$groups = json_decode( $viewInfo->view_groups, true );
+			$groupSet = array( );
+			
+			foreach( $groups as $groupID ) {
+				$groupInfo = $groupList[$groupID];
+				$groupSet[] = $groupInfo->group_name;
+			}
+			
+			return $this->twig->render( $view, array( 
+				"OWNER" => $owner,
+				"GROUPS" => implode( ", ", $groupSet )
+			));
+		}
+		
+	}
+	
+	/**
+	 * Change the permissions of a single view
+	 */
+	 
+	public function changePermission( $viewID, $viewPermission, $viewGroups ) {
+		
+		$groupVal = array( );
+		if( sizeof( $viewGroups ) > 0 ) {
+			$groupVal = $viewGroups;
+		}
+		
+		$groupVal = json_encode( $groupVal );
+		
+		$stmt = $this->db->prepare( "UPDATE " . DB_MAIN . ".views SET view_permission=?, view_groups=? WHERE view_id=?" );
+		$stmt->execute( array( $viewPermission, $groupVal, $viewID ));
+		
+		return true;
 		
 	}
 	

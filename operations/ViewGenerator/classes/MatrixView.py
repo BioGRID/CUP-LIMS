@@ -63,7 +63,7 @@ class MatrixView( ) :
 			fileInfo = fileRef.split( "|" )
 			file = fileHash[fileInfo[0]]
 			ctrlFile = fileHash[fileInfo[1]]
-			referenceHash[condName] = { "FILE" : { "ID" : file['file_id'], "NAME" : file['file_name'], "EXP_ID" : file['experiment_id'] }, "BG" : { "ID" : ctrlFile['file_id'], "NAME" : ctrlFile['file_name'], "EXP_ID" : ctrlFile['experiment_id'] } }
+			referenceHash[condName] = { "FILE" : { "ID" : file['file_id'], "NAME" : file['file_name'] }, "BG" : { "ID" : ctrlFile['file_id'], "NAME" : ctrlFile['file_name'] } }
 		
 		return referenceHash
 	

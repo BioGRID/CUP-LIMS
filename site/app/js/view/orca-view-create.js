@@ -15,6 +15,7 @@
 	$(function( ) {
 		
 		initializeFormValidation( );
+		initializePermissionSwitch( );
 		
 		var expIDs = $("#expIDs").val( );
 		
@@ -27,12 +28,26 @@
 			hasToolbar: true,
 			addonParams: { "ids" : expIDs, "showBGSelect" : "true" },
 			optionsCallback: function( datatable ) {
-				initializeOptionPopups( );
 				initializeGlobalBGSelect( );
 				initializeCheckboxCheck( );
 			}
 		});
 	});
+	
+	function initializePermissionSwitch( ) {
+		
+		$("#addViewWrap").on( "change", "#viewPermission", function( ) {
+			
+			var selectVal = $(this).val( );
+			if( selectVal == "private" ) {
+				$("#viewGroupsBox").show( );
+			} else {
+				$("#viewGroupsBox").hide( );
+			}
+			
+		});
+		
+	}
 	
 	/**
 	 * Setup the functionality for creating a view from selected files 
@@ -106,44 +121,6 @@
 		
 		$("#addViewForm").formValidation( 'revalidateField', 'viewChecked' );
 	}
-	
-	/**
-	 * Setup tooltips for the options in the options column
-	 */
-	 
-	 function initializeOptionPopups( ) {
-		 
-		$(".datatableBlock").on( 'mouseover', '.popoverData', function( event ) {
-	 
-			var optionPopup = $(this).qtip({
-				overwrite: false,
-				content: {
-					title: $(this).data( "title" ),
-					text: $(this).data( "content" )
-				},
-				style: {
-					classes: 'qtip-bootstrap',
-					width: '250px'
-				},
-				position: {
-					my: 'bottom right',
-					at: 'top left'
-				},
-				show: {
-					event: event.type,
-					ready: true,
-					solo: true
-				},
-				hide: {
-					delay: 1000,
-					fixed: true,
-					event: 'mouseleave'
-				}
-			}, event);
-			
-		});
-		
-	 }
 	 
 	/**
 	 * Setup the validation for the add new view form
@@ -177,6 +154,14 @@
 				}
 			}
 		};
+		
+		fieldVals['viewPermission'] = {
+			validators: {
+				notEmpty: {
+					message: 'A View Permission Setting is Required'
+				}
+			}
+		}
 			
 		$("#addViewForm").formValidation({
 			framework: 'bootstrap',
@@ -214,6 +199,12 @@
 			files.push( { "fileID" : $(this).val( ), "backgroundID" : background.val( ) } );
 		});
 		submitSet['viewFiles'] = files;
+		
+		// Get permitted groups select
+		submitSet['viewGroups'] = [];
+		$("#viewGroups option:selected").each( function( ) {
+			submitSet['viewGroups'].push( $(this).val( ) );
+		});
 				
 		// Convert to JSON
 		submitSet = JSON.stringify( submitSet );

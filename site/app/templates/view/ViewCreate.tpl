@@ -42,6 +42,21 @@
 				<div class='form-group'>
 					<input type='hidden' id='viewChecked' name='viewChecked' value='' />
 				</div>
+				<div class='form-group col-lg-12 col-md-12'>
+					<label for='viewPermission' class='control-label'>View Permissions (who can see this view)</label>
+					<select class='form-control' id='viewPermission' name='viewPermission'>
+						<option value='public'>Public (Openly Available to all Users, Best for Non-Sensitive Data)</option>
+						<option value='private' selected>Private (Available Only to You, and Groups of Users You Select)</option>
+					</select>
+				</div>
+				<div id='viewGroupsBox' class='form-group col-lg-8 col-md-8'>
+					<label for='viewGroups' class='control-label'>Permitted Groups (if you don't choose any, only <strong>YOU</strong> alone will have access to these files) [choose all that apply]</label>
+					<select class='form-control' id='viewGroups' name='viewGroups' multiple>
+						{% for groupID, groupInfo in GROUPS %}
+							<option value='{{groupID}}'>{{groupInfo.group_name}}</option>
+						{% endfor %}
+					</select>
+				</div>
 				<div class='col-lg-12 col-md-12'>
 					<button class='btn btn-success btn-lg' id='addViewSubmit' type='submit'><strong>Create View</strong> <i class='fa fa-check'></i></button>
 				</div>

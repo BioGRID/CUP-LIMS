@@ -15,6 +15,10 @@
 					<label for='groupName' class='control-label'>Group Name</label>
 					<input type='text' class='form-control' id='groupName' name='groupName' placeholder='Group Name' />
 				</div>
+				<div class='form-group col-lg-12 col-md-12'>
+					<label for='groupDesc' class='control-label'>Group Desc</label>
+					<input type='text' class='form-control' id='groupDesc' name='groupDesc' placeholder='Group Desc' />
+				</div>
 				<div class='form-group col-lg-6 col-md-6'>
 					<label for='groupMembers' class='control-label'>Select Group Members</label>
 					<select class='form-control' id='groupMembers' name='groupMembers' multiple>
