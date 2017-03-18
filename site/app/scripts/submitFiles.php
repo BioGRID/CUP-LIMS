@@ -41,7 +41,7 @@ if( isset( $_POST['data'] )) {
 		$response = $fileHandler->insertFileSet( $data );
 		
 	} else {
-		$response = array( "STATUS" => "error", "MESSAGE" => "Unable to Process Experiment due to Missing Fields in Submission" );
+		$response = array( "STATUS" => "error", "MESSAGE" => "Unable to Process Files due to Missing Fields in Submission" );
 	}
 	
 } else {

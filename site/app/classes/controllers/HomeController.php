@@ -51,6 +51,8 @@ class HomeController extends lib\Controller {
 		$addonJS = $this->footerParams->get( 'ADDON_JS' );
 		$addonJS[] = "jquery.qtip.min.js";
 		$addonJS[] = "files/orca-files-common.js";
+		$addonJS[] = "view/orca-view-common.js";
+		$addonJS[] = "blocks/orca-qtipCommon.js";
 		
 		// Add some CSS
 		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );

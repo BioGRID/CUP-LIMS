@@ -38,6 +38,10 @@ class ViewController extends lib\Controller {
 			$viewHandler = new models\ViewHandler( );
 			$view = $viewHandler->fetchView( $_GET['viewID'] );
 			
+			if( !$viewHandler->canAccess( $_GET['viewID'] ) ) {
+				lib\Session::sendPermissionDenied( );
+			}
+			
 			if( $view ) {
 				// View Type 1 is a Matrix View
 				if( $view->view_type_id == "1" ) {
@@ -70,6 +74,8 @@ class ViewController extends lib\Controller {
 		$addonJS[] = "alertify.min.js";
 		$addonJS[] = "blocks/orca-dataTableBlock.js";
 		$addonJS[] = "view/orca-view-listing.js";
+		$addonJS[] = "view/orca-view-common.js";
+		$addonJS[] = "blocks/orca-qtipCommon.js";
 		
 		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );
 		$addonCSS[] = "jquery.qtip.min.css";
@@ -132,6 +138,7 @@ class ViewController extends lib\Controller {
 		$addonJS[] = "blocks/orca-dataTableBlock.js";
 		$addonJS[] = "files/orca-files-common.js";
 		$addonJS[] = "view/orca-view-create.js";
+		$addonJS[] = "blocks/orca-qtipCommon.js";
 		
 		// Add some Manager Permissions Specific CSS
 		$addonCSS = $this->headerParams->get( 'ADDON_CSS' );
@@ -155,6 +162,10 @@ class ViewController extends lib\Controller {
 		$viewTypes = $viewHandler->fetchViewTypes( );
 		$viewValues = $viewHandler->fetchViewValues( );
 		
+		// Fetch Groups
+		$groupHandler = new models\GroupHandler( );
+		$groups = $groupHandler->fetchGroups( );
+		
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
@@ -166,6 +177,7 @@ class ViewController extends lib\Controller {
 			"VIEW_TYPES" => $viewTypes,
 			"VIEW_VALUES" => $viewValues,
 			"EXP_IDS" => implode( "|", $fileIDs ),
+			"GROUPS" => $groups,
 			"BUTTONS" => $buttons
 		);
 		
@@ -197,6 +209,16 @@ class ViewController extends lib\Controller {
 		$viewHandler->updateLastViewed( $_GET['viewID'] );
 		$viewIcon = $viewHandler->fetchViewTypeIcon( $view->view_type_id );
 		
+		$canEdit = false;
+		if( $view->user_id == $_SESSION[SESSION_NAME]['ID'] ) {
+			$canEdit = true;
+		}
+		
+		$isPrivate = false;
+		if( $view->view_permission == "private" ) {
+			$isPrivate = true;
+		}
+		
 		$addonJS = $this->footerParams->get( 'ADDON_JS' );
 		$addonJS[] = "alertify.min.js";
 		
@@ -226,6 +248,7 @@ class ViewController extends lib\Controller {
 			$addonJS[] = "alertify.min.js";
 			$addonJS[] = "blocks/orca-dataTableBlock.js";
 			$addonJS[] = "view/orca-view-matrix.js";
+			$addonJS[] = "view/orca-view-all.js";
 			
 			// Add some matrix view Specific CSS
 			$addonCSS[] = "jquery.qtip.min.css";
@@ -248,6 +271,12 @@ class ViewController extends lib\Controller {
 			$user = new lib\User( );
 			$userInfo = $user->fetchUserDetails( $view->user_id );
 			
+			// Get List of Groups
+			$groupHandler = new models\GroupHandler( );
+			$groups = $groupHandler->fetchGroups( );
+			
+			$selectedGroups = json_decode( $view->view_groups );
+			
 			$params = array(
 				"WEB_URL" => WEB_URL,
 				"IMG_URL" => IMG_URL,
@@ -268,7 +297,11 @@ class ViewController extends lib\Controller {
 				"VIEW_CODE" => $view->view_code,
 				"VIEW_STATE" => $view->view_state,
 				"VIEW_STYLE" => $viewStyle,
-				"VIEW_ICON" => $viewIcon
+				"VIEW_ICON" => $viewIcon,
+				"CAN_EDIT" => $canEdit,
+				"IS_PRIVATE" => $isPrivate,
+				"GROUPS" => $groups,
+				"SELECTED_GROUPS" => $selectedGroups
 			);
 			
 		}

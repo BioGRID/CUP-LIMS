@@ -120,6 +120,7 @@
 									<th class='text-center'>Type</th>
 									<th class='text-center'>Values</th>
 									<th class='text-center'>State</th>
+									<th class='text-center'>Privacy</th>
 									<th class='text-center'>Date Added</th>
 									<th class='text-center'>User</th>
 								</tr>
@@ -131,6 +132,7 @@
 									<td class='text-center'><i class='fa primaryIcon fa-lg {{ VIEW.TYPE_ICON | raw }}'></i></td> 
 									<td class='text-center'>{{ VIEW.VALUE }}</td> 
 									<td class='text-center'>{{ VIEW.STATE | raw }}</td>
+									<td class='text-center'>{{ VIEW.PERMISSION | raw }}</td>
 									<td class='text-center'>{{ VIEW.ADDED_DATE }}</td>
 									<td class='text-center'>{{ VIEW.USER_NAME }}</td>
 								</tr>
@@ -143,7 +145,7 @@
 							</div>
 						{% endif %}
 						
-						<h4>Global Recent Custom Views</h4>
+						<h4>Other Recent Custom Views</h4>
 						{% if ALL_VIEWS %}
 							<table class='orcaRawReadsTable table table-striped table-bordered table-responsive table-condensed marginTopSm'>
 							<thead>
@@ -152,17 +154,19 @@
 									<th class='text-center'>Type</th>
 									<th class='text-center'>Values</th>
 									<th class='text-center'>State</th>
+									<th class='text-center'>Privacy</th>
 									<th class='text-center'>Date Added</th>
 									<th class='text-center'>User</th>
 								</tr>
 							</thead>
 							<tbody>
-							{% for VIEW in MY_VIEWS %}
+							{% for VIEW in ALL_VIEWS %}
 								<tr>
 									<td><a href='{{ WEB_URL }}/View?viewID={{ VIEW.ID }}' title='View {{ VIEW.TITLE }}'>{{ VIEW.TITLE }}</a></td>
 									<td class='text-center'><i class='fa primaryIcon fa-lg {{ VIEW.TYPE_ICON | raw }}'></i></td> 
 									<td class='text-center'>{{ VIEW.VALUE }}</td> 
 									<td class='text-center'>{{ VIEW.STATE | raw }}</td>
+									<td class='text-center'>{{ VIEW.PERMISSION | raw }}</td>
 									<td class='text-center'>{{ VIEW.ADDED_DATE }}</td>
 									<td class='text-center'>{{ VIEW.USER_NAME }}</td>
 								</tr>

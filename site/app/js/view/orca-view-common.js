@@ -13,16 +13,16 @@
 	var baseURL = $("head base").attr( "href" );
 
 	$(function( ) {
-		initializeFilePrivacyPopups( );
+		initializeViewPrivacyPopups( );
 	});
 	
 	/**
 	 * Setup Privacy Popup
 	 */
 	 
-	function initializeFilePrivacyPopups( ) {
+	function initializeViewPrivacyPopups( ) {
 		
-		$("body").on( 'click', '.filePermissionPopup', function( event ) {
+		$("body").on( 'click', '.viewPermissionPopup', function( event ) {
 			
 			var annPopup = $(this).qtip({
 				overwrite: false,
@@ -30,16 +30,16 @@
 					text: function( event, api ) {
 						
 						var submitSet = { };
-						submitSet['tool'] = "fetchFilePrivacyDetails";
-						submitSet['fileID'] = $(this).data( "fileid" );
+						submitSet['tool'] = "fetchViewPrivacyDetails";
+						submitSet['viewID'] = $(this).data( "viewid" );
 						
 						// Convert to JSON
 						submitSet = JSON.stringify( submitSet );
 						
 						$.ajax({
-							url: baseURL + 'scripts/fileTools.php',
+							url: baseURL + 'scripts/viewTools.php',
 							type: 'POST',
-							data: { 'data': submitSet }, 
+							data: { 'expData': submitSet }, 
 							dataType: 'json'
 						}).done( function( results ) {
 							api.set( 'content.text', results['DATA'] );

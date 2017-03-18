@@ -15,6 +15,7 @@
 	$(function( ) {
 		
 		initializeFormValidation( );
+		initializePermissionSwitch( );
 		
 		var expIDs = $("#expIDs").val( );
 		
@@ -32,6 +33,21 @@
 			}
 		});
 	});
+	
+	function initializePermissionSwitch( ) {
+		
+		$("#addViewWrap").on( "change", "#viewPermission", function( ) {
+			
+			var selectVal = $(this).val( );
+			if( selectVal == "private" ) {
+				$("#viewGroupsBox").show( );
+			} else {
+				$("#viewGroupsBox").hide( );
+			}
+			
+		});
+		
+	}
 	
 	/**
 	 * Setup the functionality for creating a view from selected files 
@@ -138,6 +154,14 @@
 				}
 			}
 		};
+		
+		fieldVals['viewPermission'] = {
+			validators: {
+				notEmpty: {
+					message: 'A View Permission Setting is Required'
+				}
+			}
+		}
 			
 		$("#addViewForm").formValidation({
 			framework: 'bootstrap',
@@ -175,6 +199,12 @@
 			files.push( { "fileID" : $(this).val( ), "backgroundID" : background.val( ) } );
 		});
 		submitSet['viewFiles'] = files;
+		
+		// Get permitted groups select
+		submitSet['viewGroups'] = [];
+		$("#viewGroups option:selected").each( function( ) {
+			submitSet['viewGroups'].push( $(this).val( ) );
+		});
 				
 		// Convert to JSON
 		submitSet = JSON.stringify( submitSet );

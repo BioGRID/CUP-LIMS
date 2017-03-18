@@ -55,7 +55,7 @@ class FileHandler {
 			$this->db->commit( );
 			
 			$this->removeStagingDir( $data->fileCode );
-			return array( "STATUS" => "success", "MESSAGE" => "Successfully Added Experiment", "IDS" => implode( "|", $fileIDs ) );
+			return array( "STATUS" => "success", "MESSAGE" => "Successfully Added Files", "IDS" => implode( "|", $fileIDs ) );
 			
 		} catch( PDOException $e ) {
 			$this->db->rollback( );
@@ -499,9 +499,9 @@ class FileHandler {
 		
 		$permission = "";
 		if( $fileInfo->file_permission == "public" ) {
-			$permission = "<strong><span data-fileid='" . $fileInfo->file_id . "' class='text-success permissionView optionIcon'>" . $fileInfo->file_permission . " <i class='fa fa-unlock'></i></span></strong>";
+			$permission = "<strong><span data-fileid='" . $fileInfo->file_id . "' class='text-success filePermissionPopup optionIcon'>" . $fileInfo->file_permission . " <i class='fa fa-unlock'></i></span></strong>";
 		} else {
-			$permission = "<strong><span data-fileid='" . $fileInfo->file_id . "' class='text-danger permissionView optionIcon'>" . $fileInfo->file_permission . " <i class='fa fa-lock'></i></span></strong>";
+			$permission = "<strong><span data-fileid='" . $fileInfo->file_id . "' class='text-danger filePermissionPopup optionIcon'>" . $fileInfo->file_permission . " <i class='fa fa-lock'></i></span></strong>";
 		}
 		
 		return $permission;
@@ -797,7 +797,7 @@ class FileHandler {
 		$groupHandler = new models\GroupHandler( );
 		$groupList = $groupHandler->fetchGroups( );
 		
-		$view = "files" . DS . "FilesPrivacy.tpl";
+		$view = "blocks" . DS . "ORCAPrivacyPopup.tpl";
 		$fileInfo = $this->fetchFile( $fileID );
 		
 		$userInfo = $userHandler->fetchUser( $fileInfo->user_id );
@@ -862,6 +862,8 @@ class FileHandler {
 		
 		// If the user is a member of an associated group
 		$groups = json_decode( $fileInfo->file_groups, true ); 
+		$userGroups = array_keys( $_SESSION[SESSION_NAME]['GROUPS'] );
+		
 		foreach( $groups as $groupID ) {
 			if( in_array( $groupID, $userGroups )) {
 				return true;

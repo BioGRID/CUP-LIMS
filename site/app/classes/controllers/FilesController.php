@@ -57,6 +57,7 @@ class FilesController extends lib\Controller {
 		$addonJS = $this->footerParams->get( 'ADDON_JS' );
 		$addonJS[] = "files/orca-files-common.js";
 		$addonJS[] = "files/orca-files.js";
+		$addonJS[] = "blocks/orca-qtipCommon.js";
 		
 		$this->footerParams->set( 'ADDON_JS', $addonJS );
 		
@@ -74,8 +75,8 @@ class FilesController extends lib\Controller {
 			$type = "file";
 		}
 		
-		$includeBG = true;
-		$incBGString = "true";
+		$includeBG = false;
+		$incBGString = "false";
 		if( isset( $_GET['includeBG'] ) && $_GET['includeBG'] == "true" ) {
 			$includeBG = true;
 			$incBGString = "true";
@@ -150,7 +151,7 @@ class FilesController extends lib\Controller {
 		$viewHandler = new models\ViewHandler( );
 		$fileSet = array( );
 		$fileSet[] = array( "fileID" => $fileInfo->file_id, "backgroundID" => "0" );
-		$viewDetails = $viewHandler->addView( "File #" . $fileInfo->file_id . " Annotated Raw Data", "Raw Data Annotated with Group Info", 2, 2, $fileSet );
+		$viewDetails = $viewHandler->addView( "File #" . $fileInfo->file_id . " Annotated Raw Data", "Raw Data Annotated with Group Info", 2, 2, $fileSet, "public", array( )  );
 		$view = $viewHandler->fetchView( $viewDetails['ID'] );
 		$viewHandler->updateLastViewed( $view->view_id );
 		

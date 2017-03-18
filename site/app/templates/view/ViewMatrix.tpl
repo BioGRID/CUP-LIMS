@@ -25,9 +25,15 @@
 			{% endfor %}
 			</ul>
 		{% endif %}
-		
+		{% if CAN_EDIT %}
+			<div class='viewPermissions'><a class='showViewPermissions'>Edit Permissions <i class='fa fa-angle-double-down'></i></a></div>
+		{% endif %}
 	</div>
 </div>
+
+{% if CAN_EDIT %}
+	{% include 'view/ViewPermissions.tpl' %}
+{% endif %}
 
 {% include 'blocks/ORCADataTableBlock.tpl' %}
 
