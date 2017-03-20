@@ -21,7 +21,7 @@ class UploadController extends lib\Controller {
 		$addonJS[] = "bootstrap-datepicker.min.js";
 		$addonJS[] = "formValidation/formValidation.min.js";
 		$addonJS[] = "formValidation/bootstrap.min.js";
-		$addonJS[] = "upload/orca-upload.js";
+		
 		
 		$addonCSS = array( );
 		$addonCSS[] = "dropzone.min.css";
@@ -42,6 +42,11 @@ class UploadController extends lib\Controller {
 		
 		lib\Session::canAccess( lib\Session::getPermission( 'VIEW UPLOAD TOOL' ));
 		
+		$addonJS = $this->footerParams->get( 'ADDON_JS' );
+		$addonJS[] = "upload/orca-upload.js";
+		
+		$this->footerParams->set( 'ADDON_JS', $addonJS );
+		
 		$lookups = new models\Lookups( );
 		$cellLines = $lookups->buildCellLineHash( );
 		
@@ -61,6 +66,39 @@ class UploadController extends lib\Controller {
 		$this->headerParams->set( "TITLE", "Upload Experiment" );
 		
 		$this->renderView( "upload" . DS . "UploadIndex.tpl", $params, false );
+				
+	}
+	
+	/**
+	 * Annotation
+	 * Default layout for the annotation upload page, used to upload
+	 * sets of sgRNA and their mapping to groups
+	 */
+	
+	public function Annotation( ) {
+		
+		lib\Session::canAccess( lib\Session::getPermission( 'VIEW UPLOAD ANNOTATION TOOL' ));
+		
+		$addonJS = $this->footerParams->get( 'ADDON_JS' );
+		$addonJS[] = "upload/orca-upload-annotation.js";
+		
+		$this->footerParams->set( 'ADDON_JS', $addonJS );
+		
+		$lookups = new models\Lookups( );
+		$organisms = $lookups->buildOrganismHash( );
+				
+		$params = array(
+			"WEB_URL" => WEB_URL,
+			"IMG_URL" => IMG_URL,
+			"DATASET_CODE" => uniqid( ),
+			"ORGANISMS" => $organisms,
+			"TODAY" => date( 'Y-m-d', strtotime( 'today' ))
+		);
+		
+		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Upload/Annotation' />" );
+		$this->headerParams->set( "TITLE", "Upload Annotation" );
+		
+		$this->renderView( "upload" . DS . "UploadAnnotation.tpl", $params, false );
 				
 	}
 

@@ -22,3 +22,11 @@ class ParserHandler( ) :
 	def setFileReadTotal( self, fileID, readTotal ) :
 		self.cursor.execute( "UPDATE " + Config.DB_MAIN + ".files SET file_readtotal=%s WHERE file_id=%s", [readTotal, fileID] )
 		self.db.commit( )
+		
+	def deprecateAnnotationMappings( self, annotationFileID ) :
+		self.cursor.execute( "UPDATE " + Config.DB_MAIN + ".sgRNA_group_mappings WHERE annotation_file_id=%s", [annotationFileID] )
+		self.db.commit( );
+			
+	def setAnnotationFileState( self, annotationFileID, state, messages ) :
+		self.cursor.execute( "UPDATE " + Config.DB_MAIN + ".annotation_files SET annotation_file_state=%s,annotation_file_state_msg=%s WHERE annotation_file_id=%s", [state, json.dumps(messages), annotationFileID] )
+		self.db.commit( )

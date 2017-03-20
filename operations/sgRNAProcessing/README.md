@@ -1,4 +1,4 @@
-# BioGRID ORCA Annotation
+# BioGRID ORCA sgRNA Processing
 This directory contains tools to load up sgRNA sequence annotation into the database and create mappings to annotation and groups.
 
 ## System Requirements

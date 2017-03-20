@@ -1,8 +1,8 @@
 <div id='fileProgress'>
 	<div class='primaryContent'>
 		<div class='container-fluid'>
-			<h2>File Progress <i class='fa fa-lg fa-server primaryIcon'></i> </h2>
-			<div class='subheadLarge'>The files shown below are being processed to the database. Please be patient, this process may take a while to complete and this page will update regularly with progress. Once all your files are indicated as completed, you can proceed to analyze your data. Page will auto refresh every <strong>30 seconds</strong> or you can manually refresh at any time.</div>
+			<h2>Annotation File Progress <i class='fa fa-lg fa-server primaryIcon'></i> </h2>
+			<div class='subheadLarge'>The annotation file below is being processed to the database. Please be patient, this process may take a while to complete and this page will update regularly with progress. Once your file is indicated as completed, you can proceed to utilize this annotation when processing raw data files. This Page will auto refresh every <strong>30 seconds</strong> or you can manually refresh at any time.</div>
 		</div>
 	</div>
 
