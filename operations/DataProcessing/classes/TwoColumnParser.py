@@ -51,7 +51,8 @@ class TwoColumnParser( ) :
 				if sgRNA in self.sgRNAs :
 					sgRNAID = self.sgRNAs[sgRNA]
 				else :
-					sgRNAID = self.insertSGRNA( sgRNA )
+					self.errors[lineNumber] = "FOUND SGRNA NOT LOADED IN DATABASE: Found an sgRNA that has not yet been loaded via annotation " + str(splitLine[1]) + " on row " + str(lineNumber)
+					continue
 					
 				self.readTotal = self.readTotal + readCount
 				self.cursor.execute( "INSERT INTO " + Config.DB_MAIN + ".raw_reads VALUES( '0', %s, %s, %s )", [sgRNAID, readCount, self.fileID] )
@@ -72,26 +73,3 @@ class TwoColumnParser( ) :
 			self.errors[lineNumber] = "UNEXPECTED ERROR: " + str(exctype);
 			
 		return reads, self.readTotal, self.errors
-		
-	def insertSGRNA( self, sgRNA ) :
-	
-		"""See if sgRNA exists and if not add it"""
-		
-		print "ADDING SGRNA"
-		
-		sgRNA = sgRNA.strip( ).upper( )
-		
-		self.cursor.execute( "SELECT sgrna_id FROM " + Config.DB_MAIN + ".sgRNAs WHERE sgrna_sequence=%s LIMIT 1", [sgRNA] )
-		row = self.cursor.fetchone( )
-		
-		if row == None :
-			self.cursor.execute( "INSERT INTO " + Config.DB_MAIN + ".sgRNAs VALUES( '0', %s, NOW( ), 'active' )", [sgRNA] )
-			sgRNAID = self.cursor.lastrowid
-			self.sgRNAs[sgRNA] = str(sgRNAID)
-			
-			self.cursor.execute( "INSERT INTO " + Config.DB_MAIN + ".sgRNA_groups VALUES( '0', "-", "-", "-", "-", NOW( ), 'active' )" )
-			sgRNAGroupID = self.cursor.lastrowid
-			
-			self.cursor.execute( "INSERT INTO " + Config.DB_MAIN + ".sgRNA_group_mappings VALUES( '0', %s, %s, NOW( ), 'active' )", [sgRNAGroupID, sgRNAID] )
-			
-		return sgRNAID

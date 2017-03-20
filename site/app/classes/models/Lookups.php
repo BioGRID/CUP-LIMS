@@ -59,6 +59,32 @@ class Lookups {
 		
 	}
 	
+	/**
+	 * Build a list of organisms that can be referenced by ID
+	 * and are ordered by name ASC
+	 */
+	 
+	public function buildOrganismHash( ) {
+		
+		$organisms = array( );
+		
+		$stmt = $this->db->prepare( "SELECT organism_id, organism_official_name, organism_strain FROM " . DB_MAIN . ".organisms ORDER BY organism_official_name ASC" );
+		$stmt->execute( );
+		
+		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
+			
+			$organismName = $row->organism_official_name;
+			if( $row->organism_strain != "-" ) {
+				$organismName .= " (" . $row->organism_strain . ")";
+			}
+			
+			$organisms[$row->organism_id] = $organismName;
+		}
+		
+		return $organisms;
+		
+	}
+	
 }
 
 ?>

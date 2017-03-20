@@ -921,6 +921,98 @@ class FileHandler {
 		
 	}
 	
+	/** 
+	 * Insert a new annotation file into the database if one with the same
+	 * hash doesn't already exist. Also move file into proper new
+	 * home on the file system.
+	 */
+	 
+	public function addAnnotationFile( $fileSet, $fileCode, $filename ) {
+		
+		$oldDir = UPLOAD_TMP_PATH . DS . $fileCode;
+		$fileHash = sha1_file( $oldDir . DS . $filename );
+		
+		// See if one with the same hash already exists
+		$stmt = $this->db->prepare( "SELECT annotation_file_id FROM " . DB_MAIN . ".annotation_files WHERE annotation_file_hash=? LIMIT 1" );
+		$stmt->execute( array( $fileHash ));
+		
+		// If it exists, return an error
+		if( $stmt->rowCount( ) > 0 ) {
+			$row = $stmt->fetch( PDO::FETCH_OBJ );
+			$this->removeStagingDir( $fileCode );
+			return array( "STATUS" => "success", "MESSAGE" => "Successfully Added Files", "IDS" => $row->annotation_file_id );
+		}
+		
+		try {
+			
+			// Move File
+			if( $fileInfo = $this->moveFileToProcessing( $filename, $fileCode )) {
+		
+				// Create File
+				$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".annotation_files VALUES( '0', ?, ?, ?, ?, ?, ?, NOW( ), 'new','-', 'active', ? )" );
+				$stmt->execute( array( $filename, $fileHash, $fileInfo['SIZE'], $fileCode, $fileSet->annotationDesc, $fileSet->annotationOrganism, $_SESSION[SESSION_NAME]['ID'] ));
+				
+				// Fetch its new ID
+				$fileID = $this->db->lastInsertId( );
+				
+				$this->removeStagingDir( $fileCode );
+				return array( "STATUS" => "success", "MESSAGE" => "Successfully Added Files", "IDS" => $fileID );
+				
+			}
+			
+		} catch( Exception $e ) {
+			return array( "STATUS" => "error", "MESSAGE" => "Database Insert Problem. " . $e->getMessage( ) );
+		}
+		
+		return array( "STATUS" => "error", "MESSAGE" => "Unknown Error" );
+		
+	}
+	
+	/** 
+	 * Fetch a file from the database pertaining to a specific
+	 * annotation file ID
+	 */
+	 
+	public function fetchAnnotationFile( $fileID ) {
+		
+		$query = "SELECT * FROM " . DB_MAIN . ".annotation_files WHERE annotation_file_id=?";
+
+		$stmt = $this->db->prepare( $query );
+		$stmt->execute( array( $fileID ) );
+		
+		// If it exists, return an error
+		if( $stmt->rowCount( ) > 0 ) {
+			$row = $stmt->fetch( PDO::FETCH_OBJ );
+			return $row;
+		}
+		
+		return false;
+	
+	}
+	
+	/** 
+	 * Fetch a set of annotation files from the database pertaining to a specific
+	 * set of annotation file IDs and a status
+	 */
+	 
+	public function fetchAnnotationFilesByIDs( $fileIDs ) {
+		
+		$varSet = array_fill( 0, sizeof( $fileIDs ), "?" );
+		
+		$query = "SELECT * FROM " . DB_MAIN . ".annotation_files WHERE annotation_file_status='active' AND annotation_file_id IN (" . implode( ",", $varSet ) . ") ORDER BY annotation_file_addeddate DESC, annotation_file_id DESC";
+
+		$stmt = $this->db->prepare( $query );
+		$stmt->execute( $fileIDs );
+		
+		$files = array( );
+		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
+			$files[] = array( "NAME" => $row->annotation_file_name, "ID" => $row->annotation_file_id, "SIZE" => $this->formatFileSize( $row->annotation_file_size ), "STATE" => $row->annotation_file_state, "STATE_MSG" => json_decode( $row->annotation_file_state_msg, true ) );
+		}
+		
+		return $files;
+	
+	}
+	
 }
 
 ?>
