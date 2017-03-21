@@ -34,7 +34,7 @@ class ViewHandler {
 		
 		$fileSet = array( );
 		foreach( $files as $fileInfo ) {
-			$fileSet[$fileInfo['fileID']] = $fileInfo['backgroundID'];
+			$fileSet[$fileInfo['fileID']] = array( "BG" => $fileInfo['backgroundID'], "MAP" => $fileInfo['mappingID'] );
 		}
 		
 		// Make sure files are always listed in the same order

@@ -169,7 +169,7 @@ class ViewController extends lib\Controller {
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
-			"TABLE_TITLE" => "Select Files and Controls for View",
+			"TABLE_TITLE" => "Choose Files and Configure Options",
 			"ROW_COUNT" => $fileCount,
 			"SHOW_TOOLBAR" => true,
 			"INCLUDE_BG" => "false",

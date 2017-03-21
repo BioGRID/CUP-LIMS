@@ -34,7 +34,7 @@ if( isset( $_POST['data'] )) {
 		isset( $data->fileDate ) && 
 		isset( $data->fileCode ) &&
 		isset( $data->fileTags ) &&
-		isset( $data->fileCell ) &&
+		isset( $data->fileAnnotation ) &&
 		isset( $data->hasFile ) && 
 		isset( $data->files )) {
 	

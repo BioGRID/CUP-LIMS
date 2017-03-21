@@ -18,10 +18,10 @@
 					<input type='text' class='form-control' id='fileDate' name='fileDate' placeholder='Run Date (Format: YYYY-MM-DD)' value='{{TODAY}}'	/>
 				</div>
 				<div class='form-group col-lg-4 col-md-4'>
-					<label for='fileCell' class='control-label'>Cell Line</label>
-					<select class='form-control' id='fileCell' name='fileCell'>
-						{% for cellLineID, cellLineName in CELL_LINES %}
-							<option value='{{cellLineID}}'>{{cellLineName}}</option>
+					<label for='fileAnnotation' class='control-label'>Default Annotation Mapping</label>
+					<select class='form-control' id='fileAnnotation' name='fileAnnotation'>
+						{% for annotationID, annotationInfo in ANNOTATION_FILES %}
+							<option value='{{annotationID}}'>{{annotationInfo.annotation_file_name}}</option>
 						{% endfor %}
 					</select>
 				</div>

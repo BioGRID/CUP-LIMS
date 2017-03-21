@@ -47,7 +47,7 @@ with Database.db as cursor :
 	# ---------------------------------
 	# Parse Annotation Files
 	
-	cursor.execute( "SELECT annotation_file_id, annotation_file_name, annotation_file_code, annotation_file_state, organism_id FROM " + Config.DB_MAIN + ".annotation_files WHERE annotation_file_state IN ('new','redo') AND annotation_file_status='active' ORDER BY organism_id ASC" )
+	cursor.execute( "SELECT annotation_file_id, annotation_file_name, annotation_file_code, annotation_file_state, organism_id FROM " + Config.DB_MAIN + ".annotation_files WHERE annotation_file_state IN ('new','redo') AND annotation_file_status='active' ORDER BY organism_id ASC, annotation_file_id ASC" )
 	
 	if cursor.rowcount > 0 :
 	

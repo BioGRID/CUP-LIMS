@@ -20,7 +20,7 @@
 		var expIDs = $("#expIDs").val( );
 		
 		$(".datatableBlock").orcaDataTableBlock({ 
-			sortCol: 4, 
+			sortCol: 1, 
 			sortDir: "desc", 
 			pageLength: 1000,
 			colTool: "filesHeader", 
@@ -28,7 +28,7 @@
 			hasToolbar: true,
 			addonParams: { "ids" : expIDs, "showBGSelect" : "true" },
 			optionsCallback: function( datatable ) {
-				initializeGlobalBGSelect( );
+				initializeGlobalSelect( );
 				initializeCheckboxCheck( );
 			}
 		});
@@ -53,12 +53,24 @@
 	 * Setup the functionality for creating a view from selected files 
 	 */
 	 
-	function initializeGlobalBGSelect( ) {
+	function initializeGlobalSelect( ) {
 		
-		$(".datatableBlock").on( "change", ".orcaToolbarSelect", function( ) {
+		$(".datatableBlock").on( "change", ".orcaToolbarControlSelect", function( ) {
 			
 			var selectedVal = $("option:selected", this).text( );
-			$(".orcaSelect").each( function( ) {
+			$(".controlFileSelect").each( function( ) {
+				var matchingOption = $(this).find( 'option:contains(' + selectedVal + ')' );
+				if( matchingOption.length > 0 ) {
+					matchingOption.prop( "selected", "selected" );
+				}
+			});
+			
+		});
+		
+		$(".datatableBlock").on( "change", ".orcaToolbarMappingSelect", function( ) {
+			
+			var selectedVal = $("option:selected", this).text( );
+			$(".mappingSelect").each( function( ) {
 				var matchingOption = $(this).find( 'option:contains(' + selectedVal + ')' );
 				if( matchingOption.length > 0 ) {
 					matchingOption.prop( "selected", "selected" );
@@ -195,8 +207,11 @@
 		var table = $(".orcaDataTableTools" ).find( ".orcaDataTable" );
 		var files = [];
 		table.find( ".orcaDataTableRowCheck:checked" ).each( function( ) {
-			var background = $(this).parent( ).parent( ).find( ".orcaSelect" );
-			files.push( { "fileID" : $(this).val( ), "backgroundID" : background.val( ) } );
+			var row = $(this).parent( ).parent( )
+			var background = row.find( ".controlFileSelect" );
+			var mapping = row.find( ".mappingSelect" );
+			
+			files.push( { "fileID" : $(this).val( ), "backgroundID" : background.val( ), "mappingID" : mapping.val( ) } );
 		});
 		submitSet['viewFiles'] = files;
 		
