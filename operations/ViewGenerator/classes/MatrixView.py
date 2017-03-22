@@ -9,17 +9,18 @@ class MatrixView( ) :
 
 	"""Generate a matrix view table based on passed in parameters"""
 
-	def __init__( self, db, sgRNAToGroup, sgRNAGroups, sgRNAGroupToBioGRID ) :
+	def __init__( self, db, sgRNAToGroup, sgRNAGroups, sgRNAGroupToGene, organismHash ) :
 		self.db = db
 		self.cursor = self.db.cursor( )
 		self.conditionReference = { }
 		self.conditionBlock = []
 		self.sgRNAToGroup = sgRNAToGroup
 		self.sgRNAGroups = sgRNAGroups
-		self.sgRNAGroupToBioGRID = sgRNAGroupToBioGRID
+		self.sgRNAGroupToGene = sgRNAGroupToGene
+		self.organismHash = organismHash
 		self.matrix = { }
 		self.logPad = 1
-		self.colCount = 13
+		self.colCount = 14
 		self.max = 0
 		self.min = 0
 		
@@ -31,10 +32,10 @@ class MatrixView( ) :
 		
 		# Build a list of all conditions for the X axis
 		fileList = { }
-		for fileID, ctrlIDs in fileMap.iteritems( ) :
-			ctrlSet = ctrlIDs.split( "|" )
+		for fileID, fileInfo in fileMap.iteritems( ) :
+			ctrlSet = fileInfo['BG'].split( "|" )
 			for ctrl in sorted(ctrlSet) :
-				fileList[str(fileID) + "|" + str(ctrl)] = 0
+				fileList[str(fileID) + "|" + str(ctrl) + "|" + str(fileInfo['MAP'])] = 0
 				
 		# Create the database table for storing the view 
 		self.createView( view, fileList )
@@ -44,7 +45,8 @@ class MatrixView( ) :
 			fileInfo = fileInfo.split( "|" )
 			fileID = fileInfo[0]
 			ctrlID = fileInfo[1]
-			self.generateGroupSummary( view, fileID, ctrlID, rawData, fileHash )
+			mapID = fileInfo[2]
+			self.generateGroupSummary( view, fileID, ctrlID, mapID, rawData, fileHash )
 			
 		# Collapse down conditions into mean values
 		self.processView( view )
@@ -67,9 +69,9 @@ class MatrixView( ) :
 		
 		return referenceHash
 	
-	def generateGroupSummary( self, view, fileID, ctrlID, rawData, fileHash ) :
+	def generateGroupSummary( self, view, fileID, ctrlID, mapID, rawData, fileHash ) :
 	
-			fileRef = fileID + "|" + ctrlID
+			fileRef = fileID + "|" + ctrlID + "|" + mapID
 			
 			reads = rawData.fetchReads( fileID )
 			readSGRNAIDs = reads.keys( )
@@ -87,8 +89,8 @@ class MatrixView( ) :
 			for sgRNAID in allSGRNA :
 				
 				# Only use it if we can find a mapping to a group
-				if str(sgRNAID) in self.sgRNAToGroup :
-					groupIDs = self.sgRNAToGroup[str(sgRNAID)]
+				if str(sgRNAID) in self.sgRNAToGroup[str(mapID)] :
+					groupIDs = self.sgRNAToGroup[str(mapID)][str(sgRNAID)]
 					
 					# Could be multiple groups this sgRNA is a 
 					# member of
@@ -135,15 +137,17 @@ class MatrixView( ) :
 			groupName = groupInfo['sgrna_group_reference']
 			
 			# Initialize with basic annotation data
-			if groupID in self.sgRNAGroupToBioGRID :
-				biogridAnn = self.sgRNAGroupToBioGRID[groupID]
+			if groupID in self.sgRNAGroupToGene :
+				geneAnn = self.sgRNAGroupToGene[groupID]
 				
-				if biogridAnn['official_symbol'] != "-" :
-					groupName = biogridAnn['official_symbol']
+				if geneAnn['official_symbol'] != "-" :
+					groupName = geneAnn['official_symbol']
+					
+				orgAnn = self.organismHash[str(geneAnn['organism_id'])]
 				
-				row = [groupInfo['sgrna_group_id'], groupInfo['sgrna_group_reference'], groupInfo['sgrna_group_reference_type'], groupName, biogridAnn['official_symbol'], biogridAnn['systematic_name'], biogridAnn['aliases'], biogridAnn['definition'], biogridAnn['organism_id'], biogridAnn['organism_common_name'], biogridAnn['organism_official_name'], biogridAnn['organism_abbreviation'], biogridAnn['organism_strain']]
+				row = [groupInfo['sgrna_group_id'], groupInfo['sgrna_group_reference'], groupInfo['sgrna_group_reference_type'], groupName, geneAnn['official_symbol'], geneAnn['systematic_name'], geneAnn['aliases'], geneAnn['definition'], geneAnn['biogrid_id'], geneAnn['organism_id'], orgAnn['organism_common_name'], orgAnn['organism_official_name'], orgAnn['organism_abbreviation'], orgAnn['organism_strain']]
 			else :
-				row = [groupInfo['sgrna_group_id'], groupInfo['sgrna_group_reference'], groupInfo['sgrna_group_reference_type'], groupName, "-", "-", "-", "-", "0", "-", "-", "-", "-"]
+				row = [groupInfo['sgrna_group_id'], groupInfo['sgrna_group_reference'], groupInfo['sgrna_group_reference_type'], groupName, "-", "-", "-", "-", "0", "0", "-", "-", "-", "-"]
 			
 			# Perform any remaining calculations on results
 			for conditionRef, conditionScores in conditions.items( ) :
@@ -164,7 +168,7 @@ class MatrixView( ) :
 				row.append( conditionSet[condition] )
 			
 			# Insert formatted data to database
-			formatCols = ','.join( ['%s'] * self.colCount)
+			formatCols = ','.join( ['%s'] * len(row))
 			query = "INSERT INTO " + Config.DB_VIEWS + ".view_" + view['view_code'] + " VALUES ( %s )"
 			query = query % formatCols
 			self.cursor.execute( query, tuple(row) )
@@ -193,6 +197,7 @@ class MatrixView( ) :
 		tableFields.append( "systematic_name VARCHAR(255) NOT NULL" )
 		tableFields.append( "aliases LONGTEXT NOT NULL" )
 		tableFields.append( "definition TEXT NOT NULL" )
+		tableFields.append( "biogrid_id BIGINT(10) NOT NULL" )
 		tableFields.append( "organism_id BIGINT(10) NOT NULL" )
 		tableFields.append( "organism_common_name VARCHAR(255) NOT NULL" )
 		tableFields.append( "organism_official_name VARCHAR(255) NOT NULL" )
@@ -224,6 +229,7 @@ class MatrixView( ) :
 		tableIndexes.append( "ADD KEY (official_symbol)" )
 		tableIndexes.append( "ADD KEY (systematic_name)" )
 		tableIndexes.append( "ADD KEY (organism_id)" )
+		tableIndexes.append( "ADD KEY (biogrid_id)" )
 		tableIndexes.append( "ADD KEY (organism_common_name)" )
 		tableIndexes.append( "ADD KEY (organism_official_name)" )
 		tableIndexes.append( "ADD KEY (organism_abbreviation)" )

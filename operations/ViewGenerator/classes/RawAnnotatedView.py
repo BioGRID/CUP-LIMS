@@ -8,12 +8,12 @@ class RawAnnotatedView( ) :
 
 	"""Generate a raw annotated view table based on passed in parameters"""
 
-	def __init__( self, db, sgRNAToGroup, sgRNAGroups, sgRNAGroupToBioGRID ) :
+	def __init__( self, db, sgRNAToGroup, sgRNAGroups, sgRNAGroupToGene ) :
 		self.db = db
 		self.cursor = self.db.cursor( )
 		self.sgRNAToGroup = sgRNAToGroup
 		self.sgRNAGroups = sgRNAGroups
-		self.sgRNAGroupToBioGRID = sgRNAGroupToBioGRID
+		self.sgRNAGroupToGene = sgRNAGroupToGene
 		
 		self.lookups = Lookups.Lookups( self.db )
 		self.sgRNAHash = self.lookups.buildSGRNAIDHash( )
@@ -23,16 +23,17 @@ class RawAnnotatedView( ) :
 		
 		# Get a list of files
 		fileList = fileMap.keys( )
+		mapID = str(fileMap[fileList[0]]["MAP"])
 				
 		# Create the database table for storing the view 
 		self.createView( view )
 		
 		# Process each file one by one
-		self.generateRawAnnotatedView( view, fileList, rawData )
+		self.generateRawAnnotatedView( view, fileList, mapID, rawData )
 			
 		return { }
 	
-	def generateRawAnnotatedView( self, view, fileList, rawData ) :
+	def generateRawAnnotatedView( self, view, fileList, mapID, rawData ) :
 	
 		readCount = 0
 		for fileID in fileList :
@@ -40,7 +41,10 @@ class RawAnnotatedView( ) :
 			
 			for sgRNAID, readScore in reads.items( ) :
 				sgRNASeq = self.sgRNAHash[sgRNAID]
-				groupIDs = self.sgRNAToGroup[sgRNAID]
+				
+				groupIDs = []
+				if sgRNAID in self.sgRNAToGroup[mapID] :
+					groupIDs = self.sgRNAToGroup[mapID][sgRNAID]
 				
 				groupNames = []
 				for groupID in groupIDs :
@@ -48,8 +52,8 @@ class RawAnnotatedView( ) :
 					groupName = groupInfo['sgrna_group_reference']
 					
 					# Initialize with basic annotation data
-					if groupID in self.sgRNAGroupToBioGRID :
-						biogridAnn = self.sgRNAGroupToBioGRID[groupID]
+					if groupID in self.sgRNAGroupToGene :
+						biogridAnn = self.sgRNAGroupToGene[groupID]
 						
 						if biogridAnn['official_symbol'] != "-" :
 							groupName = biogridAnn['official_symbol']

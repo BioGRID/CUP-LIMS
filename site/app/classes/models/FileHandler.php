@@ -17,6 +17,7 @@ class FileHandler {
 	private $db;
 	private $twig;
 	private $maxNameLength = 40;
+	private $annotationFiles;
 
 	public function __construct( ) {
 		$this->db = new PDO( DB_CONNECT, DB_USER, DB_PASS );
@@ -24,6 +25,8 @@ class FileHandler {
 		
 		$loader = new \Twig_Loader_Filesystem( TEMPLATE_PATH );
 		$this->twig = new \Twig_Environment( $loader );
+		
+		$this->annotationFiles = $this->fetchAnnotationFiles( );
 	}
 	
 	/** 
@@ -138,7 +141,7 @@ class FileHandler {
 	 
 	public function fetchFile( $fileID ) {
 		
-		$query = "SELECT file_id, file_name, file_size, file_state, file_state_msg, user_id, file_addeddate, file_readtotal, file_code, file_desc, file_tags, file_permission, file_groups FROM " . DB_MAIN . ".files WHERE file_id=?";
+		$query = "SELECT file_id, file_name, file_size, file_state, file_state_msg, user_id, file_addeddate, file_readtotal, file_code, file_desc, file_tags, file_permission, file_groups, annotation_file_id FROM " . DB_MAIN . ".files WHERE file_id=?";
 
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( array( $fileID ) );
@@ -261,8 +264,8 @@ class FileHandler {
 				$groupVal = json_encode( $groupVal );
 		
 				// Create File
-				$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".files VALUES( '0', ?, ?, ?, ?, ?, ?, ?, '0', NOW( ), ?, 'new','-', 'active', ?, ?, ? )" );
-				$stmt->execute( array( $filename, $fileHash, $fileInfo['SIZE'], $fileCode, $fileSet->fileTags, $fileSet->fileDesc, $bgVal, $fileSet->fileDate, $_SESSION[SESSION_NAME]['ID'], $fileSet->filePermission, $groupVal ));
+				$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".files VALUES( '0', ?, ?, ?, ?, ?, ?, ?, '0', ?, NOW( ), ?, 'new','-', 'active', ?, ?, ? )" );
+				$stmt->execute( array( $filename, $fileHash, $fileInfo['SIZE'], $fileCode, $fileSet->fileTags, $fileSet->fileDesc, $bgVal, $fileSet->fileAnnotation, $fileSet->fileDate, $_SESSION[SESSION_NAME]['ID'], $fileSet->filePermission, $groupVal ));
 				
 				// Fetch its new ID
 				$fileID = $this->db->lastInsertId( );
@@ -356,19 +359,31 @@ class FileHandler {
 	 public function fetchFilesViewColumnDefinitions( $showBGSelect = false ) {
 	 
 		$columns = array( );
-		$columns[0] = array( "title" => "", "data" => 0, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
-		$columns[1] = array( "title" => "Name", "data" => 1, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'file_name' );
-		$columns[2] = array( "title" => "Desc", "data" => 2, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'file_desc' );
-		$columns[3] = array( "title" => "Tags", "data" => 3, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_tags' );
-		$columns[4] = array( "title" => "Size", "data" => 4, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_size' );
-		$columns[5] = array( "title" => "ReadSum", "data" => 5, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_readtotal' );
-		$columns[6] = array( "title" => "Date", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_addeddate' );
-		$columns[7] = array( "title" => "State", "data" => 7, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_state' );
-		$columns[8] = array( "title" => "Privacy", "data" => 8, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_permission' );
-		$columns[9] = array( "title" => "Options", "data" => 9, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
-		
-		if( $showBGSelect ) {
-			$columns[10] = array( "title" => "Control", "data" => 10, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
+		if( !$showBGSelect ) {
+			
+			$columns[0] = array( "title" => "", "data" => 0, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
+			$columns[1] = array( "title" => "Name", "data" => 1, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'file_name' );
+			$columns[2] = array( "title" => "Desc", "data" => 2, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'file_desc' );
+			$columns[3] = array( "title" => "Tags", "data" => 3, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_tags' );
+			$columns[4] = array( "title" => "Size", "data" => 4, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_size' );
+			$columns[5] = array( "title" => "ReadSum", "data" => 5, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_readtotal' );
+			$columns[6] = array( "title" => "Date", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_addeddate' );
+			$columns[7] = array( "title" => "State", "data" => 7, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_state' );
+			$columns[8] = array( "title" => "Privacy", "data" => 8, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_permission' );
+			$columns[9] = array( "title" => "Options", "data" => 9, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
+			
+		} else {
+			
+			$columns[0] = array( "title" => "", "data" => 0, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
+			$columns[1] = array( "title" => "Name", "data" => 1, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'file_name' );
+			$columns[2] = array( "title" => "Desc", "data" => 2, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'file_desc' );
+			$columns[3] = array( "title" => "ReadSum", "data" => 3, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_readtotal' );
+			$columns[4] = array( "title" => "Date", "data" => 4, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_addeddate' );
+			$columns[5] = array( "title" => "State", "data" => 5, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_state' );
+			$columns[6] = array( "title" => "Privacy", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_permission' );
+			$columns[7] = array( "title" => "Mapping", "data" => 7, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
+			$columns[8] = array( "title" => "Control", "data" => 8, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
+			
 		}
 		
 		return $columns;
@@ -381,19 +396,32 @@ class FileHandler {
 	 
 	public function buildBGList( $params, $separated = false ) {
 		
+		$codeList = array( );
 		$query = "SELECT file_id, file_name, file_code FROM " . DB_MAIN . ".files WHERE file_status='active' AND file_iscontrol='1'";
 		
-		$idSet = array( );
-		
 		if( isset( $params['fileIDs'] ) && strlen( $params['fileIDs'] ) > 0 ) {
+			
+			$codeQuery = "SELECT file_code FROM " . DB_MAIN . ".files WHERE file_status='active'";
 			$idSet = explode( "|", $params['fileIDs'] );
 			$options = $idSet;
 			$varSet = array_fill( 0, sizeof( $idSet ), "?" );
-			$query .= " AND file_id IN (" . implode( ",", $varSet ) . ")";
+			$codeQuery .= " AND file_id IN (" . implode( ",", $varSet ) . ") GROUP BY file_code";
+			
+			$stmt = $this->db->prepare( $codeQuery );
+			$stmt->execute( $idSet );
+			
+			$codeList = array( );
+			while( $row = $stmt->fetch( PDO::FETCH_OBJ )) {
+				$codeList[] = $row->file_code;
+			}
+			
+			$varSet = array_fill( 0, sizeof( $codeList ), "?" );
+			$query .= " AND file_code IN (" . implode( ",", $varSet ) . ")";
+			
 		} 
 		
 		$stmt = $this->db->prepare( $query );
-		$stmt->execute( $idSet );
+		$stmt->execute( $codeList );
 		
 		$bgList = array( );
 		while( $row = $stmt->fetch( PDO::FETCH_OBJ )) {
@@ -451,9 +479,12 @@ class FileHandler {
 			}
 			$column[] = $formattedName;
 			$column[] = $fileInfo->file_desc;
-			$column[] = $fileInfo->file_tags;
 			
-			$column[] = $this->formatBytes( $fileInfo->file_size );
+			if( !isset( $params['showBGSelect'] ) || $params['showBGSelect'] == "false" ) {
+				$column[] = $fileInfo->file_tags;
+				$column[] = $this->formatBytes( $fileInfo->file_size );
+			}
+			
 			$column[] = number_format( $fileInfo->file_readtotal, 0, ".", "," );
 			$column[] = $fileInfo->file_addeddate;
 			
@@ -461,16 +492,48 @@ class FileHandler {
 			
 			$column[] = $this->formatPermission( $fileInfo );
 			
-			$column[] = $this->buildFilesTableOptions( $fileInfo );
-			
 			if( isset( $params['showBGSelect'] ) && $params['showBGSelect'] == "true" ) {
-				$column[] = $this->generateBGSelect( $bgList, $fileInfo->file_code, "", "", false, false );
+				$column[] = $this->generateMappingSelect( $fileInfo->annotation_file_id, "mappingSelect", "", false );
+				$column[] = $this->generateBGSelect( $bgList, $fileInfo->file_code, "controlFileSelect", "", false, false );
+			} else {
+				$column[] = $this->buildFilesTableOptions( $fileInfo );
 			}
 			
 			$rows[] = $column;
 		}
 		
 		return $rows;
+		
+	}
+	
+	/**
+	 * Build a formatted list of selectable mapping files
+	 */
+	 
+	private function generateMappingSelect( $selectedOption, $selectClass = "", $selectLabel = "", $forToolbar = false ) {
+		
+		$selectOptions = array( );
+		
+		foreach( $this->annotationFiles as $annotationFileID => $annotationFileInfo ) {
+			if( $annotationFileID == $selectedOption ) {
+				$selectOptions[$annotationFileID] = array( "SELECTED" => "selected", "NAME" => $annotationFileInfo->annotation_file_name );
+			} else {
+				$selectOptions[$annotationFileID] = array( "SELECTED" => "", "NAME" => $annotationFileInfo->annotation_file_name );
+			}
+		}
+		
+		$view = "blocks" . DS . "ORCASelect.tpl";
+		if( $forToolbar ) {
+			$view = "blocks" . DS . "ORCADataTableToolbarSelect.tpl";
+		}
+		
+		$select = $this->twig->render( $view, array(
+			"OPTIONS" => $selectOptions,
+			"SELECT_CLASS" => $selectClass,
+			"SELECT_LABEL" => $selectLabel
+		));
+		
+		return $select;
 		
 	}
 	
@@ -753,11 +816,14 @@ class FileHandler {
 	 * Fetch a toolbar with buttons only available when adding a view
 	 */
 	 
-	public function fetchFileToolbarForAddView( $expIDs ) {
+	public function fetchFileToolbarForAddView( $fileIDs ) {
 		$buttons = array( );
 		
-		$bgList = $this->buildBGList( array( "expIDs" => implode( "|", $expIDs )), false );
-		$selectList = $this->generateBGSelect( $bgList, 0, "pull-right col-lg-2 col-md-3 col-sm-4 col-xs-6", "Control: ", false, true );
+		$bgList = $this->buildBGList( array( "fileIDs" => implode( "|", $fileIDs )), false );
+		$selectList = $this->generateBGSelect( $bgList, 0, "orcaToolbarControlSelect pull-right col-lg-2 col-md-3 col-sm-4 col-xs-6", "Control: ", false, true );
+		$buttons[] = $selectList;
+		
+		$selectList = $this->generateMappingSelect( "", "orcaToolbarMappingSelect pull-right col-lg-2 col-md-3 col-sm-4 col-xs-6", "Mapping: ", true );
 		$buttons[] = $selectList;
 		
 		return implode( "", $buttons );
@@ -1007,6 +1073,26 @@ class FileHandler {
 		$files = array( );
 		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
 			$files[] = array( "NAME" => $row->annotation_file_name, "ID" => $row->annotation_file_id, "SIZE" => $this->formatFileSize( $row->annotation_file_size ), "STATE" => $row->annotation_file_state, "STATE_MSG" => json_decode( $row->annotation_file_state_msg, true ) );
+		}
+		
+		return $files;
+	
+	}
+	
+	/** 
+	 * Fetch all annotation files from the database 
+	 */
+	 
+	public function fetchAnnotationFiles( ) {
+		
+		$query = "SELECT * FROM " . DB_MAIN . ".annotation_files WHERE annotation_file_status='active' ORDER BY annotation_file_name ASC";
+
+		$stmt = $this->db->prepare( $query );
+		$stmt->execute( );
+		
+		$files = array( );
+		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
+			$files[$row->annotation_file_id] = $row;
 		}
 		
 		return $files;

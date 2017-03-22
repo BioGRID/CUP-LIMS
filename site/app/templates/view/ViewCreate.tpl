@@ -7,7 +7,7 @@
 
 <div id='addViewWrap' class='greyBG marginTopSm paddingLg marginBotSm'>
 	<div class='container-fluid'>
-		<h3>Add New View</h3>
+		<h3>View Settings</h3>
 		<span id='addNewViewSubhead' class='subheadSmall'>Use this form to create a new custom view of your data</span>
 		<div class='col-lg-12 col-md-12 col-sm-12 col-xs-12 marginTopSm clearfix'>
 			<form id='addViewForm'>

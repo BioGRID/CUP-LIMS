@@ -47,8 +47,8 @@ class UploadController extends lib\Controller {
 		
 		$this->footerParams->set( 'ADDON_JS', $addonJS );
 		
-		$lookups = new models\Lookups( );
-		$cellLines = $lookups->buildCellLineHash( );
+		$fileHandler = new models\FileHandler( );
+		$annotationFiles = $fileHandler->fetchAnnotationFiles( );
 		
 		$groupHandler = new models\GroupHandler( );
 		$groups = $groupHandler->fetchGroups( );
@@ -56,7 +56,7 @@ class UploadController extends lib\Controller {
 		$params = array(
 			"WEB_URL" => WEB_URL,
 			"IMG_URL" => IMG_URL,
-			"CELL_LINES" => $cellLines,
+			"ANNOTATION_FILES" => $annotationFiles,
 			"DATASET_CODE" => uniqid( ),
 			"GROUPS" => $groups,
 			"TODAY" => date( 'Y-m-d', strtotime( 'today' ))
