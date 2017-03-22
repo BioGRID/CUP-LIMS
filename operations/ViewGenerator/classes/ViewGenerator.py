@@ -16,9 +16,10 @@ class ViewGenerator( ) :
 	def __init__( self ) :
 		self.db = Database.db
 		self.lookups = Lookups.Lookups( self.db )
-		self.sgRNAToGroup = self.lookups.buildSGRNAIDtoSGRNAGroupHash( )
+		self.sgRNAToGroup = { }
 		self.sgRNAGroups = self.lookups.buildSGRNAGroupHash( )
-		self.sgRNAGroupToBioGRID = self.lookups.buildGroupIDToBioGRIDAnnotation( )
+		self.sgRNAGroupToGene = self.lookups.buildGroupIDToGeneAnnotation( )
+		self.organismHash = self.lookups.buildOrganismHash( )
 		self.matrixView = None
 		self.rawAnnotatedView = None
 		self.rawData = RawDataHandler.RawDataHandler( self.db )
@@ -34,13 +35,20 @@ class ViewGenerator( ) :
 		for view in queuedViews :
 			if not self.viewExists( view['view_code'] ) :
 			
+				# Build a set of mappings that are required, if they do not already
+				# exist in the mapping table
+				mappings = json.loads( view['view_mappings'] )
+				for mappingID in mappings :
+					if str(mappingID) not in self.sgRNAToGroup and str(mappingID) != "0" :
+						self.sgRNAToGroup[str(mappingID)] = self.lookups.buildSGRNAIDtoSGRNAGroupHash( mappingID )
+			
 				# Build unique set of files we'll need for this view
 				# including controls
 				fileMap = json.loads( view['view_files'] )
 				files = fileMap.keys( )
 				controls = set( )
-				for fileID,ctrlSet in fileMap.iteritems( ) :
-					ctrlSet = ctrlSet.split( "|" )
+				for fileID,fileInfo in fileMap.iteritems( ) :
+					ctrlSet = fileInfo['BG'].split( "|" )
 					for ctrl in ctrlSet :
 						controls.add( ctrl )
 
@@ -66,7 +74,7 @@ class ViewGenerator( ) :
 	
 		"""Create a matrix view using the appropriate classes"""
 		if self.matrixView == None :
-			self.matrixView = MatrixView.MatrixView( self.db, self.sgRNAToGroup, self.sgRNAGroups, self.sgRNAGroupToBioGRID )
+			self.matrixView = MatrixView.MatrixView( self.db, self.sgRNAToGroup, self.sgRNAGroups, self.sgRNAGroupToGene, self.organismHash )
 		
 		fileHash = self.lookups.buildFileHash( allFiles )
 		viewDetails = self.matrixView.build( view, fileMap, self.rawData, fileHash )
@@ -76,7 +84,7 @@ class ViewGenerator( ) :
 	
 		"""Create a matrix view using the appropriate classes"""
 		if self.rawAnnotatedView == None :
-			self.rawAnnotatedView = RawAnnotatedView.RawAnnotatedView( self.db, self.sgRNAToGroup, self.sgRNAGroups, self.sgRNAGroupToBioGRID )
+			self.rawAnnotatedView = RawAnnotatedView.RawAnnotatedView( self.db, self.sgRNAToGroup, self.sgRNAGroups, self.sgRNAGroupToGene )
 		
 		viewDetails = self.rawAnnotatedView.build( view, fileMap, self.rawData )
 		self.updateViewDetails( view['view_id'], viewDetails )

@@ -23,6 +23,9 @@ class LinkoutGenerator {
 			
 			case "biogrid" :
 				return "https://thebiogrid.org/" . $id;
+				
+			case "entrez" :
+				return "https://www.ncbi.nlm.nih.gov/gene/" . $id;
 			
 			default:
 				return "";

@@ -6,7 +6,7 @@
 	{% if LINKS %}
 		<div class='orcaGroupAnnotationRow'><strong>Links</strong> :
 			{% for LINK_NAME, LINK_URL in LINKS %}
-				[<a href='{{ LINK_URL|raw }}' title='VIEW IN {{ LINK_NAME }}'>{{ LINK_NAME }}</a>] 
+				[<a href='{{ LINK_URL|raw }}' target='_BLANK' title='VIEW IN {{ LINK_NAME }}'>{{ LINK_NAME }}</a>] 
 			{% endfor %}
 		</div>
 	{% endif %}

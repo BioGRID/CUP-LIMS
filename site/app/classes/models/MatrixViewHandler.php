@@ -110,8 +110,8 @@ class MatrixViewHandler {
 				}
 			} 
 			
-			if( $rowInfo->sgrna_group_reference_type == "BIOGRID" ) {
-				$column[] = "<a class='annotationPopup' data-id='" . $rowInfo->sgrna_group_id . "' data-type='BIOGRID'>" . $rowInfo->group_name . "</a>";
+			if( $rowInfo->sgrna_group_reference_type == "ENTREZ" ) {
+				$column[] = "<a class='annotationPopup' data-id='" . $rowInfo->sgrna_group_id . "' data-type='ENTREZ'>" . $rowInfo->group_name . "</a>";
 			} else {
 				$column[] = $rowInfo->group_name;
 			}
@@ -154,7 +154,7 @@ class MatrixViewHandler {
 			return "rgb( " . ($colorValue + 55) . ", 0, 0)";
 		} 
 		
-		return "rgb( 0, 255, 0 )";
+		return "rgb( 0, 130, 0 )";
 		
 	}
 	

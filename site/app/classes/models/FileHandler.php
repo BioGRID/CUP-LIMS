@@ -141,7 +141,7 @@ class FileHandler {
 	 
 	public function fetchFile( $fileID ) {
 		
-		$query = "SELECT file_id, file_name, file_size, file_state, file_state_msg, user_id, file_addeddate, file_readtotal, file_code, file_desc, file_tags, file_permission, file_groups FROM " . DB_MAIN . ".files WHERE file_id=?";
+		$query = "SELECT file_id, file_name, file_size, file_state, file_state_msg, user_id, file_addeddate, file_readtotal, file_code, file_desc, file_tags, file_permission, file_groups, annotation_file_id FROM " . DB_MAIN . ".files WHERE file_id=?";
 
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( array( $fileID ) );

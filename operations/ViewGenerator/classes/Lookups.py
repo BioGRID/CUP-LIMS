@@ -44,12 +44,12 @@ class Lookups( ) :
 			
 		return mapping
 		
-	def buildSGRNAIDtoSGRNAGroupHash( self ) :
+	def buildSGRNAIDtoSGRNAGroupHash( self, annotationFileID ) :
 	
 		"""Build a set of sgRNAs mapped to gene IDs"""
 		
 		mapping = { }
-		self.cursor.execute( "SELECT sgrna_id, sgrna_group_id FROM " + Config.DB_MAIN + ".sgRNA_group_mappings WHERE sgrna_group_mapping_status='active'" )
+		self.cursor.execute( "SELECT sgrna_id, sgrna_group_id FROM " + Config.DB_MAIN + ".sgRNA_group_mappings WHERE sgrna_group_mapping_status='active' AND annotation_file_id=%s", [annotationFileID] )
 		
 		for row in self.cursor.fetchall( ) :
 		
@@ -60,10 +60,11 @@ class Lookups( ) :
 			
 		return mapping
 		
-	def buildGroupIDToBioGRIDAnnotation( self ) :
-		"""Build a quick lookup of BioGRID annotation for groups with a BioGRID ID reference"""
+	def buildGroupIDToGeneAnnotation( self ) :
+	
+		"""Build a quick lookup of ENTREZ annotation for groups with a ENTREZ ID reference"""
 		mapping = { }
-		self.cursor.execute( "SELECT o.sgrna_group_id, o.sgrna_group_reference, p.systematic_name, p.official_symbol, p.aliases, p.definition, p.organism_id, p.organism_common_name, p.organism_official_name, p.organism_abbreviation, p.organism_strain FROM " + Config.DB_MAIN + ".sgRNA_groups o LEFT JOIN " + Config.DB_QUICK + ".quick_annotation p ON (o.sgrna_group_reference=p.gene_id) WHERE o.sgrna_group_reference_type='BIOGRID'" )
+		self.cursor.execute( "SELECT o.sgrna_group_id, o.sgrna_group_reference, p.systematic_name, p.official_symbol, p.aliases, p.definition, p.organism_id, p.biogrid_id FROM " + Config.DB_MAIN + ".sgRNA_groups o LEFT JOIN " + Config.DB_MAIN + ".genes p ON (o.sgrna_group_reference=p.entrez_gene_id) WHERE o.sgrna_group_reference_type='ENTREZ'" )
 		
 		for row in self.cursor.fetchall( ) :
 			mapping[str(row['sgrna_group_id'])] = row
@@ -82,4 +83,15 @@ class Lookups( ) :
 			files[str(row['file_id'])] = row
 			
 		return files
+		
+	def buildOrganismHash( self ) :
+		
+		""" Build an Organism Lookup Hash"""
+		mapping = { }
+		self.cursor.execute( "SELECT * FROM " + Config.DB_MAIN + ".organisms" )
+		
+		for row in self.cursor.fetchall( ) :
+			mapping[str(row['organism_id'])] = row
+			
+		return mapping
 		

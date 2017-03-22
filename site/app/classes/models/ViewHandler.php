@@ -33,9 +33,15 @@ class ViewHandler {
 	public function addView( $viewName, $viewDesc, $typeID, $valueID, $files, $permission, $groups ) {
 		
 		$fileSet = array( );
+		$mappingSet = array( );
 		foreach( $files as $fileInfo ) {
 			$fileSet[$fileInfo['fileID']] = array( "BG" => $fileInfo['backgroundID'], "MAP" => $fileInfo['mappingID'] );
+			$mappingSet[] = $fileInfo['mappingID'];
 		}
+		
+		// Unique and turn to json
+		$mappingSet = array_values( array_unique( $mappingSet ));
+		$mappingSet = json_encode( $mappingSet );
 		
 		// Make sure files are always listed in the same order
 		ksort( $fileSet, SORT_NUMERIC );
@@ -71,8 +77,8 @@ class ViewHandler {
 				
 		$groupVal = json_encode( $groupVal );
 		
-		$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".views VALUES( '0', ?, ?, ?, ?, ?, ?, ?, '0000-00-00 00:00:00', NOW( ), 'building', 'active', ?, ?, ?, ?, ? )" );
-		$stmt->execute( array( $viewName, $viewDesc, $viewCode, $typeID, $valueID, $fileSet, "summary", $emptyArray, $emptyArray, $_SESSION[SESSION_NAME]['ID'], $permission, $groupVal ));
+		$stmt = $this->db->prepare( "INSERT INTO " . DB_MAIN . ".views VALUES( '0', ?, ?, ?, ?, ?, ?, ?, ?, '0000-00-00 00:00:00', NOW( ), 'building', 'active', ?, ?, ?, ?, ? )" );
+		$stmt->execute( array( $viewName, $viewDesc, $viewCode, $typeID, $valueID, $fileSet, $mappingSet, "summary", $emptyArray, $emptyArray, $_SESSION[SESSION_NAME]['ID'], $permission, $groupVal ));
 		
 		if( CONFIG['VIEWGENERATOR']['ACTIVE'] ) {
 			// Run Active View Generator Service
@@ -293,8 +299,8 @@ class ViewHandler {
 			
 			$fileSet = json_decode( $viewInfo->view_files );
 			$fileList = array( );
-			foreach( $fileSet as $fileID => $backgroundID ) {
-				$backgroundSplit = explode( "|", $backgroundID );
+			foreach( $fileSet as $fileID => $fileInfo ) {
+				$backgroundSplit = explode( "|", $fileInfo->BG );
 				$fileList[] = $fileID;
 				foreach( $backgroundSplit as $bgID ) {
 					if( $bgID != "0" ) {
@@ -614,7 +620,7 @@ class ViewHandler {
 		
 		$viewInfo = $this->fetchView( $viewID );
 		
-		$stmt = $this->db->prepare( "SELECT sgrna_group_reference, official_symbol, systematic_name, aliases, definition, organism_official_name FROM " . DB_VIEWS . ".view_" . $viewInfo->view_code . " WHERE sgrna_group_id=? LIMIT 1" );
+		$stmt = $this->db->prepare( "SELECT sgrna_group_reference, official_symbol, systematic_name, aliases, definition, organism_official_name, biogrid_id FROM " . DB_VIEWS . ".view_" . $viewInfo->view_code . " WHERE sgrna_group_id=? LIMIT 1" );
 		
 		$stmt->execute( array( $groupID ) );
 		
@@ -632,7 +638,7 @@ class ViewHandler {
 			}
 			
 			if( $row->aliases != "-" ) {
-				$aliases = explode( "|", $row->aliases );
+				$aliases = json_decode( $row->aliases, true );
 				$annotationParams["Aliases"] = implode( ", ", $aliases );
 			}
 			
@@ -645,7 +651,11 @@ class ViewHandler {
 			}
 			
 			$links = array( );
-			$links["biogrid"] = models\LinkoutGenerator::getLinkout( "biogrid", $row->sgrna_group_reference );
+			$links["entrez"] = models\LinkoutGenerator::getLinkout( "entrez", $row->sgrna_group_reference );
+			
+			if( $row->biogrid_id != "0" && $row->biogrid_id != "-" ) {
+				$links["biogrid"] = models\LinkoutGenerator::getLinkout( "biogrid", $row->biogrid_id );
+			}
 			
 			$annotation = $this->twig->render( "view" . DS . "ViewGroupAnnotation.tpl", array(
 				"ANNOTATION" => $annotationParams,

@@ -150,7 +150,7 @@ class FilesController extends lib\Controller {
 		// See if a view already exists for this file
 		$viewHandler = new models\ViewHandler( );
 		$fileSet = array( );
-		$fileSet[] = array( "fileID" => $fileInfo->file_id, "backgroundID" => "0" );
+		$fileSet[] = array( "fileID" => $fileInfo->file_id, "backgroundID" => "0", "mappingID" => $fileInfo->annotation_file_id );
 		$viewDetails = $viewHandler->addView( "File #" . $fileInfo->file_id . " Annotated Raw Data", "Raw Data Annotated with Group Info", 2, 2, $fileSet, "public", array( )  );
 		$view = $viewHandler->fetchView( $viewDetails['ID'] );
 		$viewHandler->updateLastViewed( $view->view_id );
