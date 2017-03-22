@@ -29,7 +29,6 @@ class CRONTask( ) :
 	def run( self ) :
 		"""Run the cron task or skip if it's already running"""
 		if self.existsPID( ) :
-			print "CRON ALREADY RUNNING"
 			return
 			
 		self.writePID( )
@@ -45,9 +44,7 @@ class CRONTask( ) :
 			
 	def killPID( self ) :
 		"""Remove the PID file to allow for other instances to run later"""
-		print "KILLING"
 		if self.wrotePID :
-			print "KILLING CAUSE I WROTE IT"
 			try :
 				os.unlink( self.pidFile )
 			except OSError :

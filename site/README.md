@@ -43,3 +43,8 @@ To use all of the tools contained within, you require at least the following:
 		+ memory_limit = 2000M
 		+ post_max_size = 128M
 		+ upload_max_filesize = 128M
+		
+## CRON JOBS
+The processing of uploaded raw data and annotation files requires a regularly run CRON task. Also, the creation of views requires a regularly run CRON task. We recommend running these tasks as regularly as possible (every minute) but can ultimately be set to run at whatever time frame you prefer. The easiest way to get this going is to go into the <INSTALL LOCATION>/site/app/bin directory and modify "**orcaCron.sh**" to change the "operationsPath" and "python" variables to match that of your installation. Then simply run the shell script at whatever frequency you prefer...
++ Using FLOCK (preferred method): * * * * * /usr/bin/flock -n /tmp/orcaCRON.lockfile <INSTALL LOCATION>/site/app/bin/orcaCron.sh >> <LOG FILE LOCATION>/orca.log
++ Example Straight Cron: * * * * * <INSTALL LOCATION>/site/app/bin/orcaCron.sh >> <LOG FILE LOCATION>/orca.log

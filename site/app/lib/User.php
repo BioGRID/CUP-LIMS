@@ -271,6 +271,10 @@ class User {
 		$passwordHash = $this->generatePasswordHash( $password );
 		$stmt = $this->db->prepare( "UPDATE " . DB_MAIN . ".users SET user_password=?, user_uuid='-', user_random='0', user_passwordreset='0' WHERE user_id=?" );
 		
+		if( $userID == $_SESSION[SESSION_NAME]['ID'] ) {
+			$_SESSION[SESSION_NAME]['RESET_PASS'] = 0;
+		}
+		
 		$stmt->execute( array( $passwordHash, $userID ) );
 		
 	}
