@@ -34,8 +34,8 @@
 					message: 'You Must Enter a New Password'
 				},
 				stringLength: {
-					message: 'Your New Password Must be at Least 12 Characters Long',
-					min: 12
+					message: 'Your New Password Must be at Least 10 Characters Long',
+					min: 10
 				}
 			}
 		};

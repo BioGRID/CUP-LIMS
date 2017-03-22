@@ -100,6 +100,12 @@ class HomeController extends lib\Controller {
 		$myViews = $viewHandler->fetchViewList( $_SESSION[SESSION_NAME]['ID'], $this->RECENT_TO_SHOW );
 		$allViews = $viewHandler->fetchViewList( "", $this->RECENT_TO_SHOW );
 		
+		// Check to see if password needs to be reset
+		$alertMsg = "";
+		if( $_SESSION[SESSION_NAME]['RESET_PASS'] == "1" ) {
+			$alertMsg = "<i class='fa fa-warning fa-lg dangerIcon'></i> You must change your password immediately. Click <a href='" . WEB_URL . "/Admin/ChangePassword' title='Change Your Password'>here</a> to do so...";
+		}
+		
 		$params = array( 
 			"WEB_NAME" => CONFIG['WEB']['WEB_NAME'],
 			"WEB_NAME_ABBR" => CONFIG['WEB']['WEB_NAME_ABBR'],
@@ -113,7 +119,8 @@ class HomeController extends lib\Controller {
 			"MY_FILES" => $myFiles,
 			"ALL_FILES" => $allFiles,
 			"MY_VIEWS" => $myViews,
-			"ALL_VIEWS" => $allViews
+			"ALL_VIEWS" => $allViews,
+			"ALERT_MSG" => $alertMsg
 		);
 		
 		$this->renderView( "home" . DS . "HomeIndex.tpl", $params, false );

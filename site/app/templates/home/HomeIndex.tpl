@@ -7,7 +7,7 @@
 		<div class='subheadLarge'>Thanks for logging in, <strong>{{FIRSTNAME}} {{LASTNAME}}</strong>. If this is not you, please <strong><a href='{{ WEB_URL }}/Home/Logout' title='Logout of your account'>Logout</a></strong> as soon as possible.</div>
 
 		<hr class='marginTopSm marginBotSm' />
-
+		<div class="alert alert-danger" role="alert" {% if not ALERT_MSG %}style='display:none'{% endif %}>{{ ALERT_MSG | raw }}</div>
 		<div class='paddingSm'>
 			<h3 class='paddingTopNone'>Getting Started</h3>
 			<div class='subheadLarge'>Whether you're new to the site or a regular user, the following tools and categories can help you get started with <strong>{{ WEB_NAME_ABBR }}</strong>.
@@ -107,7 +107,7 @@
 					<div class="panel-heading"><strong>Views</strong></div>
 					<div class="pull-right"><i class="fa fa-4x fa-bar-chart paddingLg primaryIcon"></i></div>
 					<div class="panel-body">
-						Views are combinations of files from one or more experiments distilled into an easily accessible format to aid in discovery. Views come in a variety of formats, each of which can be customized to your requirements. If your account has the correct permissions, you can <strong><a href="{{ WEB_URL }}/View" title="Browse Views">browse existing custom views</a></strong> or you can simply <strong><a href="{{ WEB_URL }}/Experiment" title="Create a new View">create a new view</a></strong> by seleting experiments to start with. Below is a listing of recently generated custom views:</a></strong>
+						Views are combinations of one or more files distilled into an easily accessible format to aid in discovery. Views come in a variety of formats, each of which can be customized to your requirements. If your account has the correct permissions, you can <strong><a href="{{ WEB_URL }}/View" title="Browse Views">browse existing custom views</a></strong> or you can simply <strong><a href="{{ WEB_URL }}/Files" title="Create a new View">create a new view</a></strong> by seleting files to start with. Below is a listing of recently generated custom views:</a></strong>
 						
 						<hr class='marginTopSm marginBotSm' />
 						
