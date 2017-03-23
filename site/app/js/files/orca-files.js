@@ -24,7 +24,7 @@
 		}
 		
 		$(".datatableBlock").orcaDataTableBlock({ 
-			sortCol: 4, 
+			sortCol: 6, 
 			sortDir: "desc", 
 			pageLength: 200,
 			colTool: "filesHeader", 
