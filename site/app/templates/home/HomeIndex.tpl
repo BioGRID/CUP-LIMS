@@ -194,7 +194,7 @@
 					<div class="panel-heading"><strong>Upload New Datasets</strong></div>
 					<div class="pull-right"><i class="fa fa-4x fa-cloud-upload paddingLg primaryIcon"></i></div>
 					<div class="panel-body">
-						In order to add new experiments to the {{WEB_NAME_ABBR}} system, you first need to upload the files associated with it. This can be done easily with our <strong><a href="{{ WEB_URL }}/Upload" title="Upload a new Experiment">upload a new experiment</a></strong> tool. With this tool, you can create new experiments and upload both raw data files and control files which are then submitted automatically to our processing queue for inclusion into the database. Once loaded, you can <strong><a href="{{ WEB_URL }}/Experiment" title="Create New views">create new views</a></strong> or simply look at the <strong><a href="{{ WEB_URL }}/Experiment" title="View Experiment">experimental data</a></strong>.
+						In order to add new files or annotation to the {{WEB_NAME_ABBR}} system, you first need to upload the files associated with it. This can be done easily with our <strong><a href="{{ WEB_URL }}/Upload" title="Upload New Files">upload new files</a></strong> tool. With this tool, you can create new files by uploading both raw data files and control files which are then submitted automatically to our processing queue for inclusion into the database. Once loaded, you can <strong><a href="{{ WEB_URL }}/Files" title="Create New views">create new views</a></strong> or simply look at the <strong><a href="{{ WEB_URL }}/Files" title="View Files">raw data</a></strong>.
 					</div>
 				</div>
 			</div>

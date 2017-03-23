@@ -483,17 +483,17 @@ class ViewHandler {
 		
 		$buttons = array( );
 		
-		if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE VIEWS' )) ) {
-			$view = "blocks" . DS . "ORCADataTableToolbarDropdown.tpl";
-			$buttons[] = $this->twig->render( $view, array(
-				"BTN_CLASS" => "btn-danger",
-				"BTN_ICON" => "fa-cog",
-				"BTN_TEXT" => "Tools",
-				"LINKS" => array(
-					"viewDisableChecked" => array( "linkHREF" => "", "linkText" => "Disable Checked Views", "linkClass" => "viewDisableChecked" )
-				)
-			));
-		}
+		// if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE VIEWS' )) ) {
+			// $view = "blocks" . DS . "ORCADataTableToolbarDropdown.tpl";
+			// $buttons[] = $this->twig->render( $view, array(
+				// "BTN_CLASS" => "btn-danger",
+				// "BTN_ICON" => "fa-cog",
+				// "BTN_TEXT" => "Tools",
+				// "LINKS" => array(
+					// "viewDisableChecked" => array( "linkHREF" => "", "linkText" => "Disable Checked Views", "linkClass" => "viewDisableChecked" )
+				// )
+			// ));
+		// }
 		
 		return implode( "", $buttons );
 		
@@ -732,7 +732,7 @@ class ViewHandler {
 		$view = "blocks" . DS . "ORCAPrivacyPopup.tpl";
 		$viewInfo = $this->fetchView( $viewID );
 		
-		$userInfo = $userHandler->fetchUser( $viewInfo->view_id );
+		$userInfo = $userHandler->fetchUser( $viewInfo->user_id );
 		$owner = $userInfo->user_firstname . " " . $userInfo->user_lastname;
 		
 		if( $viewInfo->view_permission == "public" ) {
