@@ -17,7 +17,7 @@
 		<h3>File Details</h3>
 		<div class='subheadLarge'>Use the correct button below to download this file in various supported formats.</div>
 		<div class='marginTopSm'>
-			<a href='{{ UPLOAD_PROCESSED_URL }}/{{ FILES_CODE }}/{{ FILE_NAME }}' title='Download {{ FILE_NAME }}'><button class='btn btn-info btn-lg'><i class="text-primary fa fa-cloud-download fa-lg"></i> Download Original Raw File</button></a>
+			<a href='{{ UPLOAD_PROCESSED_URL }}/{{ FILE_CODE }}/{{ FILE_NAME }}' title='Download {{ FILE_NAME }}'><button class='btn btn-info btn-lg'><i class="text-primary fa fa-cloud-download fa-lg"></i> Download Original Raw File</button></a>
 			{% if VIEW_STATE != "building" %}
 				<a href='{{ WEB_URL }}/View/Download?viewID={{ VIEW_ID }}' title='View Download'><button class='btn btn-orca2 btn-lg'><i class="fa fa-cloud-download fa-lg" style='color: #efbc2b'></i> Download Raw File with Annotation</button></a>
 			{% endif %}

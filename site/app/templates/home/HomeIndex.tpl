@@ -78,7 +78,7 @@
 							<tbody>
 							{% for FILE in ALL_FILES %}
 								<tr>
-									<td><a href='{{ WEB_URL }}/File/View?id={{ FILE.ID }}' title='View {{ FILE.NAME }}'>{{ FILE.NAME }}</a></td>
+									<td><a href='{{ WEB_URL }}/Files/View?id={{ FILE.ID }}' title='View {{ FILE.NAME }}'>{{ FILE.NAME }}</a></td>
 									<td class='text-center'>{{ FILE.SIZE }}</td> 
 									<td class='text-center'>{{ FILE.STATE | raw }}</td>
 									<td class='text-center'>{{ FILE.PERMISSION | raw }}</td>
