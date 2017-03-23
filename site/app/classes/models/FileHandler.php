@@ -236,9 +236,9 @@ class FileHandler {
 		$oldDir = UPLOAD_TMP_PATH . DS . $fileCode;
 		$fileHash = sha1_file( $oldDir . DS . $filename );
 		
-		// See if one with the same name already exists
-		$stmt = $this->db->prepare( "SELECT file_id FROM " . DB_MAIN . ".files WHERE file_hash=? LIMIT 1" );
-		$stmt->execute( array( $fileHash ));
+		// See if one with the same name and hash already exists
+		$stmt = $this->db->prepare( "SELECT file_id FROM " . DB_MAIN . ".files WHERE file_hash=? and file_name=? LIMIT 1" );
+		$stmt->execute( array( $fileHash, $filename ));
 		
 		// If it exists, return an error
 		if( $stmt->rowCount( ) > 0 ) {
