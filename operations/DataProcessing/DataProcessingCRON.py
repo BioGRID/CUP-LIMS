@@ -128,7 +128,7 @@ with Database.db as cursor :
 				# read entire file into list
 				lines = inFile.readlines( )
 				
-				firstLine = lines[0].split( "\t" )
+				firstLine = lines[0].strip( ).split( "\t" )
 				reads = {}
 				readTotal = 0
 				errors = { }
@@ -138,6 +138,9 @@ with Database.db as cursor :
 					reads, readTotal, errors = twoColParser.parse( )
 					
 					parserHandler.setFileReadTotal( row['file_id'], readTotal )
+					
+				else :
+					errors[0] = "UNRECOGNIZED FILE FORMAT: Wrong Number of Columns"
 			
 			if len(errors) > 0 :
 				parserHandler.setFileState( row['file_id'], "error", errors )
