@@ -44,7 +44,12 @@
 							<tbody>
 							{% for FILE in MY_FILES %}
 								<tr>
-									<td><a href='{{ WEB_URL }}/Files/View?id={{ FILE.ID }}' title='View {{ FILE.NAME }}'>{{ FILE.NAME }}</a></td>
+									{% if FILE.STATE_VAL == "parsed" %}
+										<td><a href='{{ WEB_URL }}/Files/View?id={{ FILE.ID }}' title='View {{ FILE.NAME }}'>{{ FILE.NAME }}</a></td>
+									{% else %}
+										<td>{{ FILE.NAME }}</td>
+									{% endif %}
+									
 									<td class='text-center'>{{ FILE.SIZE }}</td> 
 									<td class='text-center'>{{ FILE.STATE | raw }}</td>
 									<td class='text-center'>{{ FILE.PERMISSION | raw }}</td>
@@ -78,7 +83,12 @@
 							<tbody>
 							{% for FILE in ALL_FILES %}
 								<tr>
-									<td><a href='{{ WEB_URL }}/Files/View?id={{ FILE.ID }}' title='View {{ FILE.NAME }}'>{{ FILE.NAME }}</a></td>
+									{% if FILE.STATE_VAL == "parsed" %}
+										<td><a href='{{ WEB_URL }}/Files/View?id={{ FILE.ID }}' title='View {{ FILE.NAME }}'>{{ FILE.NAME }}</a></td>
+									{% else %}
+										<td>{{ FILE.NAME }}</td>
+									{% endif %}
+									
 									<td class='text-center'>{{ FILE.SIZE }}</td> 
 									<td class='text-center'>{{ FILE.STATE | raw }}</td>
 									<td class='text-center'>{{ FILE.PERMISSION | raw }}</td>
