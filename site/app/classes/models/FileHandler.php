@@ -473,7 +473,12 @@ class FileHandler {
 				$column[] = "";
 			}
 			
-			$formattedName = "<a href='" . WEB_URL . "/Files/View?id=" . $fileInfo->file_id . "' title='" . $fileInfo->file_name . "'>" . $fileInfo->file_name . "</a>";
+			if( $fileInfo->file_state == "parsed" ) {
+				$formattedName = "<a href='" . WEB_URL . "/Files/View?id=" . $fileInfo->file_id . "' title='" . $fileInfo->file_name . "'>" . $fileInfo->file_name . "</a>";
+			} else {
+				$formattedName = $fileInfo->file_name;
+			}
+			
 			if( $fileInfo->file_iscontrol == '1' ) {
 				$formattedName .= " [control]";
 			}
@@ -902,7 +907,9 @@ class FileHandler {
 			$options[] = '<a href="' . UPLOAD_PROCESSED_URL . "/" . $fileInfo->file_code . "/" . $fileInfo->file_name . '" title="' . $fileInfo->file_name . '" target="_BLANK"><i class="optionIcon fa fa-download fa-lg popoverData fileDownload text-info" data-title="Download Raw Data" data-content="Click to download this raw data file."></i></a>';
 		}
 		
-		$options[] = '<a href="' . WEB_URL . "/Files/View?id=" . $fileInfo->file_id . '" title="' . $fileInfo->file_name . '"><i class="optionIcon fa fa-search-plus fa-lg popoverData fileView text-primary" data-title="View File Details" data-content="Click to view this raw data file in expanded details."></i></a>';
+		if( $fileInfo->file_state == "parsed" ) {
+			$options[] = '<a href="' . WEB_URL . "/Files/View?id=" . $fileInfo->file_id . '" title="' . $fileInfo->file_name . '"><i class="optionIcon fa fa-search-plus fa-lg popoverData fileView text-primary" data-title="View File Details" data-content="Click to view this raw data file in expanded details."></i></a>';
+		}
 
 		
 		return implode( " ", $options );
@@ -978,6 +985,7 @@ class FileHandler {
 				"SIZE" => $this->formatBytes( $row->file_size ),
 				"PERMISSION" => $this->formatPermission( $row ),
 				"STATE" => $this->formatState( $row ),
+				"STATE_VAL" => $row->file_state,
 				"USER_NAME" => $row->user_name,
 				"OPTIONS" => $this->buildFilesTableOptions( $row )
 			);
