@@ -302,11 +302,12 @@ class ViewController extends lib\Controller {
 				"VIEW_STATE" => $view->view_state,
 				"VIEW_STYLE" => $viewStyle,
 				"VIEW_ICON" => $viewIcon,
+				"ADVANCED_FIELDS" => implode( "", $advancedSearchFields ),
 				"CAN_EDIT" => $canEdit,
 				"IS_PRIVATE" => $isPrivate,
 				"GROUPS" => $groups,
-				"SELECTED_GROUPS" => $selectedGroups,
-				"ADVANCED_FIELDS" => implode( "", $advancedSearchFields )
+				"SELECTED_GROUPS" => $selectedGroups
+				
 			);
 			
 		}
