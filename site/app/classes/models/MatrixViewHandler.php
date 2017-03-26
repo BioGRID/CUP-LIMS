@@ -48,7 +48,7 @@ class MatrixViewHandler {
 		ksort( $conditionCols, SORT_NATURAL );
 		
 		$columns = array( );
-		$columns[0] = array( "title" => "Name", "data" => 0, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'group_name' );
+		$columns[0] = array( "title" => "Name", "data" => 0, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'group_name', "searchable" => true, "searchType" => "Text", "searchName" => "Name" );
 		
 		$columnCount = 1;
 		$columnNameCount = 0;
@@ -60,7 +60,7 @@ class MatrixViewHandler {
 		
 		foreach( $conditionCols as $conditionID => $conditionDetails ) {
 			$excelName = $this->getExcelNameFromNumber( $columnNameCount );
-			$columns[$columnCount] = array( "title" => "<a class='matrixHeaderPopup' data-fileid='" . $conditionDetails['FILE']['ID'] . "' data-file='" . $conditionDetails['FILE']['NAME'] . "' data-bgid='" . $conditionDetails['BG']['ID'] . "' data-bgfile='" . $conditionDetails['BG']['NAME'] . "'>" . $excelName . "</a>", "data" => $columnCount, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => $conditionID, "fileID" => $conditionDetails['FILE']['ID'], "fileName" => $conditionDetails['FILE']['NAME'] );
+			$columns[$columnCount] = array( "title" => "<a class='matrixHeaderPopup' data-fileid='" . $conditionDetails['FILE']['ID'] . "' data-file='" . $conditionDetails['FILE']['NAME'] . "' data-bgid='" . $conditionDetails['BG']['ID'] . "' data-bgfile='" . $conditionDetails['BG']['NAME'] . "'>" . $excelName . "</a>", "data" => $columnCount, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => $conditionID, "fileID" => $conditionDetails['FILE']['ID'], "fileName" => $conditionDetails['FILE']['NAME'], "searchable" => true, "searchType" => "NumericRange", "searchName" => "(" . $excelName . ") " . $conditionDetails['FILE']['NAME'] . " [" . $conditionDetails['BG']['NAME'] . "]" );
 			
 			if( $createLegend ) {
 				$this->colLegend[] = array( "EXCEL_NAME" => $excelName, "FILE" => $conditionDetails['FILE']['NAME'], "FILE_ID" => $conditionDetails['FILE']['ID'], "BG_FILE" => $conditionDetails['BG']['NAME'], "BG_ID" => $conditionDetails['BG']['ID'] );
@@ -71,6 +71,33 @@ class MatrixViewHandler {
 		}
 		
 		return $columns;
+		
+	}
+	
+	/**
+	 * Fetch a set of fields to be used for creating an advanced search
+	 * output to display
+	 */
+	 
+	public function buildAdvancedSearchFields( ) {
+		
+		$columns = $this->fetchColumnDefinitions( );
+		$searchFields = array( );
+		
+		foreach( $columns as $columnIndex => $columnDef ) {
+			if( $columnDef['searchable'] ) {
+				$view = "advancedSearch" . DS . "AdvancedSearch" . $columnDef['searchType'] . ".tpl";
+		
+				$field = $this->twig->render( $view, array(
+					"TITLE" => $columnDef['searchName'],
+					"COLUMN" => $columnIndex
+				));
+				
+				$searchFields[] = $field;
+			}
+		}
+		
+		return $searchFields;
 		
 	}
 	

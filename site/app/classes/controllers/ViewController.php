@@ -277,6 +277,9 @@ class ViewController extends lib\Controller {
 			
 			$selectedGroups = json_decode( $view->view_groups );
 			
+			// Get Advanced Search Fields
+			$advancedSearchFields = $matrixHandler->buildAdvancedSearchFields( );
+			
 			$params = array(
 				"WEB_URL" => WEB_URL,
 				"IMG_URL" => IMG_URL,
@@ -302,7 +305,8 @@ class ViewController extends lib\Controller {
 				"CAN_EDIT" => $canEdit,
 				"IS_PRIVATE" => $isPrivate,
 				"GROUPS" => $groups,
-				"SELECTED_GROUPS" => $selectedGroups
+				"SELECTED_GROUPS" => $selectedGroups,
+				"ADVANCED_FIELDS" => implode( "", $advancedSearchFields )
 			);
 			
 		}
