@@ -284,6 +284,7 @@ class ViewController extends lib\Controller {
 				"ROW_COUNT" => $rowCount,
 				"DATATABLE_CLASS" => "matrixTable",
 				"SHOW_TOOLBAR" => true,
+				"SHOW_ADVANCED" => true,
 				"HIDE_CHECK_ALL" => true,
 				"COL_LEGEND" => $colLegend,
 				"BUTTONS" => $toolbarButtons,

@@ -25,6 +25,7 @@
 			colTool: "matrixViewHeader", 
 			rowTool: "matrixViewRows", 
 			hasToolbar: true,
+			hasAdvanced: true,
 			addonParams: { "viewID" : viewID, "viewStyle" : viewStyle },
 			optionsCallback: function( datatable ) {
 				initializeStyleSelect( datatable );

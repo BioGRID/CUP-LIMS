@@ -111,9 +111,9 @@ class MatrixViewHandler {
 			} 
 			
 			if( $rowInfo->sgrna_group_reference_type == "ENTREZ" ) {
-				$column[] = "<a class='annotationPopup' data-id='" . $rowInfo->sgrna_group_id . "' data-type='ENTREZ'>" . $rowInfo->group_name . "</a>";
+				$column[] = "<div class='annotationEntry'><a class='annotationPopup' data-id='" . $rowInfo->sgrna_group_id . "' data-type='ENTREZ'>" . $rowInfo->group_name . "</a></div>";
 			} else {
-				$column[] = $rowInfo->group_name;
+				$column[] = "<div class='annotationEntry'>" . $rowInfo->group_name . "</div>";
 			}
 
 			$columnSet = $this->colDefinitions;

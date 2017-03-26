@@ -32,7 +32,10 @@
 			filterSubmit: base.$el.find( ".orcaDataTableFilterSubmit" ),
 			filterText: base.$el.find( ".orcaDataTableFilterText" ),
 			tableRowCount: base.$el.find( ".orcaRowCount" ),
-			toolbar: base.$el.find( ".orcaDataTableToolbar" )
+			toolbar: base.$el.find( ".orcaDataTableToolbar" ),
+			advancedSearch: base.$el.find( ".orcaDataTableAdvancedSearch" ),
+			advancedToggle: base.$el.find( ".orcaDataTableAdvancedToggle" ),
+			globalSearchBox: base.$el.find( ".orcaDataTableFilterBox" )
 		};
 		
 		base.$el.data( "orcaDataTableBlock", base );
@@ -112,6 +115,14 @@
 				}
 			});
 			
+			// Setup Advanced Toggle
+			if( base.options.hasAdvanced ) {
+				base.components.advancedToggle.click( function( ) {
+					base.components.advancedSearch.toggle( );
+					base.components.globalSearchBox.toggle( );
+				});
+			}
+			
 		};
 		
 		/**
@@ -190,7 +201,8 @@
 		colTool: "",
 		rowTool: "",
 		addonParams: { },
-		hasToolbar: false
+		hasToolbar: false,
+		hasAdvanced: false
 	};
 
 	$.fn.orcaDataTableBlock = function( options ) {
