@@ -16,6 +16,13 @@ class MatrixViewHandler {
 
 	private $db;
 	private $twig;
+	private $searchHandler;
+	private $viewHandler;
+	private $view;
+	private $min;
+	private $max;
+	private $colLegend;
+	private $colDefinitions;
 
 	public function __construct( $viewID ) {
 		$this->db = new PDO( DB_CONNECT, DB_USER, DB_PASS );
@@ -23,6 +30,8 @@ class MatrixViewHandler {
 		
 		$loader = new \Twig_Loader_Filesystem( TEMPLATE_PATH );
 		$this->twig = new \Twig_Environment( $loader );
+		
+		$this->searchHandler = new models\SearchHandler( );
 		
 		$this->viewHandler = new models\ViewHandler( );
 		$this->view = $this->viewHandler->fetchView( $viewID );
@@ -48,7 +57,7 @@ class MatrixViewHandler {
 		ksort( $conditionCols, SORT_NATURAL );
 		
 		$columns = array( );
-		$columns[0] = array( "title" => "Name", "data" => 0, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'group_name', "searchable" => true, "searchType" => "Text", "searchName" => "Name" );
+		$columns[0] = array( "title" => "Name", "data" => 0, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'group_name', "searchable" => true, "searchType" => "Text", "searchName" => "Name", "searchCols" => array( "group_name" => "exact", "official_symbol" => "exact", "systematic_name" => "exact", "aliases" => "like" ));
 		
 		$columnCount = 1;
 		$columnNameCount = 0;
@@ -60,7 +69,7 @@ class MatrixViewHandler {
 		
 		foreach( $conditionCols as $conditionID => $conditionDetails ) {
 			$excelName = $this->getExcelNameFromNumber( $columnNameCount );
-			$columns[$columnCount] = array( "title" => "<a class='matrixHeaderPopup' data-fileid='" . $conditionDetails['FILE']['ID'] . "' data-file='" . $conditionDetails['FILE']['NAME'] . "' data-bgid='" . $conditionDetails['BG']['ID'] . "' data-bgfile='" . $conditionDetails['BG']['NAME'] . "'>" . $excelName . "</a>", "data" => $columnCount, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => $conditionID, "fileID" => $conditionDetails['FILE']['ID'], "fileName" => $conditionDetails['FILE']['NAME'], "searchable" => true, "searchType" => "NumericRange", "searchName" => "(" . $excelName . ") " . $conditionDetails['FILE']['NAME'] . " [" . $conditionDetails['BG']['NAME'] . "]" );
+			$columns[$columnCount] = array( "title" => "<a class='matrixHeaderPopup' data-fileid='" . $conditionDetails['FILE']['ID'] . "' data-file='" . $conditionDetails['FILE']['NAME'] . "' data-bgid='" . $conditionDetails['BG']['ID'] . "' data-bgfile='" . $conditionDetails['BG']['NAME'] . "'>" . $excelName . "</a>", "data" => $columnCount, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => $conditionID, "fileID" => $conditionDetails['FILE']['ID'], "fileName" => $conditionDetails['FILE']['NAME'], "searchable" => true, "searchType" => "NumericRange", "searchName" => "(" . $excelName . ") " . $conditionDetails['FILE']['NAME'] . " [" . $conditionDetails['BG']['NAME'] . "]", "searchCols" => array( $conditionID => "range" ) );
 			
 			if( $createLegend ) {
 				$this->colLegend[] = array( "EXCEL_NAME" => $excelName, "FILE" => $conditionDetails['FILE']['NAME'], "FILE_ID" => $conditionDetails['FILE']['ID'], "BG_FILE" => $conditionDetails['BG']['NAME'], "BG_ID" => $conditionDetails['BG']['ID'] );
@@ -74,32 +83,7 @@ class MatrixViewHandler {
 		
 	}
 	
-	/**
-	 * Fetch a set of fields to be used for creating an advanced search
-	 * output to display
-	 */
-	 
-	public function buildAdvancedSearchFields( ) {
-		
-		$columns = $this->fetchColumnDefinitions( );
-		$searchFields = array( );
-		
-		foreach( $columns as $columnIndex => $columnDef ) {
-			if( $columnDef['searchable'] ) {
-				$view = "advancedSearch" . DS . "AdvancedSearch" . $columnDef['searchType'] . ".tpl";
-		
-				$field = $this->twig->render( $view, array(
-					"TITLE" => $columnDef['searchName'],
-					"COLUMN" => $columnIndex
-				));
-				
-				$searchFields[] = $field;
-			}
-		}
-		
-		return $searchFields;
-		
-	}
+
 	
 	/**
 	 * Get Excel like name for columns so we can keep column names
@@ -190,7 +174,7 @@ class MatrixViewHandler {
 	 * for DataTable construction
 	 */
 	 
-	private function buildDataTableQuery( $params, $countOnly = false ) {
+	private function buildDataTableQuery( $params, $columns, $countOnly = false ) {
 		
 		$query = "SELECT ";
 		if( $countOnly ) {
@@ -199,16 +183,38 @@ class MatrixViewHandler {
 			$query .= "*";
 		}
 		
+		// $searchDetails = json_decode( $params["columns"]["0"]["search"]["value"], true );
+		//print_r( $params );
+		
 		$query .= " FROM " . DB_VIEWS . ".view_" . $this->view->view_code;
 		
 		$options = array( );
-		if( isset( $params['search'] ) && strlen($params['search']['value']) > 0 ) {
-			$query .= " WHERE (group_name LIKE ? OR systematic_name LIKE ? OR aliases LIKE ?)";
-			array_push( $options, '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%' );
+		$globalQuery = $this->searchHandler->buildGlobalSearch( $params, $columns );
+		if( sizeof( $globalQuery['QUERY'] ) > 0 ) {
+			$query .= " WHERE (" . implode( " OR ", $globalQuery['QUERY'] ) . ")";
+			$options = array_merge( $options, $globalQuery['OPTIONS'] );
 		}
+		
+		// print $query;
+		// print_r( $options );
+		
+		// Add in Global Search Fields
+		// if( isset( $params['search'] ) && strlen($params['search']['value']) > 0 ) {
+			// $query .= " WHERE (group_name LIKE ? OR systematic_name LIKE ? OR aliases LIKE ?)";
+			// array_push( $options, '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%' );
+		// }
+		
 		
 		return array( "QUERY" => $query, "OPTIONS" => $options );
 			
+	}
+	
+	/**
+	 * Build the global search query component
+	 */
+	 
+	private function buildDataTableQueryGlobalSearch( $params, $columns ) {
+		
 	}
 	
 	/**
@@ -222,21 +228,16 @@ class MatrixViewHandler {
 		
 		$rows = array( );
 		
-		$queryInfo = $this->buildDataTableQuery( $params, false );
+		$queryInfo = $this->buildDataTableQuery( $params, $columnSet, false );
 		$query = $queryInfo['QUERY'];
 		$options = $queryInfo['OPTIONS'];
 		
-		if( isset( $params['order'] ) && sizeof( $params['order'] ) > 0 ) {
-			$query .= " ORDER BY ";
-			$orderByEntries = array( );
-			foreach( $params['order'] as $orderIndex => $orderInfo ) {
-				$orderByEntries[] = $columnSet[$orderInfo['column']]['dbCol'] . " " . $orderInfo['dir'];
-			}
-			
-			$query .= implode( ",", $orderByEntries );
+		$orderBy = $this->searchHandler->buildOrderBy( $params, $columnSet );
+		if( $orderBy ) {
+			$query .= $orderBy;
 		}
 		
-		$query .= " LIMIT " . $params['start'] . "," . $params['length'];
+		$query .= $this->searchHandler->buildLimit( $params );
 		
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( $options );
@@ -256,7 +257,7 @@ class MatrixViewHandler {
 	 
 	public function getUnfilteredCount( $params ) {
 		
-		$queryInfo = $this->buildDataTableQuery( $params, true );
+		$queryInfo = $this->buildDataTableQuery( $params, $this->colDefinitions, true );
 		$query = $queryInfo['QUERY'];
 		$options = $queryInfo['OPTIONS'];
 		

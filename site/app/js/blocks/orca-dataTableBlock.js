@@ -35,7 +35,8 @@
 			toolbar: base.$el.find( ".orcaDataTableToolbar" ),
 			advancedSearch: base.$el.find( ".orcaDataTableAdvancedSearch" ),
 			advancedToggle: base.$el.find( ".orcaDataTableAdvancedToggle" ),
-			globalSearchBox: base.$el.find( ".orcaDataTableFilterBox" )
+			globalSearchBox: base.$el.find( ".orcaDataTableFilterBox" ),
+			advancedSearchBtn: base.$el.find( ".submitAdvancedSearchBtn" )
 		};
 		
 		base.$el.data( "orcaDataTableBlock", base );
@@ -123,6 +124,13 @@
 				});
 			}
 			
+			// Setup Advanced Submit Button
+			if( base.options.hasAdvanced ) {
+				base.components.advancedSearchBtn.click( function( ) {
+					base.processAdvancedSearches( true );
+				});
+			}
+			
 		};
 		
 		/**
@@ -176,6 +184,103 @@
 		base.filterGlobal = function( filterVal, isRegex, isSmartSearch ) {
 			base.components.table.DataTable( ).search( filterVal, isRegex, isSmartSearch, true ).draw( );
 		};
+		
+		/**
+		 * Search the table via a column specific filter
+		 */
+		 
+		base.filterColumn = function( filterVal, columnIndex, isRegex, isSmartSearch ) {
+			base.components.table.DataTable( ).column(columnIndex).search( filterVal, isRegex, isSmartSearch, true );
+		};
+		
+		/**
+		 * Reset all filters on every single column
+		 */
+		 
+		base.resetAllFilters = function( ) {
+			
+			// Reset each column
+			datatable = base.components.table.DataTable( )
+			datatable.columns( ).every( function( ) {
+				this.search( '' );
+			});
+			
+			// Reset Global
+			datatable.search( '' );
+			
+		};
+		
+		/**
+		 * Step through all the advanced search options
+		 * and process them as required
+		 */
+		 
+		base.processAdvancedSearches = function( toDraw ) {
+	
+			// Reset current filters
+			base.resetAllFilters( );
+			
+			// Step through existing fields and process each
+			// correctly by type
+			base.components.advancedSearch.find( ".orcaAdvancedField" ).each( function( ) {
+				searchData = base.fetchAdvancedSearchFieldData( $(this) );
+				if( searchData ) {
+					base.filterColumn( JSON.stringify( searchData["data"] ), searchData["column"], true, false );
+				}
+			});
+	
+			if( toDraw ) {
+				base.components.table.DataTable( ).draw( );
+			}
+	
+		};
+		
+		/**
+		 * Fetch data from advanced search field, based on its type
+		 */
+		 
+		base.fetchAdvancedSearchFieldData = function( field ) {
+			
+			var fieldType = field.data( 'type' ).toUpperCase( );
+			var column = "";
+			var searches = [];
+			
+			if( fieldType == "TEXT" ) {
+				
+				// Contains only a single text field
+				var inputField = field.find( "input[type=text]" );
+				var query = inputField.val( );
+				column = inputField.data( "column" );
+				
+				// Split phrases broken by vertical pipe
+				query = query.split( "|" );
+				for( var i = 0; i < query.length; i++ ) {
+					searches.push( { "query" : query[i] } );
+				}
+				
+			} else if( fieldType == "NUMERICRANGE" ) {
+				
+				// Contains 2 text fields for Minimum and Maximum range
+				field.find( "input[type=text]" ).each( function( ) {
+					var query  = $(this).val( );
+					column = $(this).data( "column" );
+					var range = $(this).data( "range" );
+					
+					if( query.length > 0 ) { 
+						searches.push( { "query" : query, "range" : range.toUpperCase( ) } );
+					}
+					
+				});
+		
+			}
+			
+			if( searches.length > 0 ) {
+				return { "data" : searches, "column" : column };
+			}
+			
+			return false;
+			
+		};		
 		
 		/**
 		 * Set the check all button status to the values passed in

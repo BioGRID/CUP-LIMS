@@ -278,11 +278,14 @@ class ViewController extends lib\Controller {
 			$selectedGroups = json_decode( $view->view_groups );
 			
 			// Get Advanced Search Fields
-			$advancedSearchFields = $matrixHandler->buildAdvancedSearchFields( );
+			$columns = $matrixHandler->fetchColumnDefinitions( );
+			$searchHandler = new models\SearchHandler( );
+			$advancedSearchFields = $searchHandler->buildAdvancedSearchFields( $columns );
 			
 			$params = array(
 				"WEB_URL" => WEB_URL,
 				"IMG_URL" => IMG_URL,
+				"WIKI_URL" => CONFIG['WEB']['WIKI_URL'],
 				"TABLE_TITLE" => "Matrix Dataset",
 				"ROW_COUNT" => $rowCount,
 				"DATATABLE_CLASS" => "matrixTable",

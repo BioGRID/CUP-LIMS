@@ -1,10 +1,11 @@
-<div class='col-lg-12 col-md-12 col-sm-12 col-xs-12 orcaDataTableAdvancedSearch' style='display: none'>
+<div class='col-lg-12 col-md-12 col-sm-12 col-xs-12 orcaDataTableAdvancedSearch marginTopSm marginBotSm' style='display: none'>
 	<div class='pull-right'><a class='orcaDataTableAdvancedToggle'><i class='fa fa-times text-danger fa-lg'></i></a></div>
 	<h3>Advanced Filters</h3>
-	<div class='marginTopSm'>
+	<span class='subheadSmall'>Enter text in the corresponding fields to limit results in the table below to only those that match for the a specific column. For help with correct search syntax, visit the <strong><a href='{{WIKI_URL}}/Advanced-Searching-Filtering' target='_BLANK'>wiki</a></strong>.</span>
+	<div class='marginTopSm greyBG clearfix orcaAdvancedSearchFields'>
 		{{ ADVANCED_FIELDS | raw }}
 	</div>
 	<div class='marginTopSm col-lg-12 col-md-12'>
-		<button class='btn btn-success btn-lg' id='submitAdvancedSearchBtn' type='submit'><strong>Submit Filter</strong> <i class='fa fa-check'></i></button>
+		<button class='btn btn-success btn-lg submitAdvancedSearchBtn' id='submitAdvancedSearchBtn' type='submit'><strong>Submit Filter</strong> <i class='fa fa-check'></i></button>
 	</div>
 </div>
