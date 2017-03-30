@@ -36,7 +36,8 @@
 			advancedSearch: base.$el.find( ".orcaDataTableAdvancedSearch" ),
 			advancedToggle: base.$el.find( ".orcaDataTableAdvancedToggle" ),
 			globalSearchBox: base.$el.find( ".orcaDataTableFilterBox" ),
-			advancedSearchBtn: base.$el.find( ".submitAdvancedSearchBtn" )
+			advancedSearchBtn: base.$el.find( ".submitAdvancedSearchBtn" ),
+			globalAdvancedField: base.$el.find( ".orcaDataTableGlobal" )
 		};
 		
 		base.$el.data( "orcaDataTableBlock", base );
@@ -83,12 +84,14 @@
 			// SETUP Global Filter
 			// By Button Click
 			base.components.filterSubmit.click( function( ) {
+				base.resetAllFilters( );
 				base.filterGlobal( base.components.filterText.val( ), true, false ); 
 			});
 			
 			// By Pressing the Enter Key
 			base.components.filterText.keyup( function( e ) {
 				if( e.keyCode == 13 ) {
+					base.resetAllFilters( );
 					base.filterGlobal( base.components.filterText.val( ), true, false ); 
 				}
 			});
@@ -121,6 +124,13 @@
 				base.components.advancedToggle.click( function( ) {
 					base.components.advancedSearch.toggle( );
 					base.components.globalSearchBox.toggle( );
+					
+					if( base.components.globalSearchBox.is( ":visible" )) {
+						base.components.filterText.val( base.components.globalAdvancedField.val( ) );
+					} else {
+						base.components.globalAdvancedField.val( base.components.filterText.val( ) );
+					}
+					
 				});
 			}
 			
@@ -186,6 +196,14 @@
 		};
 		
 		/**
+		 * Search the table via the global filter, no draw
+		 */
+		
+		base.filterGlobalWithoutDraw = function( filterVal, isRegex, isSmartSearch ) {
+			base.components.table.DataTable( ).search( filterVal, isRegex, isSmartSearch, true );
+		};
+		
+		/**
 		 * Search the table via a column specific filter
 		 */
 		 
@@ -219,6 +237,12 @@
 	
 			// Reset current filters
 			base.resetAllFilters( );
+			
+			// Process Global Field
+			var globalFieldVal = base.components.globalAdvancedField.val( );
+			if( globalFieldVal.length ) {
+				base.filterGlobalWithoutDraw( globalFieldVal, true, false ); 
+			} 
 			
 			// Step through existing fields and process each
 			// correctly by type
