@@ -57,7 +57,7 @@ class MatrixViewHandler {
 		ksort( $conditionCols, SORT_NATURAL );
 		
 		$columns = array( );
-		$columns[0] = array( "title" => "Name", "data" => 0, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'group_name', "searchable" => true, "searchType" => "Text", "searchName" => "Name", "searchCols" => array( "group_name" => "exact", "official_symbol" => "exact", "systematic_name" => "exact", "aliases" => "like" ));
+		$columns[0] = array( "title" => "Name", "data" => 0, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'group_name', "searchable" => true, "searchType" => "Text", "searchName" => "Name", "searchCols" => array( "group_name" => "exact", "official_symbol" => "exact", "systematic_name" => "exact", "aliases" => "exact_quotes" ));
 		
 		$columnCount = 1;
 		$columnNameCount = 0;
@@ -183,38 +183,34 @@ class MatrixViewHandler {
 			$query .= "*";
 		}
 		
-		// $searchDetails = json_decode( $params["columns"]["0"]["search"]["value"], true );
-		//print_r( $params );
-		
 		$query .= " FROM " . DB_VIEWS . ".view_" . $this->view->view_code;
 		
+		// Main storage for Query Components
 		$options = array( );
+		$queryEntries = array( );
+		
+		// Add in global search filter terms
 		$globalQuery = $this->searchHandler->buildGlobalSearch( $params, $columns );
 		if( sizeof( $globalQuery['QUERY'] ) > 0 ) {
-			$query .= " WHERE (" . implode( " OR ", $globalQuery['QUERY'] ) . ")";
+			$queryEntries[] = "(" . implode( " OR ", $globalQuery['QUERY'] ) . ")";
 			$options = array_merge( $options, $globalQuery['OPTIONS'] );
 		}
 		
-		// print $query;
-		// print_r( $options );
+		// Add in advanced search filter terms
+		$advancedQuery = $this->searchHandler->buildAdvancedSearch( $params, $columns );
+		if( sizeof( $advancedQuery['QUERY'] ) > 0 ) {
+			$queryEntries[] = "(" . implode( " AND ", $advancedQuery['QUERY'] ) . ")";
+			$options = array_merge( $options, $advancedQuery['OPTIONS'] );
+		}
 		
-		// Add in Global Search Fields
-		// if( isset( $params['search'] ) && strlen($params['search']['value']) > 0 ) {
-			// $query .= " WHERE (group_name LIKE ? OR systematic_name LIKE ? OR aliases LIKE ?)";
-			// array_push( $options, '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%' );
-		// }
-		
+		// Check for actual entries here
+		// so we only add WHERE component if necessary
+		if( sizeof( $queryEntries ) > 0 ) {
+			$query .= " WHERE " . implode( " AND ", $queryEntries );
+		}
 		
 		return array( "QUERY" => $query, "OPTIONS" => $options );
 			
-	}
-	
-	/**
-	 * Build the global search query component
-	 */
-	 
-	private function buildDataTableQueryGlobalSearch( $params, $columns ) {
-		
 	}
 	
 	/**

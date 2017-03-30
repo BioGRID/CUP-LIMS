@@ -253,9 +253,12 @@
 				column = inputField.data( "column" );
 				
 				// Split phrases broken by vertical pipe
-				query = query.split( "|" );
-				for( var i = 0; i < query.length; i++ ) {
-					searches.push( { "query" : query[i] } );
+				query = $.trim( query );
+				if( query.length > 0 ) {
+					query = query.split( "|" );
+					for( var i = 0; i < query.length; i++ ) {
+						searches.push( { "query" : query[i] } );
+					}
 				}
 				
 			} else if( fieldType == "NUMERICRANGE" ) {

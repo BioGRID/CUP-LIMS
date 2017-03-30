@@ -58,7 +58,6 @@ class SearchHandler {
 	 
 	public function buildGlobalSearch( $params, $columns ) {
 		
-		
 		$options = array( );
 		$queryBits = array( );
 		
@@ -75,42 +74,7 @@ class SearchHandler {
 				$components = array( );
 				if( $columnInfo['searchable'] ) {
 					foreach( $columnInfo['searchCols'] as $colName => $searchType ) {
-						
-						switch( strtoupper( $searchType ) ) {
-							case "EXACT" :
-								foreach( $searchValues as $searchValue ) {
-									$searchInfo = $this->convertWildcardSearchValue( $searchValue );
-									if( $searchInfo['TYPE'] == "wildcard" ) {
-										$components[] = $colName . " LIKE ?";
-										$options[] = $searchInfo['VALUE'] . '%';
-									} else {
-										$components[] = $colName . "=?";
-										$options[] = $searchInfo['VALUE'];
-									}
-									
-								}
-								break;
-								
-							case "RANGE" :
-								foreach( $searchValues as $searchValue ) {
-									$searchInfo = $this->convertWildcardSearchValue( $searchValue );
-									if( is_numeric( $searchInfo['VALUE'] ) ) {
-										$components[] = $colName . " BETWEEN ? AND ?";
-										$options[] = $searchValue - 0.000005;
-										$options[] = $searchValue + 0.000005;
-										
-									}
-								}
-								break;
-								
-							case "LIKE" :
-								foreach( $searchValues as $searchValue ) {
-									$searchInfo = $this->convertWildcardSearchValue( $searchValue );
-									$components[] = $colName . " LIKE ?";
-									$options[] = '%' . $searchInfo['VALUE'] . '%';
-								}
-								break;
-						}
+						$this->buildSearchComponent( $searchType, $searchValues, $colName, false, $components, $options );
 					}
 					
 					if( sizeof( $components ) > 0 ) {
@@ -128,11 +92,174 @@ class SearchHandler {
 	}
 	
 	/**
+	 * Build out the advanced search section of a query
+	 * based on the passed in parameters
+	 */
+	 
+	public function buildAdvancedSearch( $params, $columns ) {
+		
+		$options = array( );
+		$queryBits = array( );
+		
+		foreach( $params['columns'] as $tableColIndex => $tableColInfo ) {
+			
+			// Only add advanced search params if there is a value for this column
+			if( isset( $tableColInfo['search'] ) && strlen($tableColInfo['search']['value']) > 0 ) {
+				
+				// Decode the array of possible values
+				$searchValues = json_decode( $tableColInfo['search']['value'], true );
+				
+				// Fetch the column from the columnDefs
+				$columnInfo = $columns[$tableColIndex];
+				
+				$components = array( );
+				foreach( $columnInfo['searchCols'] as $colName => $searchType ) {
+					$this->buildSearchComponent( $searchType, $searchValues, $colName, true, $components, $options );
+				}
+					
+				if( sizeof( $components ) > 0 ) {
+					$queryBits[] = "(" . implode( " OR ", $components ) . ")";
+				}
+					
+			}
+				
+		}
+		
+		return array( "QUERY" => $queryBits, "OPTIONS" => $options );
+		
+	}
+	
+	/**
+	 * Build individual column query bits based on passed 
+	 * in parameters
+	 */
+	 
+	private function buildSearchComponent( $searchType, $searchValues, $colName, $isAdvanced = false, &$components, &$options ) {
+		
+		// Ranged Searches are Different
+		// When coming from Advanced Search
+		if( strtoupper($searchType) == "RANGE" && $isAdvanced ) {
+			$searchType = "RANGE_ADVANCED";
+		} 
+		
+		switch( strtoupper( $searchType ) ) {
+						
+			case "EXACT" :
+			
+				// Use an exact match, unless we have a wildcard
+				// term, in which casey ou have to use a LIKE with
+				// % only at the end
+				foreach( $searchValues as $searchValue ) {
+					
+					if( $isAdvanced ) {
+						$searchValue = $searchValue['query'];
+					}
+					
+					$searchInfo = $this->convertWildcardSearchValue( $searchValue );
+					if( $searchInfo['TYPE'] == "wildcard" ) {
+						$components[] = $colName . " LIKE ?";
+						$options[] = $searchInfo['VALUE'] . '%';
+					} else {
+						$components[] = $colName . "=?";
+						$options[] = $searchInfo['VALUE'];
+					}
+					
+				}
+				break;
+				
+			case "RANGE" :
+			
+				// Use a range that's very close to where things are likely 
+				// to be rounded off at
+				foreach( $searchValues as $searchValue ) {
+					$searchInfo = $this->convertWildcardSearchValue( $searchValue );
+					if( is_numeric( $searchInfo['VALUE'] ) ) {
+						$components[] = $colName . " BETWEEN ? AND ?";
+						$options[] = $searchValue - 0.000005;
+						$options[] = $searchValue + 0.000005;
+						
+					}
+				}
+				break;
+				
+			case "RANGE_ADVANCED" :
+			
+				// Determine if we have both a Min and Max Value
+				$rangeSet = array( "MAX" => "", "MIN" => "" );
+				foreach( $searchValues as $searchValue ) {
+					$searchTerm = $searchValue['query'];
+					$searchInfo = $this->convertWildcardSearchValue( $searchTerm );
+					if( is_numeric( $searchInfo['VALUE'] )) {
+						if( $searchValue['range'] == "MIN" ) {
+							$rangeSet['MIN'] = $searchInfo['VALUE'];
+						} else if( $searchValue['range'] == "MAX" ) {
+							$rangeSet['MAX'] = $searchInfo['VALUE'];
+						}					
+					}
+				}
+				
+				// Change up the Query based on whether or not we have
+				// a full range or just a MIN or MAX value exclusively
+				if( $rangeSet['MIN'] != "" || $rangeSet['MAX'] != "" ) {
+					if( $rangeSet['MIN'] != "" && $rangeSet['MAX'] != "" ) {
+						$components[] = $colName . " BETWEEN ? AND ?";
+						$options[] = $rangeSet['MIN'];
+						$options[] = $rangeSet['MAX'];
+					} else if( $rangeSet['MIN'] != "" ) {
+						$components[] = $colName . " >= ?";
+						$options[] = $rangeSet['MIN'];
+					} else if( $rangeSet['MAX'] != "" ) {
+						$components[] = $colName . " <= ?";
+						$options[] = $rangeSet['MAX'];
+					}
+				}
+				break;
+				
+			case "LIKE" :
+			
+				// Use a LIKE with % on both Sides
+				foreach( $searchValues as $searchValue ) {
+					
+					if( $isAdvanced ) {
+						$searchValue = $searchValue['query'];
+					}
+					
+					$searchInfo = $this->convertWildcardSearchValue( $searchValue );
+					$components[] = $colName . " LIKE ?";
+					$options[] = '%' . $searchInfo['VALUE'] . '%';
+				}
+				break;
+				
+			case "EXACT_QUOTES" :
+			
+				// Use a LIKE with % on both Sides and quotes as part of the LIKE
+				// this is most useful for searching through a json stores string
+				// like gene aliases when wanting an exact match
+				foreach( $searchValues as $searchValue ) {
+					
+					if( $isAdvanced ) {
+						$searchValue = $searchValue['query'];
+					}
+					
+					$searchInfo = $this->convertWildcardSearchValue( $searchValue );
+					$components[] = $colName . " LIKE ?";
+					if( $searchInfo['TYPE'] == "wildcard" ) {
+						$options[] = '%\"' . $searchInfo['VALUE'] . '%';
+					} else {
+						$options[] = '%\"' . $searchInfo['VALUE'] . '\"%';
+					}
+				}
+				break;
+		}
+		
+	}
+	
+	/**
 	 * Convert a search value into a wildcard if it
 	 * contains a * at the end of it
 	 */
 	 
-	public function convertWildcardSearchValue( $value ) {
+	private function convertWildcardSearchValue( $value ) {
 		
 		$value = trim( $value );
 		$type = "normal";
