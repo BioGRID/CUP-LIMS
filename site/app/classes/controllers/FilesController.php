@@ -85,6 +85,11 @@ class FilesController extends lib\Controller {
 			$incBGString = "true";
 		}
 		
+		// Get Advanced Search Fields
+		$columns = $fileHandler->fetchColumnDefinitions( );
+		$searchHandler = new models\SearchHandler( );
+		$advancedSearchFields = $searchHandler->buildAdvancedSearchFields( $columns );
+		
 		$fileCount = $fileHandler->fetchFileCount( $ids, $includeBG, $isExp );
 				 
 		$params = array(
@@ -97,7 +102,9 @@ class FilesController extends lib\Controller {
 			"IDS" => implode( '|', $ids ),
 			"INCLUDE_BG" => $incBGString,
 			"TYPE" => $type,
-			"BUTTONS" => $buttons
+			"BUTTONS" => $buttons,
+			"SHOW_ADVANCED" => true,
+			"ADVANCED_FIELDS" => implode( "", $advancedSearchFields )
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Files' />" );
@@ -156,11 +163,19 @@ class FilesController extends lib\Controller {
 		$viewHandler->updateLastViewed( $view->view_id );
 		
 		$rawCount = 0;
+		$advancedSearchFields = array( );
+		$showAdvanced = false;
 		if( $view->view_state != 'building' ) {
 			// Fetch Raw Reads Info for Table
 			$rawViewHandler = new models\RawAnnotatedViewHandler( $view->view_id );
 			$rawCount = $rawViewHandler->fetchRowCount( $_GET['id'] );
-		}
+			
+			// Get Advanced Search Fields
+			$columns = $rawViewHandler->fetchColumnDefinitions( );
+			$searchHandler = new models\SearchHandler( );
+			$advancedSearchFields = $searchHandler->buildAdvancedSearchFields( $columns );
+			$showAdvanced = true;
+		} 
 		
 		// File Permissions Handling
 		$canEdit = false;
@@ -198,7 +213,9 @@ class FilesController extends lib\Controller {
 			"CAN_EDIT" => $canEdit,
 			"IS_PRIVATE" => $isPrivate,
 			"GROUPS" => $groups,
-			"SELECTED_GROUPS" => $selectedGroups
+			"SELECTED_GROUPS" => $selectedGroups,
+			"SHOW_ADVANCED" => $showAdvanced,
+			"ADVANCED_FIELDS" => implode( "", $advancedSearchFields )
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/Files' />" );

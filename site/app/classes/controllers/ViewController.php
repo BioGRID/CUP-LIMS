@@ -88,9 +88,14 @@ class ViewController extends lib\Controller {
 		
 		$canCreateView = lib\Session::validateCredentials( lib\Session::getPermission( 'CREATE VIEWS' ));
 		
-		$expHandler = new models\ViewHandler( );
-		$expCount = $expHandler->fetchViewCount( );
-		$buttons = $expHandler->fetchViewToolbar( );
+		$viewHandler = new models\ViewHandler( );
+		$expCount = $viewHandler->fetchViewCount( );
+		$buttons = $viewHandler->fetchViewToolbar( );
+		
+		// Get Advanced Search Fields
+		$columns = $viewHandler->fetchColumnDefinitions( );
+		$searchHandler = new models\SearchHandler( );
+		$advancedSearchFields = $searchHandler->buildAdvancedSearchFields( $columns );
 				
 		$params = array(
 			"WEB_URL" => WEB_URL,
@@ -100,7 +105,9 @@ class ViewController extends lib\Controller {
 			"WEB_NAME_ABBR" => CONFIG['WEB']['WEB_NAME_ABBR'],
 			"VIEW_CREATE_VALID" => $canCreateView,
 			"SHOW_TOOLBAR" => true,
-			"BUTTONS" => $buttons
+			"BUTTONS" => $buttons,
+			"ADVANCED_FIELDS" => implode( "", $advancedSearchFields ),
+			"SHOW_ADVANCED" => true
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/View' />" );

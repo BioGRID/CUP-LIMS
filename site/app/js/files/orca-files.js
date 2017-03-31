@@ -30,6 +30,7 @@
 			colTool: "filesHeader", 
 			rowTool: "filesRows", 
 			hasToolbar: true,
+			hasAdvanced: true,
 			addonParams: { "ids" : IDs, "includeBG" : includeBG, "type" : type },
 			optionsCallback: function( datatable ) {
 				initializeFilesButtons( );

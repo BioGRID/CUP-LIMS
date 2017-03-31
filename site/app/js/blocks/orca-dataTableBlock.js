@@ -299,6 +299,17 @@
 					
 				});
 		
+			} else if( fieldType == "DATE" ) {
+				
+				// Contains 2 fields, one dropdown and one value field
+				var dateEval = field.find( ".dateEval" ).val( );
+				var dateVal = field.find( ".dateVal" ).val( );
+				column = field.find( ".dateVal" ).data( "column" );
+				
+				if( dateVal.length > 0 ) {
+					searches.push( { "query" : dateVal, "eval" : dateEval } );
+				}
+				
 			}
 			
 			if( searches.length > 0 ) {

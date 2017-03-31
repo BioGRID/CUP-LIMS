@@ -14,7 +14,9 @@ use ORCA\app\classes\models;
 class RawAnnotatedViewHandler {
 
 	private $db;
-	private $sgHASH;
+	private $viewHandler;
+	private $view;
+	private $searchHandler;
 
 	public function __construct( $viewID ) {
 		$this->db = new PDO( DB_CONNECT, DB_USER, DB_PASS );
@@ -22,6 +24,7 @@ class RawAnnotatedViewHandler {
 		
 		$this->viewHandler = new models\ViewHandler( );
 		$this->view = $this->viewHandler->fetchView( $viewID );
+		$this->searchHandler = new models\SearchHandler( );
 	}
 	
 	/**
@@ -31,9 +34,9 @@ class RawAnnotatedViewHandler {
 	 public function fetchColumnDefinitions( ) {
 	 
 		$columns = array( );
-		$columns[0] = array( "title" => "sgRNA", "data" => 0, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'sgrna_sequence' );
-		$columns[1] = array( "title" => "Names", "data" => 1, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => "group_names" );
-		$columns[2] = array( "title" => "Raw Reads", "data" => 2, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'raw_read_count' );
+		$columns[0] = array( "title" => "sgRNA", "data" => 0, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'sgrna_sequence', "searchable" => true, "searchType" => "Text", "searchName" => "sgRNA", "searchCols" => array( "sgrna_sequence" => "exact" ));
+		$columns[1] = array( "title" => "Names", "data" => 1, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => "group_names", "searchable" => true, "searchType" => "Text", "searchName" => "Names", "searchCols" => array( "group_names" => "exact" ));
+		$columns[2] = array( "title" => "Raw Reads", "data" => 2, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'raw_read_count', "searchable" => true, "searchType" => "NumericRange", "searchName" => "Name", "searchCols" => array( "raw_read_count" => "range" ));
 		
 		return $columns;
 		
@@ -52,14 +55,6 @@ class RawAnnotatedViewHandler {
 			
 			$column[] = $rawInfo->sgrna_sequence;
 			
-			// $groupIDs = explode( "|", $rawInfo->sgrna_group_ids );
-			// $groupNames = explode( "|", $rawInfo->group_names );
-			
-			// $groupLinks = array( );
-			// for( $i = 0; $i < sizeof( $groupIDs ); $i++ ) {
-				// $groupLinks[] = "<a class='annotationPopup' data-id='" . $groupIDs[$i] . "' data-type='BIOGRID'>" . $groupNames[$i] . "</a>";
-			// }
-			
 			$column[] = implode( ", ", explode( "|", $rawInfo->group_names ));
 			$column[] = $rawInfo->raw_read_count;
 		
@@ -75,7 +70,7 @@ class RawAnnotatedViewHandler {
 	 * for DataTable construction
 	 */
 	 
-	private function buildDataTableQuery( $params, $countOnly = false ) {
+	private function buildDataTableQuery( $params, $columns, $countOnly = false ) {
 		
 		$query = "SELECT ";
 		if( $countOnly ) {
@@ -85,10 +80,29 @@ class RawAnnotatedViewHandler {
 		}
 		
 		$query .= " FROM " . DB_VIEWS . ".view_" . $this->view->view_code;
+		
+		// Main storage for Query Components
+		$queryEntries = array( );
 		$options = array( );
-		if( isset( $params['search'] ) && strlen($params['search']['value']) > 0 ) {
-			$query .= " WHERE (sgrna_sequence LIKE ? OR raw_read_count=? OR group_names LIKE ?)";
-			array_push( $options, $params['search']['value'] . '%', $params['search']['value'], '%' . $params['search']['value'] . '%' );
+		
+		// Add in global search filter terms
+		$globalQuery = $this->searchHandler->buildGlobalSearch( $params, $columns );
+		if( sizeof( $globalQuery['QUERY'] ) > 0 ) {
+			$queryEntries[] = "(" . implode( " OR ", $globalQuery['QUERY'] ) . ")";
+			$options = array_merge( $options, $globalQuery['OPTIONS'] );
+		}
+		
+		// Add in advanced search filter terms
+		$advancedQuery = $this->searchHandler->buildAdvancedSearch( $params, $columns );
+		if( sizeof( $advancedQuery['QUERY'] ) > 0 ) {
+			$queryEntries[] = "(" . implode( " AND ", $advancedQuery['QUERY'] ) . ")";
+			$options = array_merge( $options, $advancedQuery['OPTIONS'] );
+		}
+		
+		// Check for actual entries here
+		// so we only add WHERE component if necessary
+		if( sizeof( $queryEntries ) > 0 ) {
+			$query .= " WHERE " . implode( " AND ", $queryEntries );
 		}
 		
 		return array( "QUERY" => $query, "OPTIONS" => $options );
@@ -102,25 +116,20 @@ class RawAnnotatedViewHandler {
 	 
 	public function buildCustomizedRowList( $params ) {
 		
-		$columnSet = $this->fetchColumnDefinitions( );
+		$columns = $this->fetchColumnDefinitions( );
 		
 		$rows = array( );
 		
-		$queryInfo = $this->buildDataTableQuery( $params, false );
+		$queryInfo = $this->buildDataTableQuery( $params, $columns, false );
 		$query = $queryInfo['QUERY'];
 		$options = $queryInfo['OPTIONS'];
 		
-		if( isset( $params['order'] ) && sizeof( $params['order'] ) > 0 ) {
-			$query .= " ORDER BY ";
-			$orderByEntries = array( );
-			foreach( $params['order'] as $orderIndex => $orderInfo ) {
-				$orderByEntries[] = $columnSet[$orderInfo['column']]['dbCol'] . " " . $orderInfo['dir'];
-			}
-			
-			$query .= implode( ",", $orderByEntries );
+		$orderBy = $this->searchHandler->buildOrderBy( $params, $columns );
+		if( $orderBy ) {
+			$query .= $orderBy;
 		}
 		
-		$query .= " LIMIT " . $params['start'] . "," . $params['length'];
+		$query .= $this->searchHandler->buildLimit( $params );
 		
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( $options );
@@ -140,7 +149,9 @@ class RawAnnotatedViewHandler {
 	 
 	public function getUnfilteredRowCount( $params ) {
 		
-		$queryInfo = $this->buildDataTableQuery( $params, true );
+		$columns = $this->fetchColumnDefinitions( );
+		
+		$queryInfo = $this->buildDataTableQuery( $params, $columns, true );
 		$query = $queryInfo['QUERY'];
 		$options = $queryInfo['OPTIONS'];
 		
@@ -175,40 +186,6 @@ class RawAnnotatedViewHandler {
 	public function fetchToolbar( ) {
 		
 		$buttons = array( );
-		
-		// if( lib\Session::validateCredentials( lib\Session::getPermission( 'VIEW FILES' )) ) {
-			// $view = "blocks" . DS . "ORCADataTableToolbarButton.tpl";
-			// $buttons[] = $this->twig->render( $view, array( 
-				// "BTN_CLASS" => "btn-info experimentViewFilesBtn",
-				// "BTN_LINK" => "",
-				// "BTN_ID" => "experimentViewFilesBtn",
-				// "BTN_ICON" => "fa-file-text",
-				// "BTN_TEXT" => "View Files"
-			// ));
-		// }
-		
-		// if( lib\Session::validateCredentials( lib\Session::getPermission( 'CREATE VIEW' )) ) {
-			// $view = "blocks" . DS . "ORCADataTableToolbarButton.tpl";
-			// $buttons[] = $this->twig->render( $view, array( 
-				// "BTN_CLASS" => "btn-orca2 experimentCreateViewBtn",
-				// "BTN_LINK" => "",
-				// "BTN_ID" => "experimentCreateViewBtn",
-				// "BTN_ICON" => "fa-bar-chart",
-				// "BTN_TEXT" => "Create View"
-			// ));
-		// }
-		
-		// if( lib\Session::validateCredentials( lib\Session::getPermission( 'MANAGE EXPERIMENTS' )) ) {
-			// $view = "blocks" . DS . "ORCADataTableToolbarDropdown.tpl";
-			// $buttons[] = $this->twig->render( $view, array(
-				// "BTN_CLASS" => "btn-danger",
-				// "BTN_ICON" => "fa-cog",
-				// "BTN_TEXT" => "Tools",
-				// "LINKS" => array(
-					// "experimentDisableChecked" => array( "linkHREF" => "", "linkText" => "Disable Checked Experiments", "linkClass" => "experimentDisableChecked" )
-				// )
-			// ));
-		// }
 		
 		return implode( "", $buttons );
 		

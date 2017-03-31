@@ -34,6 +34,7 @@
 				colTool: "rawReadsHeader", 
 				rowTool: "rawReadsRows", 
 				hasToolbar: false,
+				hasAdvanced: true,
 				addonParams: { "viewID" : viewID },
 				optionsCallback: function( datatable ) {
 					initializeGroupClickPopups( );

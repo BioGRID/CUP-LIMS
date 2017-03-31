@@ -16,6 +16,7 @@ class ViewHandler {
 
 	private $db;
 	private $twig;
+	private $searchHandler;
 
 	public function __construct( ) {
 		$this->db = new PDO( DB_CONNECT, DB_USER, DB_PASS );
@@ -23,6 +24,7 @@ class ViewHandler {
 		
 		$loader = new \Twig_Loader_Filesystem( TEMPLATE_PATH );
 		$this->twig = new \Twig_Environment( $loader );
+		$this->searchHandler = new models\SearchHandler( );
 	}
 	
 	/** 
@@ -251,19 +253,19 @@ class ViewHandler {
 	 * Fetch column headers for an View listing DataTable
 	 */
 	 
-	 public function fetchViewColumnDefinitions( ) {
+	 public function fetchColumnDefinitions( ) {
 	 
 		$columns = array( );
-		$columns[0] = array( "title" => "", "data" => 0, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
-		$columns[1] = array( "title" => "Name", "data" => 1, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'view_title' );
-		$columns[2] = array( "title" => "Desc", "data" => 2, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'view_desc' );
-		$columns[3] = array( "title" => "Type", "data" => 3, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'view_type_name' );
-		$columns[4] = array( "title" => "Values", "data" => 4, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'view_value_name' );
-		$columns[5] = array( "title" => "Run Date", "data" => 5, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'view_addeddate' );
-		$columns[6] = array( "title" => "Files", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'view_files' );
-		$columns[7] = array( "title" => "State", "data" => 7, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'view_state' );
-		$columns[8] = array( "title" => "Privacy", "data" => 8, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'view_permission' );
-		$columns[9] = array( "title" => "User", "data" => 9, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'user_name' );
+		$columns[0] = array( "title" => "", "data" => 0, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '', "searchable" => false );
+		$columns[1] = array( "title" => "Name", "data" => 1, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'view_title', "searchable" => true, "searchType" => "Text", "searchName" => "Name", "searchCols" => array( "view_title" => "exact" ));
+		$columns[2] = array( "title" => "Desc", "data" => 2, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'view_desc', "searchable" => true, "searchType" => "Text", "searchName" => "Desc", "searchCols" => array( "view_desc" => "exact" ));
+		$columns[3] = array( "title" => "Type", "data" => 3, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'view_type_name', "searchable" => true, "searchType" => "Text", "searchName" => "Type", "searchCols" => array( "view_type_name" => "exact" ));
+		$columns[4] = array( "title" => "Values", "data" => 4, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'view_value_name', "searchable" => true, "searchType" => "Text", "searchName" => "Values", "searchCols" => array( "view_value_name" => "exact" ));
+		$columns[5] = array( "title" => "Run Date", "data" => 5, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'view_addeddate', "searchable" => true, "searchType" => "Date", "searchName" => "Run Date", "searchCols" => array( "view_addeddate" => "date" ));
+		$columns[6] = array( "title" => "Files", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'view_files', "searchable" => false );
+		$columns[7] = array( "title" => "State", "data" => 7, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'view_state', "searchable" => true, "searchType" => "Text", "searchName" => "State", "searchCols" => array( "view_state" => "exact" ));
+		$columns[8] = array( "title" => "Privacy", "data" => 8, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'view_permission', "searchable" => true, "searchType" => "Text", "searchName" => "Privacy", "searchCols" => array( "view_permission" => "exact" ));
+		$columns[9] = array( "title" => "User", "data" => 9, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'user_name', "searchable" => true, "searchType" => "Text", "searchName" => "User", "searchCols" => array( "user_name" => "exact" ));
 		
 		return $columns;
 		
@@ -328,7 +330,7 @@ class ViewHandler {
 	 * data
 	 */
 	 
-	private function buildViewPermissionQuery( $query, $prepend = "" ) {
+	private function buildPermissionQuery( $query, $prepend = "" ) {
 		
 		// Check for valid permissions to access
 		if( $prepend != "" ) {
@@ -371,7 +373,7 @@ class ViewHandler {
 	 * for DataTable construction
 	 */
 	 
-	private function buildViewDataTableQuery( $params, $countOnly = false ) {
+	private function buildDataTableQuery( $params, $columns, $countOnly = false ) {
 		
 		$query = "SELECT ";
 		if( $countOnly ) {
@@ -384,13 +386,32 @@ class ViewHandler {
 		
 		$options = array( );
 		$query .= " WHERE view_status='active' AND view.view_type_id != '2'";
-		if( isset( $params['search'] ) && strlen($params['search']['value']) > 0 ) {
-			$query .= " AND (view_title LIKE ? OR view_desc LIKE ? OR view_type_name LIKE ? OR view_value_name LIKE ? OR view_state=? OR view_addeddate=? OR user_name LIKE ?)";
-			array_push( $options, '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', $params['search']['value'], $params['search']['value'], '%' . $params['search']['value'] . '%' );
+		
+		// Main storage for Query Components
+		$queryEntries = array( );
+		
+		// Add in global search filter terms
+		$globalQuery = $this->searchHandler->buildGlobalSearch( $params, $columns );
+		if( sizeof( $globalQuery['QUERY'] ) > 0 ) {
+			$queryEntries[] = "(" . implode( " OR ", $globalQuery['QUERY'] ) . ")";
+			$options = array_merge( $options, $globalQuery['OPTIONS'] );
+		}
+		
+		// Add in advanced search filter terms
+		$advancedQuery = $this->searchHandler->buildAdvancedSearch( $params, $columns );
+		if( sizeof( $advancedQuery['QUERY'] ) > 0 ) {
+			$queryEntries[] = "(" . implode( " AND ", $advancedQuery['QUERY'] ) . ")";
+			$options = array_merge( $options, $advancedQuery['OPTIONS'] );
+		}
+		
+		// Check for actual entries here
+		// so we only add WHERE component if necessary
+		if( sizeof( $queryEntries ) > 0 ) {
+			$query .= " AND " . implode( " AND ", $queryEntries );
 		}
 		
 		// Addon Permission Check Query Params
-		$query = $this->buildViewPermissionQuery( $query, "view." );
+		$query = $this->buildPermissionQuery( $query, "view." );
 		
 		return array( "QUERY" => $query, "OPTIONS" => $options );
 			
@@ -403,25 +424,20 @@ class ViewHandler {
 	 
 	public function buildCustomizedViewList( $params ) {
 		
-		$columnSet = $this->fetchViewColumnDefinitions( );
+		$columns = $this->fetchColumnDefinitions( );
 		
 		$views = array( );
 		
-		$queryInfo = $this->buildViewDataTableQuery( $params, false );
+		$queryInfo = $this->buildDataTableQuery( $params, $columns, false );
 		$query = $queryInfo['QUERY'];
 		$options = $queryInfo['OPTIONS'];
 		
-		if( isset( $params['order'] ) && sizeof( $params['order'] ) > 0 ) {
-			$query .= " ORDER BY ";
-			$orderByEntries = array( );
-			foreach( $params['order'] as $orderIndex => $orderInfo ) {
-				$orderByEntries[] = $columnSet[$orderInfo['column']]['dbCol'] . " " . $orderInfo['dir'];
-			}
-			
-			$query .= implode( ",", $orderByEntries );
+		$orderBy = $this->searchHandler->buildOrderBy( $params, $columns );
+		if( $orderBy ) {
+			$query .= $orderBy;
 		}
 		
-		$query .= " LIMIT " . $params['start'] . "," . $params['length'];
+		$query .= $this->searchHandler->buildLimit( $params );
 		
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( $options );
@@ -441,7 +457,8 @@ class ViewHandler {
 	 
 	public function getUnfilteredViewCount( $params ) {
 		
-		$queryInfo = $this->buildViewDataTableQuery( $params, true );
+		$columns = $this->fetchColumnDefinitions( );
+		$queryInfo = $this->buildDataTableQuery( $params, $columns, true );
 		$query = $queryInfo['QUERY'];
 		$options = $queryInfo['OPTIONS'];
 		
@@ -463,7 +480,7 @@ class ViewHandler {
 		$query = "SELECT COUNT(*) as viewCount FROM " . DB_MAIN . ".views WHERE view_id > 1";
 		
 		// Addon Permission Check Query Params
-		$query = $this->buildViewPermissionQuery( $query );
+		$query = $this->buildPermissionQuery( $query );
 		
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( );
@@ -563,7 +580,7 @@ class ViewHandler {
 			$query .= " AND v.user_id=?";
 		}
 		
-		$query = $this->buildViewPermissionQuery( $query, "v." );
+		$query = $this->buildPermissionQuery( $query, "v." );
 		
 		$query .= " ORDER BY v.view_addeddate DESC LIMIT " . $limit;
 		

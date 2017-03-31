@@ -104,7 +104,7 @@ class SearchHandler {
 		foreach( $params['columns'] as $tableColIndex => $tableColInfo ) {
 			
 			// Only add advanced search params if there is a value for this column
-			if( isset( $tableColInfo['search'] ) && strlen($tableColInfo['search']['value']) > 0 ) {
+			if( isset( $tableColInfo['search'] ) && strlen($tableColInfo['search']['value']) > 0  ) {
 				
 				// Decode the array of possible values
 				$searchValues = json_decode( $tableColInfo['search']['value'], true );
@@ -173,10 +173,11 @@ class SearchHandler {
 				// to be rounded off at
 				foreach( $searchValues as $searchValue ) {
 					$searchInfo = $this->convertWildcardSearchValue( $searchValue );
+					$searchInfo['VALUE'] = $this->removeCommasAndSpaces( $searchInfo['VALUE'] );
 					if( is_numeric( $searchInfo['VALUE'] ) ) {
 						$components[] = $colName . " BETWEEN ? AND ?";
-						$options[] = $searchValue - 0.000005;
-						$options[] = $searchValue + 0.000005;
+						$options[] = $searchInfo['VALUE'] - 0.000005;
+						$options[] = $searchInfo['VALUE'] + 0.000005;
 						
 					}
 				}
@@ -189,7 +190,9 @@ class SearchHandler {
 				foreach( $searchValues as $searchValue ) {
 					$searchTerm = $searchValue['query'];
 					$searchInfo = $this->convertWildcardSearchValue( $searchTerm );
+					$searchInfo['VALUE'] = $this->removeCommasAndSpaces( $searchInfo['VALUE'] );
 					if( is_numeric( $searchInfo['VALUE'] )) {
+						
 						if( $searchValue['range'] == "MIN" ) {
 							$rangeSet['MIN'] = $searchInfo['VALUE'];
 						} else if( $searchValue['range'] == "MAX" ) {
@@ -212,6 +215,23 @@ class SearchHandler {
 						$components[] = $colName . " <= ?";
 						$options[] = $rangeSet['MAX'];
 					}
+				}
+				break;
+				
+			case "DATE" :
+			
+				// Dates have two components and evaluation
+				// and a date value
+				foreach( $searchValues as $searchValue ) {
+					
+					if( $isAdvanced ) {
+						$components[] = $colName . " " . $searchValue['eval'] . "?";
+						$options[] = $searchValue['query'];
+					} else {
+						$components[] = $colName . "=?";
+						$options[] = $searchValue;
+					}
+					
 				}
 				break;
 				
@@ -252,6 +272,17 @@ class SearchHandler {
 				break;
 		}
 		
+	}
+	
+	/**
+	 * Convert a search value that is numeric by removing commas
+	 * and spaces
+	 */
+	 
+	private function removeCommasAndSpaces( $value ) {
+		$value = trim( $value );
+		$value = str_replace( array( ",", " " ), "", $value );
+		return $value;
 	}
 	
 	/**

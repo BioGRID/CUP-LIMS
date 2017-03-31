@@ -9,14 +9,17 @@ namespace ORCA\app\classes\models;
 
 use \PDO;
 use ORCA\app\lib;
+use ORCA\app\classes\models;
  
 class UserHandler {
 
 	private $db;
+	private $searchHandler;
 
 	public function __construct( ) {
 		$this->db = new PDO( DB_CONNECT, DB_USER, DB_PASS );
 		$this->db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+		$this->searchHandler = new models\SearchHandler( );
 	}
 	
 	/**
@@ -64,20 +67,62 @@ class UserHandler {
 	 * Build a set of column header definitions for the manage users table
 	 */
 	 
-	public function fetchManageUsersColumnDefinitions( ) {
+	public function fetchColumnDefinitions( ) {
 		
 		$columns = array( );
-		$columns[0] = array( "title" => "ID", "data" => 0, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'user_id' );
-		$columns[1] = array( "title" => "Name", "data" => 1, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'user_name' );
-		$columns[2] = array( "title" => "First Name", "data" => 2, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'user_firstname' );
-		$columns[3] = array( "title" => "Last Name", "data" => 3, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'user_lastname' );
-		$columns[4] = array( "title" => "Email", "data" => 4, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'user_email' );
-		$columns[5] = array( "title" => "Last Login", "data" => 5, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'user_lastlogin' );
-		$columns[6] = array( "title" => "Class", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center userClass", "dbCol" => 'user_class' );
-		$columns[7] = array( "title" => "Status", "data" => 7, "orderable" => true, "sortable" => true, "className" => "text-center userStatus", "dbCol" => 'user_status' );
-		$columns[8] = array( "title" => "Options", "data" => 8, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
+		$columns[0] = array( "title" => "ID", "data" => 0, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'user_id', "searchable" => false );
+		$columns[1] = array( "title" => "Name", "data" => 1, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'user_name', "searchable" => true, "searchType" => "Text", "searchName" => "Name", "searchCols" => array( "user_name" => "exact" ));
+		$columns[2] = array( "title" => "First Name", "data" => 2, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'user_firstname', "searchable" => true, "searchType" => "Text", "searchName" => "First Name", "searchCols" => array( "user_firstname" => "exact" ));
+		$columns[3] = array( "title" => "Last Name", "data" => 3, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'user_lastname', "searchable" => true, "searchType" => "Text", "searchName" => "Last Name", "searchCols" => array( "user_lastname" => "exact" ));
+		$columns[4] = array( "title" => "Email", "data" => 4, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'user_email', "searchable" => true, "searchType" => "Text", "searchName" => "Email", "searchCols" => array( "user_email" => "exact" ));
+		$columns[5] = array( "title" => "Last Login", "data" => 5, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'user_lastlogin', "searchable" => true, "searchType" => "Text", "searchName" => "Last Login", "searchCols" => array( "user_lastlogin" => "date" ));
+		$columns[6] = array( "title" => "Class", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center userClass", "dbCol" => 'user_class', "searchable" => true, "searchType" => "Text", "searchName" => "Class", "searchCols" => array( "user_class" => "exact" ));
+		$columns[7] = array( "title" => "Status", "data" => 7, "orderable" => true, "sortable" => true, "className" => "text-center userStatus", "dbCol" => 'user_status', "searchable" => true, "searchType" => "Text", "searchName" => "Status", "searchCols" => array( "user_status" => "exact" ));
+		$columns[8] = array( "title" => "Options", "data" => 8, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '', "searchable" => false );
 		
 		return $columns;
+		
+	}
+	
+	/**
+	 * Build a base query with search params
+	 * for DataTable construction
+	 */
+	 
+	private function buildDataTableQuery( $params, $columns, $countOnly = false ) {
+		
+		if( $countOnly ) {
+			$query = "SELECT count(*) as rowCount FROM " . DB_MAIN . ".users";
+		} else {
+			$query = "SELECT user_id, user_name, user_firstname, user_lastname, user_email, user_lastlogin, user_class, user_status FROM " . DB_MAIN . ".users";
+		}
+		
+		$options = array( );
+		
+		// Main storage for Query Components
+		$queryEntries = array( );
+		
+		// Add in global search filter terms
+		$globalQuery = $this->searchHandler->buildGlobalSearch( $params, $columns );
+		if( sizeof( $globalQuery['QUERY'] ) > 0 ) {
+			$queryEntries[] = "(" . implode( " OR ", $globalQuery['QUERY'] ) . ")";
+			$options = array_merge( $options, $globalQuery['OPTIONS'] );
+		}
+		
+		// Add in advanced search filter terms
+		$advancedQuery = $this->searchHandler->buildAdvancedSearch( $params, $columns );
+		if( sizeof( $advancedQuery['QUERY'] ) > 0 ) {
+			$queryEntries[] = "(" . implode( " AND ", $advancedQuery['QUERY'] ) . ")";
+			$options = array_merge( $options, $advancedQuery['OPTIONS'] );
+		}
+		
+		// Check for actual entries here
+		// so we only add WHERE component if necessary
+		if( sizeof( $queryEntries ) > 0 ) {
+			$query .= " WHERE " . implode( " AND ", $queryEntries );
+		}
+		
+		return array( "QUERY" => $query, "OPTIONS" => $options );
 		
 	}
 	
@@ -88,29 +133,20 @@ class UserHandler {
 	 
 	public function buildCustomizedUserList( $params ) {
 		
-		$columnSet = $this->fetchManageUsersColumnDefinitions( );
+		$columns = $this->fetchColumnDefinitions( );
 		
 		$users = array( );
 		
-		$query = "SELECT user_id, user_name, user_firstname, user_lastname, user_email, user_lastlogin, user_class, user_status FROM " . DB_MAIN . ".users";
-		$options = array( );
+		$queryInfo = $this->buildDataTableQuery( $params, $columns, false );
+		$query = $queryInfo['QUERY'];
+		$options = $queryInfo['OPTIONS'];
 		
-		if( isset( $params['search'] ) && strlen($params['search']['value']) > 0 ) {
-			$query .= " WHERE user_id=? OR user_name LIKE ? OR user_firstname LIKE ? OR user_lastname LIKE ? OR user_email LIKE ? OR user_lastlogin=? OR user_class=? OR user_status=?";
-			array_push( $options, $params['search']['value'], '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', $params['search']['value'], $params['search']['value'], $params['search']['value'] );
+		$orderBy = $this->searchHandler->buildOrderBy( $params, $columns );
+		if( $orderBy ) {
+			$query .= $orderBy;
 		}
 		
-		if( isset( $params['order'] ) && sizeof( $params['order'] ) > 0 ) {
-			$query .= " ORDER BY ";
-			$orderByEntries = array( );
-			foreach( $params['order'] as $orderIndex => $orderInfo ) {
-				$orderByEntries[] = $columnSet[$orderInfo['column']]['dbCol'] . " " . $orderInfo['dir'];
-			}
-			
-			$query .= implode( ",", $orderByEntries );
-		}
-		
-		$query .= " LIMIT " . $params['start'] . "," . $params['length'];
+		$query .= $this->searchHandler->buildLimit( $params );
 		
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( $options );
@@ -131,14 +167,11 @@ class UserHandler {
 	public function getUnfilteredUsersCount( $params ) {
 		
 		$users = array( );
+		$columns = $this->fetchColumnDefinitions( );
 		
-		$query = "SELECT count(*) as rowCount FROM " . DB_MAIN . ".users";
-		$options = array( );
-		
-		if( isset( $params['search'] ) && strlen($params['search']['value']) > 0 ) {
-			$query .= " WHERE user_id=? OR user_name LIKE ? OR user_firstname LIKE ? OR user_lastname LIKE ? OR user_email LIKE ? OR user_lastlogin=? OR user_class=? OR user_status=?";
-			array_push( $options, $params['search']['value'], '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', $params['search']['value'], $params['search']['value'], $params['search']['value'] );
-		}
+		$queryInfo = $this->buildDataTableQuery( $params, $columns, true );
+		$query = $queryInfo['QUERY'];
+		$options = $queryInfo['OPTIONS'];
 		
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( $options );
