@@ -9,15 +9,19 @@ namespace ORCA\app\classes\models;
 
 use \PDO;
 use ORCA\app\lib;
+use ORCA\app\classes\models;
  
 class PermissionsHandler {
 
 	private $db;
+	private $permissions;
+	private $searchHandler;
 
 	public function __construct( ) {
 		$this->db = new PDO( DB_CONNECT, DB_USER, DB_PASS );
 		$this->db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 		$this->permissions = array( "public", "observer", "curator", "poweruser", "admin" );
+		$this->searchHandler = new models\SearchHandler( );
 	}
 	
 	
@@ -25,16 +29,58 @@ class PermissionsHandler {
 	 * Build a set of column header definitions for the manage permissions table
 	 */
 	 
-	public function fetchManagePermissionsColumnDefinitions( ) {
+	public function fetchColumnDefinitions( ) {
 		
 		$columns = array( );
-		$columns[0] = array( "title" => "ID", "data" => 0, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'permission_id' );
-		$columns[1] = array( "title" => "Name", "data" => 1, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'permission_name' );
-		$columns[2] = array( "title" => "Description", "data" => 2, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'permission_desc' );
-		$columns[3] = array( "title" => "Category", "data" => 3, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'permission_category' );
-		$columns[4] = array( "title" => "Permission Setting", "data" => 4, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
+		$columns[0] = array( "title" => "ID", "data" => 0, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'permission_id', "searchable" => false );
+		$columns[1] = array( "title" => "Name", "data" => 1, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'permission_name', "searchable" => true, "searchType" => "Text", "searchName" => "Name", "searchCols" => array( "permission_name" => "exact" ));
+		$columns[2] = array( "title" => "Description", "data" => 2, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'permission_desc', "searchable" => true, "searchType" => "Text", "searchName" => "Description", "searchCols" => array( "permission_desc" => "exact" ));
+		$columns[3] = array( "title" => "Category", "data" => 3, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'permission_category', "searchable" => true, "searchType" => "Text", "searchName" => "Category", "searchCols" => array( "permission_category" => "exact" ));
+		$columns[4] = array( "title" => "Permission Setting", "data" => 4, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '', "searchable" => false );
 		
 		return $columns;
+		
+	}
+	
+	/**
+	 * Build a base query with search params
+	 * for DataTable construction
+	 */
+	 
+	private function buildDataTableQuery( $params, $columns, $countOnly = false ) {
+		
+		if( $countOnly ) {
+			$query = "SELECT count(*) as rowCount FROM " . DB_MAIN . ".permissions";
+		} else {
+			$query = "SELECT permission_id, permission_name, permission_desc, permission_level, permission_category FROM " . DB_MAIN . ".permissions";
+		}
+		
+		$options = array( );
+		
+		// Main storage for Query Components
+		$queryEntries = array( );
+		
+		// Add in global search filter terms
+		$globalQuery = $this->searchHandler->buildGlobalSearch( $params, $columns );
+		if( sizeof( $globalQuery['QUERY'] ) > 0 ) {
+			$queryEntries[] = "(" . implode( " OR ", $globalQuery['QUERY'] ) . ")";
+			$options = array_merge( $options, $globalQuery['OPTIONS'] );
+		}
+		
+		// Add in advanced search filter terms
+		$advancedQuery = $this->searchHandler->buildAdvancedSearch( $params, $columns );
+		if( sizeof( $advancedQuery['QUERY'] ) > 0 ) {
+			$queryEntries[] = "(" . implode( " AND ", $advancedQuery['QUERY'] ) . ")";
+			$options = array_merge( $options, $advancedQuery['OPTIONS'] );
+		}
+		
+		// Check for actual entries here
+		// so we only add WHERE component if necessary
+		if( sizeof( $queryEntries ) > 0 ) {
+			$query .= " WHERE " . implode( " AND ", $queryEntries );
+		}
+		
+		return array( "QUERY" => $query, "OPTIONS" => $options );
 		
 	}
 	
@@ -45,29 +91,19 @@ class PermissionsHandler {
 	 
 	public function buildCustomizedPermissionsList( $params ) {
 		
-		$columnSet = $this->fetchManagePermissionsColumnDefinitions( );
+		$columns = $this->fetchColumnDefinitions( );
 		
 		$users = array( );
+		$queryInfo = $this->buildDataTableQuery( $params, $columns, false );
+		$query = $queryInfo['QUERY'];
+		$options = $queryInfo['OPTIONS'];
 		
-		$query = "SELECT permission_id, permission_name, permission_desc, permission_level, permission_category FROM " . DB_MAIN . ".permissions";
-		$options = array( );
-		
-		if( isset( $params['search'] ) && strlen($params['search']['value']) > 0 ) {
-			$query .= " WHERE permission_id=? OR permission_name LIKE ? OR permission_desc LIKE ? OR permission_category LIKE ?";
-			array_push( $options, $params['search']['value'], '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%' );
+		$orderBy = $this->searchHandler->buildOrderBy( $params, $columns );
+		if( $orderBy ) {
+			$query .= $orderBy;
 		}
 		
-		if( isset( $params['order'] ) && sizeof( $params['order'] ) > 0 ) {
-			$query .= " ORDER BY ";
-			$orderByEntries = array( );
-			foreach( $params['order'] as $orderIndex => $orderInfo ) {
-				$orderByEntries[] = $columnSet[$orderInfo['column']]['dbCol'] . " " . $orderInfo['dir'];
-			}
-			
-			$query .= implode( ",", $orderByEntries );
-		}
-		
-		$query .= " LIMIT " . $params['start'] . "," . $params['length'];
+		$query .= $this->searchHandler->buildLimit( $params );
 		
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( $options );
@@ -88,14 +124,11 @@ class PermissionsHandler {
 	public function getUnfilteredPermissionsCount( $params ) {
 		
 		$users = array( );
+		$columns = $this->fetchColumnDefinitions( );
 		
-		$query = "SELECT count(*) as rowCount FROM " . DB_MAIN . ".permissions";
-		$options = array( );
-		
-		if( isset( $params['search'] ) && strlen($params['search']['value']) > 0 ) {
-			$query .= " WHERE permission_id=? OR permission_name LIKE ? OR permission_desc LIKE ? OR permission_category LIKE ?";
-			array_push( $options, $params['search']['value'], '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%' );
-		}
+		$queryInfo = $this->buildDataTableQuery( $params, $columns, true );
+		$query = $queryInfo['QUERY'];
+		$options = $queryInfo['OPTIONS'];
 		
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( $options );

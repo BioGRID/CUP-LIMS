@@ -88,9 +88,14 @@ class ViewController extends lib\Controller {
 		
 		$canCreateView = lib\Session::validateCredentials( lib\Session::getPermission( 'CREATE VIEWS' ));
 		
-		$expHandler = new models\ViewHandler( );
-		$expCount = $expHandler->fetchViewCount( );
-		$buttons = $expHandler->fetchViewToolbar( );
+		$viewHandler = new models\ViewHandler( );
+		$expCount = $viewHandler->fetchViewCount( );
+		$buttons = $viewHandler->fetchViewToolbar( );
+		
+		// Get Advanced Search Fields
+		$columns = $viewHandler->fetchColumnDefinitions( );
+		$searchHandler = new models\SearchHandler( );
+		$advancedSearchFields = $searchHandler->buildAdvancedSearchFields( $columns );
 				
 		$params = array(
 			"WEB_URL" => WEB_URL,
@@ -100,7 +105,9 @@ class ViewController extends lib\Controller {
 			"WEB_NAME_ABBR" => CONFIG['WEB']['WEB_NAME_ABBR'],
 			"VIEW_CREATE_VALID" => $canCreateView,
 			"SHOW_TOOLBAR" => true,
-			"BUTTONS" => $buttons
+			"BUTTONS" => $buttons,
+			"ADVANCED_FIELDS" => implode( "", $advancedSearchFields ),
+			"SHOW_ADVANCED" => true
 		);
 		
 		$this->headerParams->set( "CANONICAL", "<link rel='canonical' href='" . WEB_URL . "/View' />" );
@@ -277,13 +284,20 @@ class ViewController extends lib\Controller {
 			
 			$selectedGroups = json_decode( $view->view_groups );
 			
+			// Get Advanced Search Fields
+			$columns = $matrixHandler->fetchColumnDefinitions( );
+			$searchHandler = new models\SearchHandler( );
+			$advancedSearchFields = $searchHandler->buildAdvancedSearchFields( $columns );
+			
 			$params = array(
 				"WEB_URL" => WEB_URL,
 				"IMG_URL" => IMG_URL,
+				"WIKI_URL" => CONFIG['WEB']['WIKI_URL'],
 				"TABLE_TITLE" => "Matrix Dataset",
 				"ROW_COUNT" => $rowCount,
 				"DATATABLE_CLASS" => "matrixTable",
 				"SHOW_TOOLBAR" => true,
+				"SHOW_ADVANCED" => true,
 				"HIDE_CHECK_ALL" => true,
 				"COL_LEGEND" => $colLegend,
 				"BUTTONS" => $toolbarButtons,
@@ -298,10 +312,12 @@ class ViewController extends lib\Controller {
 				"VIEW_STATE" => $view->view_state,
 				"VIEW_STYLE" => $viewStyle,
 				"VIEW_ICON" => $viewIcon,
+				"ADVANCED_FIELDS" => implode( "", $advancedSearchFields ),
 				"CAN_EDIT" => $canEdit,
 				"IS_PRIVATE" => $isPrivate,
 				"GROUPS" => $groups,
 				"SELECTED_GROUPS" => $selectedGroups
+				
 			);
 			
 		}

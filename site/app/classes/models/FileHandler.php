@@ -18,6 +18,7 @@ class FileHandler {
 	private $twig;
 	private $maxNameLength = 40;
 	private $annotationFiles;
+	private $searchHandler;
 
 	public function __construct( ) {
 		$this->db = new PDO( DB_CONNECT, DB_USER, DB_PASS );
@@ -25,6 +26,8 @@ class FileHandler {
 		
 		$loader = new \Twig_Loader_Filesystem( TEMPLATE_PATH );
 		$this->twig = new \Twig_Environment( $loader );
+		
+		$this->searchHandler = new models\SearchHandler( );
 		
 		$this->annotationFiles = $this->fetchAnnotationFiles( );
 	}
@@ -356,33 +359,33 @@ class FileHandler {
 	 * Fetch column headers for an experiment files listing DataTable
 	 */
 	 
-	 public function fetchFilesViewColumnDefinitions( $showBGSelect = false ) {
+	 public function fetchColumnDefinitions( $showBGSelect = false ) {
 	 
 		$columns = array( );
 		if( !$showBGSelect ) {
 			
-			$columns[0] = array( "title" => "", "data" => 0, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
-			$columns[1] = array( "title" => "Name", "data" => 1, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'file_name' );
-			$columns[2] = array( "title" => "Desc", "data" => 2, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'file_desc' );
-			$columns[3] = array( "title" => "Tags", "data" => 3, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_tags' );
-			$columns[4] = array( "title" => "Size", "data" => 4, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_size' );
-			$columns[5] = array( "title" => "ReadSum", "data" => 5, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_readtotal' );
-			$columns[6] = array( "title" => "Date", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_addeddate' );
-			$columns[7] = array( "title" => "State", "data" => 7, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_state' );
-			$columns[8] = array( "title" => "Privacy", "data" => 8, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_permission' );
-			$columns[9] = array( "title" => "Options", "data" => 9, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
+			$columns[0] = array( "title" => "", "data" => 0, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '', "searchable" => false );
+			$columns[1] = array( "title" => "Name", "data" => 1, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'file_name', "searchable" => true, "searchType" => "Text", "searchName" => "Name", "searchCols" => array( "file_name" => "exact" ));
+			$columns[2] = array( "title" => "Desc", "data" => 2, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'file_desc', "searchable" => true, "searchType" => "Text", "searchName" => "Desc", "searchCols" => array( "file_desc" => "exact" ));
+			$columns[3] = array( "title" => "Tags", "data" => 3, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_tags', "searchable" => true, "searchType" => "Text", "searchName" => "Tags", "searchCols" => array( "file_tags" => "like" ));
+			$columns[4] = array( "title" => "Size", "data" => 4, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_size', "searchable" => false );
+			$columns[5] = array( "title" => "ReadSum", "data" => 5, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_readtotal', "searchable" => true, "searchType" => "NumericRange", "searchName" => "ReadSum", "searchCols" => array( "file_readtotal" => "range" ));
+			$columns[6] = array( "title" => "Date", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_addeddate', "searchable" => true, "searchType" => "Date", "searchName" => "Date", "searchCols" => array( "file_addeddate" => "date" ));
+			$columns[7] = array( "title" => "State", "data" => 7, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_state', "searchable" => true, "searchType" => "Text", "searchName" => "State", "searchCols" => array( "file_state" => "exact" ));
+			$columns[8] = array( "title" => "Privacy", "data" => 8, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_permission', "searchable" => true, "searchType" => "Text", "searchName" => "Privacy", "searchCols" => array( "file_permission" => "exact" ));
+			$columns[9] = array( "title" => "Options", "data" => 9, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '', "searchable" => false );
 			
 		} else {
 			
-			$columns[0] = array( "title" => "", "data" => 0, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
-			$columns[1] = array( "title" => "Name", "data" => 1, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'file_name' );
-			$columns[2] = array( "title" => "Desc", "data" => 2, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'file_desc' );
-			$columns[3] = array( "title" => "ReadSum", "data" => 3, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_readtotal' );
-			$columns[4] = array( "title" => "Date", "data" => 4, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_addeddate' );
-			$columns[5] = array( "title" => "State", "data" => 5, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_state' );
-			$columns[6] = array( "title" => "Privacy", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_permission' );
-			$columns[7] = array( "title" => "Mapping", "data" => 7, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
-			$columns[8] = array( "title" => "Control", "data" => 8, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
+			$columns[0] = array( "title" => "", "data" => 0, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '', "searchable" => false );
+			$columns[1] = array( "title" => "Name", "data" => 1, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'file_name', "searchable" => true, "searchType" => "Text", "searchName" => "Name", "searchCols" => array( "file_name" => "exact" ));
+			$columns[2] = array( "title" => "Desc", "data" => 2, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'file_desc', "searchable" => true, "searchType" => "Text", "searchName" => "Desc", "searchCols" => array( "file_desc" => "exact" ));
+			$columns[3] = array( "title" => "ReadSum", "data" => 3, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_readtotal', "searchable" => true, "searchType" => "NumericRange", "searchName" => "ReadSum", "searchCols" => array( "file_readtotal" => "range" ));
+			$columns[4] = array( "title" => "Date", "data" => 4, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_addeddate',"searchable" => true, "searchType" => "Date", "searchName" => "Date", "searchCols" => array( "file_addeddate" => "date" ));
+			$columns[5] = array( "title" => "State", "data" => 5, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_state', "searchable" => true, "searchType" => "Text", "searchName" => "State", "searchCols" => array( "file_state" => "exact" ));
+			$columns[6] = array( "title" => "Privacy", "data" => 6, "orderable" => true, "sortable" => true, "className" => "text-center", "dbCol" => 'file_permission', "searchable" => true, "searchType" => "Text", "searchName" => "Privacy", "searchCols" => array( "file_permission" => "exact" ));
+			$columns[7] = array( "title" => "Mapping", "data" => 7, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '', "searchable" => false );
+			$columns[8] = array( "title" => "Control", "data" => 8, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '', "searchable" => false );
 			
 		}
 		
@@ -632,7 +635,7 @@ class FileHandler {
 	 * for DataTable construction
 	 */
 	 
-	private function buildFilesDataTableQuery( $params, $countOnly = false ) {
+	private function buildDataTableQuery( $params, $columns, $countOnly = false ) {
 		
 		$includeBG = false;
 		if( isset( $params['includeBG'] ) && $params['includeBG'] == true ) {
@@ -666,9 +669,27 @@ class FileHandler {
 			$query .= " AND file_id IN (" . implode( ",", $varSet ) . ")";
 		} 
 		
-		if( isset( $params['search'] ) && strlen($params['search']['value']) > 0 ) {
-			$query .= " AND (file_name LIKE ? OR file_size=? OR file_readtotal=? OR file_addeddate LIKE ? OR file_state=? OR file_desc LIKE ? OR file_tags LIKE ?)";
-			array_push( $options, '%' . $params['search']['value'] . '%', $params['search']['value'], $params['search']['value'], '%' . $params['search']['value'] . '%', $params['search']['value'], '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%' );
+		// Main storage for Query Components
+		$queryEntries = array( );
+		
+		// Add in global search filter terms
+		$globalQuery = $this->searchHandler->buildGlobalSearch( $params, $columns );
+		if( sizeof( $globalQuery['QUERY'] ) > 0 ) {
+			$queryEntries[] = "(" . implode( " OR ", $globalQuery['QUERY'] ) . ")";
+			$options = array_merge( $options, $globalQuery['OPTIONS'] );
+		}
+		
+		// Add in advanced search filter terms
+		$advancedQuery = $this->searchHandler->buildAdvancedSearch( $params, $columns );
+		if( sizeof( $advancedQuery['QUERY'] ) > 0 ) {
+			$queryEntries[] = "(" . implode( " AND ", $advancedQuery['QUERY'] ) . ")";
+			$options = array_merge( $options, $advancedQuery['OPTIONS'] );
+		}
+		
+		// Check for actual entries here
+		// so we only add WHERE component if necessary
+		if( sizeof( $queryEntries ) > 0 ) {
+			$query .= " AND " . implode( " AND ", $queryEntries );
 		}
 		
 		// Addon Permission Check Query Params
@@ -715,27 +736,23 @@ class FileHandler {
 	 
 	public function buildCustomizedFileList( $params ) {
 		
-		$columnSet = $this->fetchFilesViewColumnDefinitions( );
+		$columnSet = $this->fetchColumnDefinitions( );
 		
 		$files = array( );
 		
-		$queryInfo = $this->buildFilesDataTableQuery( $params, false );
+		$queryInfo = $this->buildDataTableQuery( $params, $columnSet, false );
 		$query = $queryInfo['QUERY'];
 		$options = $queryInfo['OPTIONS'];
 		
-		if( isset( $params['order'] ) && sizeof( $params['order'] ) > 0 ) {
-			$query .= " ORDER BY ";
-			$orderByEntries = array( );
-			foreach( $params['order'] as $orderIndex => $orderInfo ) {
-				$orderByEntries[] = $columnSet[$orderInfo['column']]['dbCol'] . " " . $orderInfo['dir'];
-			}
-			
-			$query .= implode( ",", $orderByEntries );
+		$orderBy = $this->searchHandler->buildOrderBy( $params, $columnSet );
+		if( $orderBy ) {
+			$query .= $orderBy;
 		}
 		
-		$query .= " LIMIT " . $params['start'] . "," . $params['length'];
+		$query .= $this->searchHandler->buildLimit( $params );
 		
 		$stmt = $this->db->prepare( $query );
+		
 		$stmt->execute( $options );
 		
 		while( $row = $stmt->fetch( PDO::FETCH_OBJ ) ) {
@@ -753,7 +770,8 @@ class FileHandler {
 	 
 	public function getUnfilteredFileCount( $params ) {
 		
-		$queryInfo = $this->buildFilesDataTableQuery( $params, true );
+		$columnSet = $this->fetchColumnDefinitions( );
+		$queryInfo = $this->buildDataTableQuery( $params, $columnSet, true );
 		$query = $queryInfo['QUERY'];
 		$options = $queryInfo['OPTIONS'];
 		

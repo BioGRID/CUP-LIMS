@@ -22,7 +22,7 @@ if( isset( $postData['tool'] ) ) {
 		// Datatable with correct options
 		case 'manageUsersHeader' :
 			$userHandler = new models\UserHandler( );
-			$usersHeader = $userHandler->fetchManageUsersColumnDefinitions( );
+			$usersHeader = $userHandler->fetchColumnDefinitions( );
 			echo json_encode( $usersHeader );
 			break;
 		
@@ -42,7 +42,7 @@ if( isset( $postData['tool'] ) ) {
 		// Datatable with correct options
 		case 'managePermissionsHeader' :
 			$permHandler = new models\PermissionsHandler( );
-			$permHeader = $permHandler->fetchManagePermissionsColumnDefinitions( );
+			$permHeader = $permHandler->fetchColumnDefinitions( );
 			echo json_encode( $permHeader );
 			break;
 		
@@ -86,7 +86,7 @@ if( isset( $postData['tool'] ) ) {
 			if( isset( $postData['showBGSelect'] ) && $postData['showBGSelect'] == "true" ) {
 				$showBGSelect = true;
 			}
-			$fileHeader = $fileHandler->fetchFilesViewColumnDefinitions( $showBGSelect );
+			$fileHeader = $fileHandler->fetchColumnDefinitions( $showBGSelect );
 			echo json_encode( $fileHeader );
 			break;
 			
@@ -106,7 +106,7 @@ if( isset( $postData['tool'] ) ) {
 		// Datatable with correct options
 		case 'viewHeader' :
 			$viewHandler = new models\ViewHandler( );
-			$viewHeader = $viewHandler->fetchViewColumnDefinitions( );
+			$viewHeader = $viewHandler->fetchColumnDefinitions( );
 			echo json_encode( $viewHeader );
 			break;
 		
@@ -166,7 +166,7 @@ if( isset( $postData['tool'] ) ) {
 		// Datatable with correct options
 		case 'manageGroupHeader' :
 			$groupHandler = new models\GroupHandler( );
-			$groupHeader = $groupHandler->fetchManageGroupColumnDefinitions( );
+			$groupHeader = $groupHandler->fetchColumnDefinitions( );
 			echo json_encode( $groupHeader );
 			break;
 		

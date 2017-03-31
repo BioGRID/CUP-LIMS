@@ -19,6 +19,7 @@
 			pageLength: 100,
 			colTool: "viewHeader", 
 			rowTool: "viewRows", 
+			hasAdvanced: true,
 			hasToolbar: true,
 			optionsCallback: function( datatable ) {
 				initializeDisableCheckedViewsButton( datatable );

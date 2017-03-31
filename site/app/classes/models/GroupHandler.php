@@ -9,14 +9,17 @@ namespace ORCA\app\classes\models;
 
 use \PDO;
 use ORCA\app\lib;
+use ORCA\app\classes\models;
  
 class GroupHandler {
 
 	private $db;
+	private $searchHandler;
 
 	public function __construct( ) {
 		$this->db = new PDO( DB_CONNECT, DB_USER, DB_PASS );
 		$this->db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+		$this->searchHandler = new models\SearchHandler( );
 	}
 	
 	/**
@@ -127,15 +130,57 @@ class GroupHandler {
 	 * Build a set of column header definitions for the manage permissions table
 	 */
 	 
-	public function fetchManageGroupColumnDefinitions( ) {
+	public function fetchColumnDefinitions( ) {
 		
 		$columns = array( );
-		$columns[0] = array( "title" => "Name", "data" => 0, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'group_name' );
-		$columns[1] = array( "title" => "Description", "data" => 1, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'group_desc' );
-		$columns[2] = array( "title" => "Members", "data" => 2, "orderable" => false, "sortable" => false, "className" => "", "dbCol" => '' );
-		$columns[3] = array( "title" => "Group Settings", "data" => 3, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '' );
+		$columns[0] = array( "title" => "Name", "data" => 0, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'group_name', "searchable" => true, "searchType" => "Text", "searchName" => "Name", "searchCols" => array( "group_name" => "exact" ));
+		$columns[1] = array( "title" => "Description", "data" => 1, "orderable" => true, "sortable" => true, "className" => "", "dbCol" => 'group_desc', "searchable" => true, "searchType" => "Text", "searchName" => "Description", "searchCols" => array( "group_desc" => "exact" ));
+		$columns[2] = array( "title" => "Members", "data" => 2, "orderable" => false, "sortable" => false, "className" => "", "dbCol" => '', "searchable" => false );
+		$columns[3] = array( "title" => "Group Settings", "data" => 3, "orderable" => false, "sortable" => false, "className" => "text-center", "dbCol" => '', "searchable" => false );
 		
 		return $columns;
+		
+	}
+	
+	/**
+	 * Build a base query with search params
+	 * for DataTable construction
+	 */
+	 
+	private function buildDataTableQuery( $params, $columns, $countOnly = false ) {
+		
+		if( $countOnly ) {
+			$query = "SELECT count(*) as rowCount FROM " . DB_MAIN . ".groups";
+		} else {
+			$query = "SELECT group_id, group_name, group_desc FROM " . DB_MAIN . ".groups";
+		}
+		
+		$options = array( );
+		
+		// Main storage for Query Components
+		$queryEntries = array( );
+		
+		// Add in global search filter terms
+		$globalQuery = $this->searchHandler->buildGlobalSearch( $params, $columns );
+		if( sizeof( $globalQuery['QUERY'] ) > 0 ) {
+			$queryEntries[] = "(" . implode( " OR ", $globalQuery['QUERY'] ) . ")";
+			$options = array_merge( $options, $globalQuery['OPTIONS'] );
+		}
+		
+		// Add in advanced search filter terms
+		$advancedQuery = $this->searchHandler->buildAdvancedSearch( $params, $columns );
+		if( sizeof( $advancedQuery['QUERY'] ) > 0 ) {
+			$queryEntries[] = "(" . implode( " AND ", $advancedQuery['QUERY'] ) . ")";
+			$options = array_merge( $options, $advancedQuery['OPTIONS'] );
+		}
+		
+		// Check for actual entries here
+		// so we only add WHERE component if necessary
+		if( sizeof( $queryEntries ) > 0 ) {
+			$query .= " WHERE " . implode( " AND ", $queryEntries );
+		}
+		
+		return array( "QUERY" => $query, "OPTIONS" => $options );
 		
 	}
 	
@@ -146,30 +191,20 @@ class GroupHandler {
 	 
 	public function buildCustomizedGroupList( $params ) {
 		
-		$columnSet = $this->fetchManageGroupColumnDefinitions( );
+		$columns = $this->fetchColumnDefinitions( );
 		
 		$groups = array( );
 		
-		$query = "SELECT group_id, group_name, group_desc FROM " . DB_MAIN . ".groups";
-		$options = array( );
+		$queryInfo = $this->buildDataTableQuery( $params, $columns, false );
+		$query = $queryInfo['QUERY'];
+		$options = $queryInfo['OPTIONS'];
 		
-		$query .= " WHERE group_status='active'";
-		if( isset( $params['search'] ) && strlen($params['search']['value']) > 0 ) {
-			$query .= " AND group_name LIKE ? OR group_desc LIKE ?";
-			array_push( $options, '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%' );
+		$orderBy = $this->searchHandler->buildOrderBy( $params, $columns );
+		if( $orderBy ) {
+			$query .= $orderBy;
 		}
 		
-		if( isset( $params['order'] ) && sizeof( $params['order'] ) > 0 ) {
-			$query .= " ORDER BY ";
-			$orderByEntries = array( );
-			foreach( $params['order'] as $orderIndex => $orderInfo ) {
-				$orderByEntries[] = $columnSet[$orderInfo['column']]['dbCol'] . " " . $orderInfo['dir'];
-			}
-			
-			$query .= implode( ",", $orderByEntries );
-		}
-		
-		$query .= " LIMIT " . $params['start'] . "," . $params['length'];
+		$query .= $this->searchHandler->buildLimit( $params );
 		
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( $options );
@@ -189,16 +224,13 @@ class GroupHandler {
 	 
 	public function getUnfilteredGroupCount( $params ) {
 		
-		$users = array( );
+		$columns = $this->fetchColumnDefinitions( );
 		
-		$query = "SELECT count(*) as rowCount FROM " . DB_MAIN . ".groups";
-		$options = array( );
+		$groups = array( );
 		
-		$query .= " WHERE group_status='active'";
-		if( isset( $params['search'] ) && strlen($params['search']['value']) > 0 ) {
-			$query .= " AND group_name LIKE ? OR group_desc LIKE ?";
-			array_push( $options, '%' . $params['search']['value'] . '%', '%' . $params['search']['value'] . '%' );
-		}
+		$queryInfo = $this->buildDataTableQuery( $params, $columns, true );
+		$query = $queryInfo['QUERY'];
+		$options = $queryInfo['OPTIONS'];
 		
 		$stmt = $this->db->prepare( $query );
 		$stmt->execute( $options );
